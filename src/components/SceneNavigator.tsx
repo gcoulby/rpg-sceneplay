@@ -681,7 +681,7 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
     <div ref={navPanelRef} className={`scene-navigator ${panelClass} flex flex-col w-69 min-w-45 bg-(--fd-navigator-bg) border-r border-(--fd-border) overflow-hidden`} style={style}>
       {/* Tab bar — horizontally scrollable tab strip + pinned close button */}
       <div className="flex items-stretch border-b border-(--fd-border) shrink-0 min-w-0">
-        <div className="flex-1 flex overflow-x-auto overflow-y-hidden scrollbar-thin min-w-0">
+        <div className="navigator-tabs-scroll flex-1 flex overflow-x-auto overflow-y-hidden min-w-0">
           <button className={navTabClass('scenes')} onClick={() => setActiveTab('scenes')}>Scenes</button>
           <button className={navTabClass('pages')} onClick={() => setActiveTab('pages')}>Pages</button>
           <button className={navTabClass('locations')} onClick={() => setActiveTab('locations')}>Locations</button>
@@ -892,13 +892,13 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
               {pageContent.map((page, pageIdx) => (
                 <div key={page.pageNumber} className="flex flex-col">
                   <div
-                    className={`flex flex-col cursor-pointer overflow-hidden rounded-[2px] border m-1 transition-[border-color,box-shadow] duration-150 bg-white ${page.pageNumber === currentVisiblePage ? 'border-(--fd-accent) shadow-[0_0_0_2px_rgba(74,158,255,0.4)]' : 'border-(--fd-border) hover:border-(--fd-accent) hover:shadow-[0_0_0_1px_var(--fd-accent)]'}`}
+                    className={`page-thumbnail flex flex-col cursor-pointer overflow-hidden rounded-[2px] border m-1 transition-[border-color,box-shadow] duration-150 bg-white ${page.pageNumber === currentVisiblePage ? 'border-(--fd-accent) shadow-[0_0_0_2px_rgba(74,158,255,0.4)]' : 'border-(--fd-border) hover:border-(--fd-accent) hover:shadow-[0_0_0_1px_var(--fd-accent)]'}`}
                     data-page={page.pageNumber}
                     onClick={(e) => handlePageClick(page, e)}
                   >
-                    <div className="page-thumb-content overflow-hidden [aspect-ratio:8.26/11.69] relative">
+                    <div className="page-thumb-content-clip w-full overflow-hidden [aspect-ratio:8.26/11.69] relative">
                       <div
-                        className="origin-top-left absolute top-0 left-0 box-border text-[#222]"
+                        className="page-thumb-content origin-top-left absolute top-0 left-0 box-border text-[#222]"
                         style={{
                           ...pageContentStyle,
                           transform: `scale(${thumbScale})`,

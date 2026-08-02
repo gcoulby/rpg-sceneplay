@@ -4153,3 +4153,34 @@ html.android .version-history-panel {
   color: #000;
   line-height: 1;
 }
+/* Rescued (round 4): scrollbar theming for containers whose class hook was dropped
+   during conversion, leaving the native (light/unthemed) OS scrollbar visible. */
+.navigator-tabs-scroll {
+  scrollbar-width: thin;
+}
+.navigator-tabs-scroll::-webkit-scrollbar { height: 4px; }
+.navigator-tabs-scroll::-webkit-scrollbar-thumb {
+  background: var(--fd-border);
+  border-radius: 2px;
+}
+.char-profiles-list::-webkit-scrollbar { width: 6px; }
+.char-profiles-list::-webkit-scrollbar-track { background: transparent; }
+.char-profiles-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+/* Rescued (round 5): per-element placeholder text shown on empty screenplay-element
+   nodes. Injected by TipTap's Placeholder extension via a `.is-empty` class it adds
+   itself (never appears as a literal className in our own JSX), so the earlier
+   code-usage-based orphan scan couldn't detect this was missing. */
+div[data-type="scene-heading"].is-empty::before { content: 'INT./EXT. LOCATION - TIME'; color: #ccc; pointer-events: none; float: left; height: 0; text-transform: uppercase; }
+div[data-type="action"].is-empty::before { content: 'Describe the action...'; color: #ccc; pointer-events: none; float: left; height: 0; font-style: italic; }
+div[data-type="character"].is-empty::before { content: 'CHARACTER NAME'; color: #ccc; pointer-events: none; float: left; height: 0; text-transform: uppercase; }
+div[data-type="dialogue"].is-empty::before { content: 'Dialogue...'; color: #ccc; pointer-events: none; float: left; height: 0; font-style: italic; }
+div[data-type="parenthetical"].is-empty::before { content: '(direction)'; color: #ccc; pointer-events: none; float: left; height: 0; font-style: italic; }
+div[data-type="transition"].is-empty::before { content: 'TRANSITION:'; color: #ccc; pointer-events: none; float: left; height: 0; text-transform: uppercase; }
+div[data-type="general"].is-empty::before { content: 'Text...'; color: #ccc; pointer-events: none; float: left; height: 0; }
+div[data-type="shot"].is-empty::before { content: 'SHOT DESCRIPTION'; color: #ccc; pointer-events: none; float: left; height: 0; text-transform: uppercase; }
+div[data-type="new-act"].is-empty::before { content: 'ACT ONE'; color: #ccc; pointer-events: none; float: left; height: 0; text-transform: uppercase; }
+div[data-type="end-of-act"].is-empty::before { content: 'END OF ACT'; color: #ccc; pointer-events: none; float: left; height: 0; text-transform: uppercase; }
+div[data-type="lyrics"].is-empty::before { content: 'Lyrics...'; color: #ccc; pointer-events: none; float: left; height: 0; font-style: italic; }
+div[data-type="show-episode"].is-empty::before { content: 'SHOW TITLE'; color: #ccc; pointer-events: none; float: left; height: 0; text-transform: uppercase; }
+div[data-type="cast-list"].is-empty::before { content: 'Cast...'; color: #ccc; pointer-events: none; float: left; height: 0; }

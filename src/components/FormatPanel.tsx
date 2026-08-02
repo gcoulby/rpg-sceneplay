@@ -224,7 +224,7 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
         <div className="format-panel bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_12px_40px_rgba(0,0,0,.6)] w-[340px] flex flex-col overflow-hidden" ref={panelRef} style={panelPos ? { position: 'fixed', left: panelPos.x, top: panelPos.y, margin: 0 } : undefined}>
           <div className="flex items-center justify-between py-3 px-4 border-b border-(--fd-border) font-semibold text-[13px] text-(--fd-text)" style={{ cursor: 'move' }} onPointerDown={onHeaderPointerDown} onPointerMove={onHeaderPointerMove} onPointerUp={onHeaderPointerUp}>
             <span>Image</span>
-            <button className="bg-transparent border-none text-(--fd-text-muted) text-[18px] cursor-pointer leading-none hover:text-(--fd-text)" onClick={onClose} aria-label="Close image properties">&times;</button>
+            <button className="format-panel-close bg-transparent border-none text-(--fd-text-muted) text-[18px] cursor-pointer leading-none hover:text-(--fd-text)" onClick={onClose} aria-label="Close image properties">&times;</button>
           </div>
           <div className="p-4 flex flex-col gap-3.5">
             <div className="flex items-center gap-3">
@@ -277,7 +277,7 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
         >
           <span>Font & Formatting</span>
           <button
-            className="bg-transparent border-none text-(--fd-text-muted) text-[18px] cursor-pointer leading-none hover:text-(--fd-text)"
+            className="format-panel-close bg-transparent border-none text-(--fd-text-muted) text-[18px] cursor-pointer leading-none hover:text-(--fd-text)"
             onClick={handleCancel}
             aria-label="Close formatting panel"
           >
