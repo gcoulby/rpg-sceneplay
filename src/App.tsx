@@ -5,7 +5,6 @@ import ProjectList from '@/components/open-draft/ProjectList'
 import ProjectView from '@/components/open-draft/ProjectView'
 import SettingsPage from '@/components/open-draft/SettingsPage'
 import Toast from '@/components/open-draft/Toast'
-import DemoBanner from '@/components/open-draft/DemoBanner'
 import AuthGate from '@/components/open-draft/AuthGate'
 import AuthBootstrap from '@/components/open-draft/AuthBootstrap'
 import StorageFallbackDialog from '@/components/open-draft/StorageFallbackDialog'
@@ -14,13 +13,16 @@ import OneDriveWarningDialog from '@/components/open-draft/OneDriveWarningDialog
 import VerifyEmailRoute from '@/components/open-draft/VerifyEmailRoute'
 import ResetPasswordRoute from '@/components/open-draft/ResetPasswordRoute'
 import { pluginRegistry } from './plugins/registry'
+import AppShell from './components/app-shell'
 
 function App() {
   const pluginRoutes = pluginRegistry.getRoutes()
 
   return (
     <>
+      <AppShell />
       {/* <DemoBanner /> */}
+
       <Routes>
         <Route path="/" element={<ScreenplayEditor />} />
         <Route path="/verify" element={<VerifyEmailRoute />} />

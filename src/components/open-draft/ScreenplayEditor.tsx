@@ -2186,6 +2186,12 @@ const ScreenplayEditor: React.FC = () => {
     [editorKey],
   )
 
+  const setEditorInStore = useEditorStore((s) => s.setEditor)
+  useEffect(() => {
+    setEditorInStore(editor)
+    return () => setEditorInStore(null)
+  }, [editor, setEditorInStore])
+
   // Keep editor ref updated for onSynced callback
   collabEditorRef.current = editor
 
@@ -5321,28 +5327,30 @@ const ScreenplayEditor: React.FC = () => {
         </div>
       )}
       {!isHistoryMode && (
-        <MenuBar
-          editor={editor}
-          onCollaborate={() => {
-            if (!currentProject || !currentScriptId) {
-              showToast(
-                'Save your screenplay to a project first — opening Save As...',
-                'info',
-              )
-              useEditorStore.getState().setSaveAsOpen(true)
-              return
-            }
-            // Check if user is authenticated to the collab server (also clears expired tokens)
-            if (!isCollabAuthenticated()) {
-              setCollabLoginOpen(true)
-              return
-            }
-            setShareDialogOpen(true)
-          }}
-          onJoinCollab={() => setJoinCollabOpen(true)}
-          isCollabActive={collabMode}
-          isCollabGuest={collabMode && !isCollabHost}
-        />
+        <>
+          <MenuBar
+            editor={editor}
+            onCollaborate={() => {
+              if (!currentProject || !currentScriptId) {
+                showToast(
+                  'Save your screenplay to a project first — opening Save As...',
+                  'info',
+                )
+                useEditorStore.getState().setSaveAsOpen(true)
+                return
+              }
+              // Check if user is authenticated to the collab server (also clears expired tokens)
+              if (!isCollabAuthenticated()) {
+                setCollabLoginOpen(true)
+                return
+              }
+              setShareDialogOpen(true)
+            }}
+            onJoinCollab={() => setJoinCollabOpen(true)}
+            isCollabActive={collabMode}
+            isCollabGuest={collabMode && !isCollabHost}
+          />
+        </>
       )}
       {!isHistoryMode && <Toolbar editor={editor} />}
       <div className="flex flex-1 overflow-hidden editor-layout">
