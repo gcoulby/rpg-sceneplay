@@ -64,7 +64,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ editor, activeEleme
 
   return (
     <select
-      className="language-selector"
+      className="h-6 bg-[#2a2a2a] text-(--fd-text) border border-[#555] rounded-[3px] px-2 text-xs cursor-pointer outline-none min-w-30 focus:border-(--fd-accent)"
       value={currentLang || ''}
       onChange={handleChange}
       title="Dialogue Language"

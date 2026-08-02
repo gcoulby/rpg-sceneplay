@@ -232,43 +232,46 @@ const RelForm: React.FC<RelFormProps> = ({ characterName, allCharacters, selectB
 
   const othersForB = allCharacters.filter((c) => c !== effectiveA);
 
+  const fieldClass = "w-full py-[5px] px-2 border border-(--fd-border) rounded text-(--fd-text) bg-(--fd-input-bg) font-[inherit] text-xs";
+  const labelClass = "block text-[10px] font-semibold uppercase tracking-[0.3px] text-(--fd-text-muted) mb-[3px]";
+
   return (
-    <div className="rel-map-form">
+    <div className="bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg p-4 min-w-70 max-w-90 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
       {selectBoth && (
-        <div className="rel-map-form-row">
-          <label>Character A</label>
-          <select value={charA} onChange={(e) => { setCharA(e.target.value); setOtherChar(''); }}>
+        <div className="mb-2">
+          <label className={labelClass}>Character A</label>
+          <select className={fieldClass} value={charA} onChange={(e) => { setCharA(e.target.value); setOtherChar(''); }}>
             <option value="">Select...</option>
             {allCharacters.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       )}
-      <div className="rel-map-form-row">
-        <label>{selectBoth ? 'Character B' : 'Character'}</label>
-        <select value={otherChar} onChange={(e) => setOtherChar(e.target.value)}>
+      <div className="mb-2">
+        <label className={labelClass}>{selectBoth ? 'Character B' : 'Character'}</label>
+        <select className={fieldClass} value={otherChar} onChange={(e) => setOtherChar(e.target.value)}>
           <option value="">Select...</option>
           {othersForB.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
-      <div className="rel-map-form-row">
-        <label>Type</label>
-        <select value={relType} onChange={(e) => setRelType(e.target.value)}>
+      <div className="mb-2">
+        <label className={labelClass}>Type</label>
+        <select className={fieldClass} value={relType} onChange={(e) => setRelType(e.target.value)}>
           {REL_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
-      <div className="rel-map-form-row">
-        <label>Dynamic</label>
-        <select value={dynamic} onChange={(e) => setDynamic(e.target.value)}>
+      <div className="mb-2">
+        <label className={labelClass}>Dynamic</label>
+        <select className={fieldClass} value={dynamic} onChange={(e) => setDynamic(e.target.value)}>
           {REL_DYNAMICS.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
       </div>
-      <div className="rel-map-form-row">
-        <label>Description</label>
-        <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={2} placeholder="Describe the relationship..." />
+      <div className="mb-2">
+        <label className={labelClass}>Description</label>
+        <textarea className={`${fieldClass} resize-y min-h-10`} value={desc} onChange={(e) => setDesc(e.target.value)} rows={2} placeholder="Describe the relationship..." />
       </div>
-      <div className="rel-map-form-actions">
-        <button className="rel-map-btn" onClick={onCancel}>Cancel</button>
-        <button className="rel-map-btn rel-map-btn-primary" onClick={handleSubmit} disabled={!effectiveA || !otherChar}>
+      <div className="flex justify-end gap-1.5 mt-3">
+        <button className="py-1 px-2.5 border border-(--fd-border) rounded text-(--fd-text) text-[11px] cursor-pointer whitespace-nowrap bg-transparent hover:bg-(--fd-overlay-light)" onClick={onCancel}>Cancel</button>
+        <button className="py-1 px-2.5 rounded text-[11px] cursor-pointer whitespace-nowrap bg-(--fd-accent) border border-(--fd-accent) text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-default" onClick={handleSubmit} disabled={!effectiveA || !otherChar}>
           {existing ? 'Update' : 'Add'}
         </button>
       </div>
@@ -546,7 +549,7 @@ export const RelationshipMap: React.FC<Props> = ({ scriptId, onSelectCharacter }
 
   if (nodes.length === 0) {
     return (
-      <div className="rel-map-empty">
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center text-(--fd-text-muted) text-[13px]">
         <p>No characters in the screenplay yet.</p>
         <p style={{ fontSize: 11, color: 'var(--fd-text-muted)' }}>
           Add character elements to your screenplay to see them here.
@@ -556,10 +559,10 @@ export const RelationshipMap: React.FC<Props> = ({ scriptId, onSelectCharacter }
   }
 
   return (
-    <div className="rel-map-container" ref={containerRef} onWheel={handleWheel as any}>
+    <div className="rel-map-container flex-1 relative overflow-hidden min-h-0" ref={containerRef} onWheel={handleWheel as any}>
       <svg
         viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
-        className="rel-map-svg"
+        className="block w-full h-full"
         style={{ cursor: isPanning ? 'grabbing' : 'default' }}
         onClick={() => { setSelectedNode(null); setAddingFrom(null); }}
         onPointerDown={handleSvgPointerDown}
@@ -679,19 +682,19 @@ export const RelationshipMap: React.FC<Props> = ({ scriptId, onSelectCharacter }
       </svg>
 
       {/* Toolbar overlay */}
-      <div className="rel-map-toolbar">
+      <div className="absolute bottom-2 left-2 right-2 flex items-center gap-2 py-1.5 px-2.5 bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md text-xs shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
         {selectedNode ? (
           <>
-            <span className="rel-map-toolbar-label">{selectedNode}</span>
+            <span className="font-bold text-[13px]">{selectedNode}</span>
             <button
-              className="rel-map-btn rel-map-btn-primary"
+              className="py-1 px-2.5 rounded text-[11px] cursor-pointer whitespace-nowrap bg-(--fd-accent) border border-(--fd-accent) text-white hover:opacity-90"
               onClick={() => setAddingFrom(selectedNode)}
             >
               + Add Relationship
             </button>
             {onSelectCharacter && (
               <button
-                className="rel-map-btn"
+                className="py-1 px-2.5 border border-(--fd-border) rounded text-(--fd-text) text-[11px] cursor-pointer whitespace-nowrap bg-transparent hover:bg-(--fd-overlay-light)"
                 onClick={() => onSelectCharacter(selectedNode)}
               >
                 View Profile
@@ -700,10 +703,10 @@ export const RelationshipMap: React.FC<Props> = ({ scriptId, onSelectCharacter }
           </>
         ) : (
           <>
-            <span className="rel-map-toolbar-hint">Scroll to zoom. Drag background to pan.</span>
+            <span className="text-(--fd-text-muted) text-[11px]">Scroll to zoom. Drag background to pan.</span>
             {nodes.length >= 2 && (
               <button
-                className="rel-map-btn rel-map-btn-primary"
+                className="py-1 px-2.5 rounded text-[11px] cursor-pointer whitespace-nowrap bg-(--fd-accent) border border-(--fd-accent) text-white hover:opacity-90"
                 onClick={() => setAddingFrom('__BOTH__')}
               >
                 + Add Relationship
@@ -712,7 +715,7 @@ export const RelationshipMap: React.FC<Props> = ({ scriptId, onSelectCharacter }
           </>
         )}
         <button
-          className="rel-map-btn"
+          className="py-1 px-2.5 border border-(--fd-border) rounded text-(--fd-text) text-[11px] cursor-pointer whitespace-nowrap bg-transparent hover:bg-(--fd-overlay-light)"
           style={{ marginLeft: 'auto' }}
           onClick={() => {
             // Fit viewBox to contain all nodes
@@ -735,7 +738,7 @@ export const RelationshipMap: React.FC<Props> = ({ scriptId, onSelectCharacter }
 
       {/* Add/Edit relationship form overlay */}
       {(addingFrom || editingRel) && (
-        <div className="rel-map-form-overlay" onClick={() => { setAddingFrom(null); setEditingRel(null); }}>
+        <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10" onClick={() => { setAddingFrom(null); setEditingRel(null); }}>
           <div onClick={(e) => e.stopPropagation()}>
             <RelForm
               characterName={addingFrom === '__BOTH__' ? '' : (addingFrom || editingRel!.characterA)}
@@ -747,7 +750,7 @@ export const RelationshipMap: React.FC<Props> = ({ scriptId, onSelectCharacter }
             />
             {editingRel && (
               <button
-                className="rel-map-btn rel-map-btn-danger"
+                className="py-1 px-2.5 rounded text-[11px] cursor-pointer whitespace-nowrap text-[#ef5350] border border-[#ef5350] bg-transparent hover:bg-[rgba(239,83,80,0.1)]"
                 style={{ marginTop: 8, width: '100%' }}
                 onClick={() => { deleteCharacterRelationship(editingRel.id); setEditingRel(null); }}
               >

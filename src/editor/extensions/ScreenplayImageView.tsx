@@ -86,15 +86,32 @@ export const ScreenplayImageView: React.FC<NodeViewProps> = ({ node, updateAttri
 
   const editable = editor.isEditable;
 
+  const alignClass =
+    align === 'left' ? 'text-left' : align === 'right' ? 'text-right' : 'text-center';
+
   return (
     <NodeViewWrapper
-      className={`sp-image align-${align || 'center'}${selected ? ' is-selected' : ''}`}
+      className={`block my-2 ${alignClass}`}
       data-drag-handle
     >
-      <span className="sp-image-inner" style={{ width: width ? `${width}px` : undefined }}>
-        <img ref={imgRef} src={url} alt="" draggable={false} onLoad={onLoad} className="sp-image-img" />
+      <span
+        className={`relative inline-block max-w-full leading-0 ${selected ? 'outline-2 outline-(--fd-accent)' : ''}`}
+        style={{ width: width ? `${width}px` : undefined }}
+      >
+        <img
+          ref={imgRef}
+          src={url}
+          alt=""
+          draggable={false}
+          onLoad={onLoad}
+          className="block w-full h-auto max-w-full"
+        />
         {selected && editable && (
-          <span className="sp-image-resize" onMouseDown={startResize} title="Drag to resize" />
+          <span
+            className="absolute -right-1.25 -bottom-1.25 w-3 h-3 bg-(--fd-accent) border border-white rounded-sm cursor-nwse-resize z-3"
+            onMouseDown={startResize}
+            title="Drag to resize"
+          />
         )}
       </span>
     </NodeViewWrapper>

@@ -109,7 +109,7 @@ function highlightText(text: string, query: string): React.ReactNode {
   return (
     <>
       {text.slice(0, idx)}
-      <span className="navigator-search-highlight">{text.slice(idx, idx + query.length)}</span>
+      <span className="bg-[rgba(234,179,8,0.3)] rounded-[2px] px-px">{text.slice(idx, idx + query.length)}</span>
       {text.slice(idx + query.length)}
     </>
   );
@@ -165,7 +165,7 @@ const SceneLengthIcon: React.FC<{ pages: number }> = React.memo(({ pages }) => {
       {bgStyle && (
         <rect x="2" y={FILL_TOP} width="7.5" height={FILL_H} fill={bgStyle.color} opacity={bgStyle.opacity} rx="0.5" />
       )}
-      <rect x="2" y={FILL_BOT - fillH} width="7.5" height={fillH} fill={fillColor} opacity={fillOpacity} rx="0.5" className="scene-length-fill" />
+      <rect x="2" y={FILL_BOT - fillH} width="7.5" height={fillH} fill={fillColor} opacity={fillOpacity} rx="0.5" className="scene-length-fill opacity-55" />
     </svg>
   );
 });
@@ -189,6 +189,18 @@ const SPACE_BEFORE: Record<string, number> = {
 };
 
 const LINE_HEIGHT_PX = 12 * (96 / 72); // 16px — matches pagination LINE_HEIGHT_PT
+
+function pageThumbTypeClasses(typeName: string): string {
+  switch (typeName) {
+    case 'sceneHeading': return 'font-bold';
+    case 'character': return 'uppercase';
+    case 'transition': return 'text-right uppercase';
+    case 'newAct':
+    case 'endOfAct': return 'text-center font-bold uppercase';
+    case 'lyrics': return 'italic';
+    default: return '';
+  }
+}
 
 // ── Main component ──────────────────────────────────────────────────────
 
@@ -661,30 +673,33 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
   const panelClass = animationState === 'entered'
     ? 'panel-open' : animationState === 'exiting' ? 'panel-closing' : '';
 
+  const navTabClass = (tab: NavTab) =>
+    `flex-1 shrink-0 bg-transparent border-none border-b-2 text-[11px] font-semibold uppercase tracking-[0.4px] px-2 py-2.5 cursor-pointer transition-all duration-150 min-h-10 whitespace-nowrap hover:text-(--fd-text) ${activeTab === tab ? 'text-(--fd-accent) border-b-(--fd-accent)' : 'text-(--fd-text-muted) border-transparent'}`;
+
   return (
     <>
-    <div ref={navPanelRef} className={`scene-navigator ${panelClass}`} style={style}>
+    <div ref={navPanelRef} className={`scene-navigator ${panelClass} flex flex-col w-69 min-w-45 bg-(--fd-navigator-bg) border-r border-(--fd-border) overflow-hidden`} style={style}>
       {/* Tab bar — horizontally scrollable tab strip + pinned close button */}
-      <div className="navigator-tabs">
-        <div className="navigator-tabs-scroll">
-          <button className={`navigator-tab${activeTab === 'scenes' ? ' active' : ''}`} onClick={() => setActiveTab('scenes')}>Scenes</button>
-          <button className={`navigator-tab${activeTab === 'pages' ? ' active' : ''}`} onClick={() => setActiveTab('pages')}>Pages</button>
-          <button className={`navigator-tab${activeTab === 'locations' ? ' active' : ''}`} onClick={() => setActiveTab('locations')}>Locations</button>
-          <button className={`navigator-tab${activeTab === 'structure' ? ' active' : ''}`} onClick={() => setActiveTab('structure')}>Structure</button>
+      <div className="flex items-stretch border-b border-(--fd-border) shrink-0 min-w-0">
+        <div className="navigator-tabs-scroll flex-1 flex overflow-x-auto overflow-y-hidden min-w-0">
+          <button className={navTabClass('scenes')} onClick={() => setActiveTab('scenes')}>Scenes</button>
+          <button className={navTabClass('pages')} onClick={() => setActiveTab('pages')}>Pages</button>
+          <button className={navTabClass('locations')} onClick={() => setActiveTab('locations')}>Locations</button>
+          <button className={navTabClass('structure')} onClick={() => setActiveTab('structure')}>Structure</button>
         </div>
-        <button className="navigator-close" onClick={toggleNavigator} title="Close Navigator">×</button>
+        <button className="navigator-close bg-transparent border-none text-(--fd-text-muted) text-xl cursor-pointer px-3 py-0 leading-none shrink-0 flex items-center justify-center min-w-9 min-h-10 border-l border-(--fd-border) hover:text-(--fd-text) hover:bg-(--fd-overlay-subtle)" onClick={toggleNavigator} title="Close Navigator">×</button>
       </div>
 
       {/* ── Scenes tab ───────────────────────────────────────────────── */}
       {activeTab === 'scenes' && (
         <>
-          <div className="navigator-header">
-            <span className="navigator-title">Scenes</span>
-            <span className="scene-count">
+          <div className="flex items-center px-3.5 py-0.75 border-b border-(--fd-border) shrink-0 gap-2">
+            <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">Scenes</span>
+            <span className="text-xs text-(--fd-text) opacity-70">
               {(hasActiveFilter || searchQuery) ? `${filteredIndices.length}/` : ''}{scenes.length}
             </span>
             <button
-              className={`scene-filter-btn${hasActiveFilter ? ' active' : ''}`}
+              className={`bg-transparent border-none cursor-pointer p-1.5 ml-auto flex items-center transition-colors duration-150 min-w-8 min-h-8 justify-center hover:text-(--fd-accent) ${hasActiveFilter ? 'text-(--fd-accent)' : 'text-(--fd-text-muted)'}`}
               onClick={() => setShowFilters(!showFilters)}
               title="Filter scenes"
             >
@@ -695,10 +710,10 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
           </div>
 
           {showFilters && (
-            <div className="scene-filters">
-              <div className="scene-filter-group">
+            <div className="px-3.5 pt-2 pb-2.5 border-b border-(--fd-border) flex flex-col gap-1.5 shrink-0">
+              <div className="flex flex-col gap-1.5">
                 <select
-                  className="scene-filter-select"
+                  className="scene-filter-select flex-1 min-w-0 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2 py-2 text-[13px] outline-none cursor-pointer min-h-9 pr-6"
                   value=""
                   onChange={(e) => {
                     if (e.target.value && !filterCharacters.includes(e.target.value)) {
@@ -712,36 +727,36 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                   ))}
                 </select>
                 {filterCharacters.length > 0 && (
-                  <div className="filter-tags">
+                  <div className="flex flex-wrap gap-1">
                     {filterCharacters.map(c => (
-                      <span key={c} className="filter-tag">
+                      <span key={c} className="inline-flex items-center gap-1 bg-[rgba(74,158,255,0.15)] text-(--fd-accent) text-xs px-2 py-1 rounded font-medium min-h-7">
                         {c}
-                        <button onClick={() => setFilterCharacters(filterCharacters.filter(x => x !== c))}>×</button>
+                        <button className="bg-transparent border-none text-inherit cursor-pointer text-sm px-0.5 py-0 leading-none opacity-70 min-w-5 min-h-5 flex items-center justify-center hover:opacity-100" onClick={() => setFilterCharacters(filterCharacters.filter(x => x !== c))}>×</button>
                       </span>
                     ))}
                   </div>
                 )}
               </div>
-              <div className="scene-filter-row">
-                <select className="scene-filter-select" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}>
+              <div className="flex gap-1.5">
+                <select className="scene-filter-select flex-1 min-w-0 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2 py-2 text-[13px] outline-none cursor-pointer min-h-9 pr-6" value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)}>
                   <option value="">Location...</option>
                   {allLocations.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
-                <select className="scene-filter-select" value={filterPrefix} onChange={(e) => setFilterPrefix(e.target.value)}>
+                <select className="scene-filter-select flex-1 min-w-0 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2 py-2 text-[13px] outline-none cursor-pointer min-h-9 pr-6" value={filterPrefix} onChange={(e) => setFilterPrefix(e.target.value)}>
                   <option value="">INT/EXT...</option>
                   {allPrefixes.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
-              <div className="scene-filter-row">
-                <select className="scene-filter-select" value={filterTime} onChange={(e) => setFilterTime(e.target.value)}>
+              <div className="flex gap-1.5">
+                <select className="scene-filter-select flex-1 min-w-0 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2 py-2 text-[13px] outline-none cursor-pointer min-h-9 pr-6" value={filterTime} onChange={(e) => setFilterTime(e.target.value)}>
                   <option value="">Time of Day...</option>
                   {allTimes.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
-                <div className="scene-filter-colors">
+                <div className="flex gap-1 items-center">
                   {['', '#8b5cf6', '#4f46e5', '#2563eb', '#059669', '#eab308', '#f97316', '#ef4444', '#000000', '#ffffff'].map(c => (
                     <button
                       key={c || 'all'}
-                      className={`scene-filter-color-dot${filterColor === c ? ' active' : ''}`}
+                      className={`w-4 h-4 rounded-full border-2 cursor-pointer shrink-0 shadow-[inset_0_0_0_1px_rgba(128,128,128,0.3)] ${filterColor === c ? 'border-(--fd-text)' : 'border-transparent'}`}
                       style={{ background: c || 'var(--fd-text)', opacity: c ? 1 : 0.25 }}
                       onClick={() => setFilterColor(c)}
                       title={c ? c : 'All colors'}
@@ -749,18 +764,18 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                   ))}
                 </div>
               </div>
-              <div className="scene-filter-row">
+              <div className="flex gap-1.5">
                 <input
-                  className="scene-filter-input"
+                  className="flex-1 min-w-0 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2 py-2 text-[13px] outline-none min-h-9 placeholder:text-(--fd-text-muted) placeholder:opacity-60 focus:border-(--fd-accent)"
                   type="text"
                   placeholder="Synopsis contains..."
                   value={filterSynopsis}
                   onChange={(e) => setFilterSynopsis(e.target.value)}
                 />
               </div>
-              <div className="scene-filter-row">
+              <div className="flex gap-1.5">
                 {hasActiveFilter && (
-                  <button className="filter-clear-btn" onClick={() => {
+                  <button className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) text-[13px] px-3 py-2 rounded cursor-pointer whitespace-nowrap transition-all duration-150 min-h-9 hover:border-(--fd-accent) hover:text-(--fd-accent)" onClick={() => {
                     setFilterCharacters([]);
                     setFilterLocation('');
                     setFilterPrefix('');
@@ -773,25 +788,25 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
             </div>
           )}
 
-          <div className="navigator-list" ref={listRef}>
+          <div className="navigator-list flex-1 overflow-y-auto pb-1" ref={listRef}>
             {/* Search bar — sticky on scroll-up, scrolls away on scroll-down */}
-            <div className={`navigator-search${scrollingUp ? ' navigator-search--pinned' : ''}`}>
-              <svg className="navigator-search-icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <div className={`flex items-center gap-1.5 px-3.5 py-2 border-b border-(--fd-border) ${scrollingUp ? 'sticky top-0 z-2 bg-(--fd-navigator-bg)' : ''}`}>
+              <svg className="shrink-0 opacity-40" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <circle cx="6.5" cy="6.5" r="5" /><line x1="10" y1="10" x2="14.5" y2="14.5" />
               </svg>
               <input
-                className="navigator-search-input"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none text-(--fd-text) text-[13px] py-1 placeholder:text-(--fd-text-muted) placeholder:opacity-60"
                 type="text"
                 placeholder="Search headings & synopses..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
-                <button className="navigator-search-clear" onClick={() => setSearchQuery('')}>×</button>
+                <button className="bg-transparent border-none text-(--fd-text-muted) cursor-pointer text-base leading-none px-0.5 opacity-60 hover:opacity-100 hover:text-(--fd-text)" onClick={() => setSearchQuery('')}>×</button>
               )}
             </div>
             {filteredIndices.length === 0 ? (
-              <div className="navigator-empty">
+              <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
                 {(hasActiveFilter || searchQuery)
                   ? 'No scenes match the current filters.'
                   : 'No scenes yet. Start writing a scene heading (INT. or EXT.)'}
@@ -802,21 +817,21 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                 const detail = sceneDetails[sceneIdx];
                 const isExpanded = expandedSceneIdx === sceneIdx;
                 return (
-                  <div key={scene.id} className={`navigator-scene${isExpanded ? ' expanded' : ''}`}>
-                    <div className="scene-info" onClick={() => { setExpandedSceneIdx(isExpanded ? null : sceneIdx); goToScene(sceneIdx); }}>
-                      <div className="scene-heading-row">
-                        <div className="scene-heading-text">
+                  <div key={scene.id} className={`navigator-scene flex items-start px-3.5 py-2.5 cursor-pointer border-l-[3px] min-h-10 hover:bg-(--fd-overlay-subtle) hover:border-l-(--fd-accent) active:bg-[rgba(74,158,255,0.12)] ${isExpanded ? 'bg-(--fd-overlay-subtle) border-l-(--fd-accent)' : 'border-transparent'}`}>
+                    <div className="flex-1 min-w-0" onClick={() => { setExpandedSceneIdx(isExpanded ? null : sceneIdx); goToScene(sceneIdx); }}>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 min-w-0 flex items-center gap-1.5 text-sm [font-family:var(--screenplay-font)] text-(--fd-text) leading-[1.3] font-semibold">
                           {scene.sceneNumber != null && (
-                            <span className="scene-number-badge" style={scene.color ? { background: scene.color } : undefined}>{scene.sceneNumber}</span>
+                            <span className="inline-flex items-center justify-center w-5.5 h-5.5 rounded-full shrink-0 text-xs font-bold font-inherit bg-(--fd-text-muted) text-(--fd-bg) border-none" style={scene.color ? { background: scene.color } : undefined}>{scene.sceneNumber}</span>
                           )}
                           {(() => {
                             const label = sceneActLabel(structure, sceneIdx);
-                            return label ? <span className="scene-act-badge" title={`Act ${label.slice(1)}`}>{label}</span> : null;
+                            return label ? <span className="inline-block text-[9px] font-bold tracking-[0.03em] px-1.25 py-px mr-1.5 rounded-[3px] bg-(--fd-overlay-light) text-(--fd-text-muted) align-middle shrink-0" title={`Act ${label.slice(1)}`}>{label}</span> : null;
                           })()}
-                          <span className="scene-heading-label">{highlightText(scene.heading, searchQuery)}</span>
+                          <span className="whitespace-nowrap overflow-hidden text-ellipsis min-w-0">{highlightText(scene.heading, searchQuery)}</span>
                         </div>
                         {detail && detail.pageLength > 0 && (
-                          <div className="scene-length" data-tooltip={
+                          <div className="scene-length shrink-0 flex items-center text-(--fd-text-muted) cursor-default ml-1 relative" data-tooltip={
                             formatPageLength(detail.pageLength) +
                             (sceneTimings[sceneIdx]?.finalSeconds ? ` \u00b7 ${formatSceneDuration(sceneTimings[sceneIdx].finalSeconds)}` : '')
                           }>
@@ -825,17 +840,17 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                         )}
                       </div>
                       {!isExpanded && scene.synopsis && (
-                        <div className="scene-synopsis-preview">{highlightText(scene.synopsis.split('\n')[0], searchQuery)}</div>
+                        <div className="text-[11px] text-(--fd-text) opacity-50 leading-[1.3] mt-[3px] whitespace-nowrap overflow-hidden text-ellipsis">{highlightText(scene.synopsis.split('\n')[0], searchQuery)}</div>
                       )}
                       {isExpanded && (
-                        <div className="scene-synopsis-expanded">
+                        <div className="mt-2 pt-1.5 border-t border-(--fd-border)">
                           {(detail || sceneTimings[sceneIdx]) && (
-                            <div className="scene-detail-meta">
+                            <div className="flex gap-2 text-[11px] text-(--fd-text-muted) mb-1 [font-variant-numeric:tabular-nums]">
                               {detail && detail.pageLength > 0 && (
-                                <span className="scene-meta-item">{formatPageLength(detail.pageLength)}</span>
+                                <span className="font-semibold">{formatPageLength(detail.pageLength)}</span>
                               )}
                               {sceneTimings[sceneIdx]?.finalSeconds > 0 && (
-                                <span className="scene-meta-item" style={{ color: getTimingColor(sceneTimings[sceneIdx].finalSeconds) }}>
+                                <span className="font-semibold" style={{ color: getTimingColor(sceneTimings[sceneIdx].finalSeconds) }}>
                                   {formatSceneDuration(sceneTimings[sceneIdx].finalSeconds)}
                                   {sceneTimings[sceneIdx].overrideSeconds != null && ' *'}
                                 </span>
@@ -843,12 +858,12 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                             </div>
                           )}
                           {scene.synopsis ? (
-                            <div className="scene-synopsis-text">{scene.synopsis}</div>
+                            <div className="text-xs text-(--fd-text) opacity-70 leading-[1.5] line-clamp-3">{scene.synopsis}</div>
                           ) : (
-                            <div className="scene-synopsis-empty">No synopsis for this scene available.</div>
+                            <div className="text-xs text-(--fd-text-muted) italic opacity-60">No synopsis for this scene available.</div>
                           )}
                           <button
-                            className="scene-synopsis-edit-btn"
+                            className="mt-1.5 px-2.5 py-[3px] text-[11px] bg-transparent border border-(--fd-border) rounded text-(--fd-accent) cursor-pointer hover:bg-(--fd-overlay-subtle)"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSynopsisModal({ sceneIdx, id: scene.id, heading: scene.heading, synopsis: scene.synopsis, color: scene.color });
@@ -869,21 +884,21 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
 
       {/* ── Pages tab ────────────────────────────────────────────────── */}
       {activeTab === 'pages' && (
-        <div className="navigator-list page-thumbnails-scroll" ref={pageGridRef}>
+        <div className="navigator-list p-0! flex-1 overflow-y-auto" ref={pageGridRef}>
           {pageContent.length === 0 ? (
-            <div className="navigator-empty">No pages yet. Start writing to see page previews.</div>
+            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">No pages yet. Start writing to see page previews.</div>
           ) : (
-            <div className="page-thumbnails-grid">
-              {pageContent.map((page) => (
-                <div key={page.pageNumber} className="page-thumb-wrapper">
+            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(120px,1fr))] gap-0 px-2 py-1.5">
+              {pageContent.map((page, pageIdx) => (
+                <div key={page.pageNumber} className="flex flex-col">
                   <div
-                    className={`page-thumbnail${page.pageNumber === currentVisiblePage ? ' current' : ''}`}
+                    className={`page-thumbnail flex flex-col cursor-pointer overflow-hidden rounded-[2px] border m-1 transition-[border-color,box-shadow] duration-150 bg-white ${page.pageNumber === currentVisiblePage ? 'border-(--fd-accent) shadow-[0_0_0_2px_rgba(74,158,255,0.4)]' : 'border-(--fd-border) hover:border-(--fd-accent) hover:shadow-[0_0_0_1px_var(--fd-accent)]'}`}
                     data-page={page.pageNumber}
                     onClick={(e) => handlePageClick(page, e)}
                   >
-                    <div className="page-thumb-content-clip">
+                    <div className="page-thumb-content-clip w-full overflow-hidden [aspect-ratio:8.26/11.69] relative">
                       <div
-                        className="page-thumb-content"
+                        className="page-thumb-content origin-top-left absolute top-0 left-0 box-border text-[#222]"
                         style={{
                           ...pageContentStyle,
                           transform: `scale(${thumbScale})`,
@@ -892,7 +907,7 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                         {page.blocks.map((block, i) => (
                           <div
                             key={i}
-                            className={`page-thumb-el page-thumb-${block.typeName}`}
+                            className={`break-words [overflow-wrap:break-word] whitespace-pre-wrap ${pageThumbTypeClasses(block.typeName)}`}
                             style={getBlockStyle(block.typeName, i === 0)}
                           >
                             {block.text || '\u00A0'}
@@ -901,7 +916,7 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                       </div>
                     </div>
                   </div>
-                  <div className="page-thumb-number">Page {page.pageNumber}</div>
+                  <div className={`text-center text-[10px] font-semibold text-(--fd-text) opacity-50 pt-[3px] pb-1.5 mx-1 ${pageIdx === pageContent.length - 1 ? '' : 'border-b border-(--fd-border)'}`}>Page {page.pageNumber}</div>
                 </div>
               ))}
             </div>
@@ -912,15 +927,15 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
       {/* ── Structure tab ────────────────────────────────────────────── */}
       {activeTab === 'structure' && (
         <>
-          <div className="navigator-header">
-            <span className="navigator-title">Structure</span>
-            <span className="scene-count">
+          <div className="flex items-center px-3.5 py-0.75 border-b border-(--fd-border) shrink-0 gap-2">
+            <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">Structure</span>
+            <span className="text-xs text-(--fd-text) opacity-70">
               {structure.acts.filter((a) => a.actNumber > 0).length || '—'} acts
             </span>
           </div>
-          <div className="navigator-list">
+          <div className="flex-1 overflow-y-auto pb-1">
             {structure.acts.length === 0 ? (
-              <div className="navigator-empty">
+              <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
                 No structure yet. Insert an Act Break from the element selector, or start writing scenes.
               </div>
             ) : (
@@ -930,40 +945,40 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                   ? `${act.actName}: ${act.customName}`
                   : act.actName;
                 return (
-                  <div key={`act-${act.actNumber}-${act.docPos}`} className="structure-act">
+                  <div key={`act-${act.actNumber}-${act.docPos}`} className="border-b border-(--fd-overlay-subtle)">
                     <div
-                      className="structure-act-header"
+                      className="flex items-center gap-1.5 px-3 py-2.5 cursor-pointer bg-(--fd-overlay-subtle) transition-colors duration-100 hover:bg-(--fd-overlay-light)"
                       onClick={() => toggleAct(act.actNumber)}
                     >
-                      <span className={`structure-chevron${isCollapsed ? '' : ' expanded'}`}>&#9662;</span>
-                      <span className="structure-act-name">{displayName}</span>
-                      <span className="structure-act-count">{act.scenes.length}</span>
+                      <span className={`text-(--fd-text-muted) text-[10px] w-2.5 transition-transform duration-150 shrink-0 ${isCollapsed ? 'rotate-[-90deg]' : 'rotate-0'}`}>&#9662;</span>
+                      <span className="flex-1 text-[13px] font-bold tracking-[0.02em] text-(--fd-text) uppercase">{displayName}</span>
+                      <span className="text-[11px] text-(--fd-text-muted) bg-(--fd-overlay-light) px-2 py-0.5 rounded-lg shrink-0">{act.scenes.length}</span>
                     </div>
                     {!isCollapsed && (
-                      <div className="structure-act-body">
+                      <div className="pb-1">
                         {act.sequences.map((seq) => {
                           const seqCollapsed = collapsedSequences.has(seq.id);
                           return (
-                            <div key={seq.id} className="structure-sequence">
+                            <div key={seq.id} className="pl-3">
                               <div
-                                className="structure-sequence-header"
+                                className="flex items-center gap-1.5 px-3 py-1.5 cursor-pointer hover:bg-(--fd-overlay-subtle)"
                                 onClick={() => toggleSequence(seq.id)}
                               >
-                                <span className={`structure-chevron${seqCollapsed ? '' : ' expanded'}`}>&#9662;</span>
-                                <span className="structure-sequence-dot" style={{ background: seq.color }} />
-                                <span className="structure-sequence-name">{seq.name}</span>
-                                <span className="structure-sequence-count">{seq.scenes.length}</span>
+                                <span className={`text-(--fd-text-muted) text-[10px] w-2.5 transition-transform duration-150 shrink-0 ${seqCollapsed ? 'rotate-[-90deg]' : 'rotate-0'}`}>&#9662;</span>
+                                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: seq.color }} />
+                                <span className="flex-1 text-xs text-(--fd-text) whitespace-nowrap overflow-hidden text-ellipsis">{seq.name}</span>
+                                <span className="text-[10px] text-(--fd-text-muted) shrink-0">{seq.scenes.length}</span>
                               </div>
                               {!seqCollapsed && (
-                                <div className="structure-scene-list">
+                                <div className="pl-3">
                                   {seq.scenes.map((s) => (
                                     <div
                                       key={`seq-scene-${s.sceneIndex}`}
-                                      className="structure-scene"
+                                      className="flex items-center gap-2 px-3 py-[5px] cursor-pointer transition-colors duration-100 hover:bg-(--fd-overlay-subtle)"
                                       onClick={() => goToScene(s.sceneIndex)}
                                     >
-                                      <span className="structure-scene-num">{s.sceneIndex + 1}</span>
-                                      <span className="structure-scene-heading">{s.heading}</span>
+                                      <span className="text-[10px] text-(--fd-text-muted) min-w-[22px] shrink-0">{s.sceneIndex + 1}</span>
+                                      <span className="text-xs text-(--fd-text) whitespace-nowrap overflow-hidden text-ellipsis flex-1">{s.heading}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -972,15 +987,15 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                           );
                         })}
                         {act.orphanScenes.length > 0 && (
-                          <div className="structure-scene-list">
+                          <div className="pl-3">
                             {act.orphanScenes.map((s) => (
                               <div
                                 key={`orph-scene-${s.sceneIndex}`}
-                                className="structure-scene"
+                                className="flex items-center gap-2 px-3 py-[5px] cursor-pointer transition-colors duration-100 hover:bg-(--fd-overlay-subtle)"
                                 onClick={() => goToScene(s.sceneIndex)}
                               >
-                                <span className="structure-scene-num">{s.sceneIndex + 1}</span>
-                                <span className="structure-scene-heading">{s.heading}</span>
+                                <span className="text-[10px] text-(--fd-text-muted) min-w-[22px] shrink-0">{s.sceneIndex + 1}</span>
+                                <span className="text-xs text-(--fd-text) whitespace-nowrap overflow-hidden text-ellipsis flex-1">{s.heading}</span>
                               </div>
                             ))}
                           </div>
@@ -998,13 +1013,13 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
       {/* ── Locations tab ────────────────────────────────────────────── */}
       {activeTab === 'locations' && (
         <>
-          <div className="navigator-header">
-            <span className="navigator-title">Locations</span>
-            <span className="scene-count">{locations.length}</span>
+          <div className="flex items-center px-3.5 py-0.75 border-b border-(--fd-border) shrink-0 gap-2">
+            <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">Locations</span>
+            <span className="text-xs text-(--fd-text) opacity-70">{locations.length}</span>
           </div>
-          <div className="navigator-list">
+          <div className="flex-1 overflow-y-auto pb-1">
             {locations.length === 0 ? (
-              <div className="navigator-empty">
+              <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
                 No locations yet. Scene headings like
                 &ldquo;INT. COFFEE SHOP - DAY&rdquo; will appear here.
               </div>
@@ -1014,19 +1029,19 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                 const isExpanded = expandedLocation === key;
                 const isRenaming = renamingLocation === key;
                 return (
-                  <div key={key} className="location-group">
-                    <div className="location-header" onClick={() => setExpandedLocation(isExpanded ? null : key)}>
-                      <span className="location-name">{loc.name}</span>
-                      <span className="location-scene-count">{loc.sceneIndices.length}</span>
-                      <span className={`location-chevron${isExpanded ? ' expanded' : ''}`}>&#9662;</span>
+                  <div key={key} className="border-b border-(--fd-overlay-subtle)">
+                    <div className="flex items-center px-3 py-2 cursor-pointer gap-1.5 transition-colors duration-100 hover:bg-(--fd-overlay-subtle)" onClick={() => setExpandedLocation(isExpanded ? null : key)}>
+                      <span className="flex-1 text-sm [font-family:var(--screenplay-font)] text-(--fd-text) whitespace-nowrap overflow-hidden text-ellipsis font-semibold">{loc.name}</span>
+                      <span className="text-[11px] text-(--fd-text) opacity-70 bg-(--fd-overlay-light) px-2 py-0.5 rounded-lg shrink-0 font-medium">{loc.sceneIndices.length}</span>
+                      <span className={`text-(--fd-text) opacity-50 text-[10px] transition-transform duration-150 shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>&#9662;</span>
                     </div>
                     {isExpanded && (
-                      <div className="location-detail">
+                      <div className="pt-0 px-3 pb-2">
                         {isRenaming ? (
-                          <div className="location-rename-row">
+                          <div className="mb-1.5">
                             <input
                               ref={renameInputRef}
-                              className="location-rename-input"
+                              className="w-full bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-accent) rounded-[3px] px-1.5 py-1 text-xs [font-family:var(--screenplay-font)] outline-none"
                               value={renameValue}
                               onChange={(e) => setRenameValue(e.target.value.toUpperCase())}
                               onKeyDown={(e) => { if (e.key === 'Enter') handleRenameSubmit(); if (e.key === 'Escape') setRenamingLocation(null); }}
@@ -1034,20 +1049,20 @@ const SceneNavigator: React.FC<SceneNavigatorProps> = ({ editor, scrollContainer
                             />
                           </div>
                         ) : (
-                          <button className="location-rename-btn" onClick={(e) => { e.stopPropagation(); setRenamingLocation(key); setRenameValue(loc.name); }}>
+                          <button className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) text-[10px] px-2 py-[3px] rounded-[3px] cursor-pointer mb-1.5 transition-all duration-150 hover:border-(--fd-accent) hover:text-(--fd-accent)" onClick={(e) => { e.stopPropagation(); setRenamingLocation(key); setRenameValue(loc.name); }}>
                             Rename Location
                           </button>
                         )}
-                        <div className="location-scenes">
+                        <div className="flex flex-col gap-0.5">
                           {loc.sceneIndices.map((sceneIdx, i) => (
-                            <div key={sceneIdx} className="location-scene-item" onClick={(e) => { e.stopPropagation(); goToScene(sceneIdx); }}>
-                              <span className="location-scene-num">{sceneIdx + 1}.</span>
-                              <div className="location-scene-info">
-                                <div className="location-scene-top">
-                                  <span className="location-scene-prefix">{loc.prefixes[i]}</span>
-                                  {loc.times[i] && <span className="location-scene-time">{loc.times[i]}</span>}
+                            <div key={sceneIdx} className="flex items-start gap-1.5 px-2 py-1.5 rounded-[3px] cursor-pointer text-xs text-(--fd-text) opacity-80 transition-colors duration-100 min-h-8 hover:bg-[rgba(74,158,255,0.1)] hover:opacity-100" onClick={(e) => { e.stopPropagation(); goToScene(sceneIdx); }}>
+                              <span className="text-(--fd-accent) font-semibold shrink-0 min-w-5 mt-px">{sceneIdx + 1}.</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] text-(--fd-text) opacity-70">{loc.prefixes[i]}</span>
+                                  {loc.times[i] && <span className="text-[11px] text-(--fd-text) opacity-60 ml-auto">{loc.times[i]}</span>}
                                 </div>
-                                {loc.preambles[i] && <div className="location-scene-preamble">{loc.preambles[i]}</div>}
+                                {loc.preambles[i] && <div className="text-[11px] text-(--fd-text) opacity-50 whitespace-nowrap overflow-hidden text-ellipsis mt-px">{loc.preambles[i]}</div>}
                               </div>
                             </div>
                           ))}

@@ -45,7 +45,7 @@ export const AvPara = Node.create({
   defining: true,
   parseHTML() { return [{ tag: 'p[data-type="av-para"]' }]; },
   renderHTML({ HTMLAttributes }) {
-    return ['p', mergeAttributes(HTMLAttributes, { 'data-type': 'av-para', class: 'av-para' }), 0];
+    return ['p', mergeAttributes(HTMLAttributes, { 'data-type': 'av-para', class: 'av-para m-0' }), 0];
   },
 });
 
@@ -55,7 +55,7 @@ export const AvShot = Node.create({
   defining: true,
   parseHTML() { return [{ tag: 'p[data-type="av-shot"]' }]; },
   renderHTML({ HTMLAttributes }) {
-    return ['p', mergeAttributes(HTMLAttributes, { 'data-type': 'av-shot', class: 'av-shot' }), 0];
+    return ['p', mergeAttributes(HTMLAttributes, { 'data-type': 'av-shot', class: 'av-shot m-0 uppercase font-bold' }), 0];
   },
 });
 
@@ -65,7 +65,7 @@ export const AvDirection = Node.create({
   defining: true,
   parseHTML() { return [{ tag: 'p[data-type="av-direction"]' }]; },
   renderHTML({ HTMLAttributes }) {
-    return ['p', mergeAttributes(HTMLAttributes, { 'data-type': 'av-direction', class: 'av-direction' }), 0];
+    return ['p', mergeAttributes(HTMLAttributes, { 'data-type': 'av-direction', class: 'av-direction m-0 italic' }), 0];
   },
 });
 
@@ -91,7 +91,7 @@ export const AvCell = Node.create({
       mergeAttributes(HTMLAttributes, {
         'data-type': 'av-cell',
         'data-side': side,
-        class: `av-cell av-cell-${side}`,
+        class: `av-cell av-cell-${side} relative min-h-[1.2em] border border-transparent py-2 px-[4pt] ${side === 'video' ? '[grid-column:1]' : '[grid-column:3] border-l border-l-[#d0d0d0]'}`,
       }),
       0,
     ];
@@ -107,7 +107,7 @@ export const AvRow = Node.create({
   isolating: true,
   parseHTML() { return [{ tag: 'div[data-type="av-row"]' }]; },
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'av-row', class: 'av-row' }), 0];
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'av-row', class: 'av-row grid grid-cols-[1fr_12px_1fr] items-stretch mb-2' }), 0];
   },
 });
 
@@ -135,7 +135,7 @@ export const AvBlock = Node.create({
   // is handled by a separate non-schema Extension (AvKeymap, exported below).
   parseHTML() { return [{ tag: 'div[data-type="av-block"]' }]; },
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'av-block', class: 'screenplay-element av-block' }), 0];
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'av-block', class: 'screenplay-element av-block my-4' }), 0];
   },
 
   addCommands() {

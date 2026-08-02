@@ -48,16 +48,7 @@ const ImportedSourceNotice: React.FC = () => {
   if (!importedSource) return null;
   return (
     <div
-      style={{
-        padding: '10px 12px',
-        margin: '0 0 12px 0',
-        border: '1px solid rgba(46,125,215,0.4)',
-        background: 'rgba(46,125,215,0.10)',
-        borderRadius: 6,
-        fontSize: 12,
-        color: 'var(--fd-text)',
-        lineHeight: 1.45,
-      }}
+      className="py-2.5 px-3 mb-3 border border-[rgba(46,125,215,0.4)] bg-[rgba(46,125,215,0.10)] rounded-md text-xs text-(--fd-text) leading-[1.45]"
     >
       <strong>Note:</strong> This document was imported from <strong>{importedSource.name}</strong>{' '}
       ({importedSource.format}). Saving creates a new file inside OpenDraft's library —
@@ -293,7 +284,7 @@ const SaveAsDialog: React.FC<SaveAsDialogProps> = ({
           <ImportedSourceNotice />
 
           {!WEB_ONLY_CLOUD && (
-            <div className="dialog-row" style={{ marginBottom: 12 }}>
+            <div className="dialog-row mb-3">
               <label>Save to</label>
               <div className="open-file-source-tabs" role="tablist">
                 <button
@@ -316,7 +307,7 @@ const SaveAsDialog: React.FC<SaveAsDialogProps> = ({
                 </button>
               </div>
               {destination === 'cloud' && !signedIn && (
-                <div style={{ fontSize: 12, color: '#ff9966', marginTop: 6 }}>
+                <div className="text-xs text-[#ff9966] mt-1.5">
                   Sign in to save to OpenDraft Cloud — pressing Save will open the login dialog.
                 </div>
               )}
@@ -324,8 +315,8 @@ const SaveAsDialog: React.FC<SaveAsDialogProps> = ({
           )}
           <div className="dialog-row">
             <label>Project</label>
-            <div ref={comboRef} style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', gap: 0 }}>
+            <div ref={comboRef} className="relative">
+              <div className="flex gap-0">
                 <input
                   ref={inputRef}
                   value={projectName}
@@ -336,25 +327,12 @@ const SaveAsDialog: React.FC<SaveAsDialogProps> = ({
                   }}
                   onFocus={() => { setIsTyping(false); setDropdownOpen(true); }}
                   placeholder="Project name"
-                  style={{ flex: 1, borderRadius: '4px 0 0 4px' }}
+                  className="flex-1 rounded-l-sm rounded-r-none"
                 />
                 <button
                   type="button"
                   onClick={() => { setIsTyping(false); setDropdownOpen((v) => !v); }}
-                  style={{
-                    width: 32,
-                    border: '1px solid var(--fd-border)',
-                    borderLeft: 'none',
-                    borderRadius: '0 4px 4px 0',
-                    background: 'var(--fd-bg)',
-                    color: 'var(--fd-text)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 12,
-                    padding: 0,
-                  }}
+                  className="w-8 border border-(--fd-border) border-l-0 rounded-r-sm rounded-l-none bg-(--fd-bg) text-(--fd-text) cursor-pointer flex items-center justify-center text-xs p-0"
                   tabIndex={-1}
                 >
                   &#9662;
@@ -362,42 +340,13 @@ const SaveAsDialog: React.FC<SaveAsDialogProps> = ({
               </div>
               {dropdownOpen && filteredProjects.length > 0 && (
                 <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    maxHeight: 160,
-                    overflowY: 'auto',
-                    background: 'var(--fd-menu-bg, var(--fd-bg))',
-                    border: '1px solid var(--fd-border)',
-                    borderRadius: 4,
-                    marginTop: 2,
-                    zIndex: 10,
-                    boxShadow: '0 4px 12px rgba(0,0,0,.3)',
-                  }}
+                  className="absolute top-full left-0 right-0 max-h-40 overflow-y-auto bg-(--fd-menu-bg,var(--fd-bg)) border border-(--fd-border) rounded mt-0.5 z-10 shadow-[0_4px_12px_rgba(0,0,0,.3)]"
                 >
                   {filteredProjects.map((p) => (
                     <div
                       key={p.id}
                       onClick={() => handleSelectProject(p.name)}
-                      style={{
-                        padding: '8px 12px',
-                        cursor: 'pointer',
-                        fontSize: 13,
-                        color: 'var(--fd-text)',
-                        background:
-                          p.name.toLowerCase() === projectName.toLowerCase()
-                            ? 'var(--fd-menu-hover)'
-                            : 'transparent',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--fd-menu-hover)')}
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.background =
-                          p.name.toLowerCase() === projectName.toLowerCase()
-                            ? 'var(--fd-menu-hover)'
-                            : 'transparent')
-                      }
+                      className={`px-3 py-2 cursor-pointer text-[13px] text-(--fd-text) hover:bg-(--fd-menu-hover) ${p.name.toLowerCase() === projectName.toLowerCase() ? 'bg-(--fd-menu-hover)' : 'bg-transparent'}`}
                     >
                       {p.name}
                     </div>
@@ -406,7 +355,7 @@ const SaveAsDialog: React.FC<SaveAsDialogProps> = ({
               )}
             </div>
           </div>
-          <div className="dialog-row" style={{ marginTop: 12 }}>
+          <div className="dialog-row mt-3">
             <label>File Name</label>
             <input
               ref={fileInputRef}
@@ -416,7 +365,7 @@ const SaveAsDialog: React.FC<SaveAsDialogProps> = ({
             />
           </div>
           {error && (
-            <div style={{ color: '#ff6b6b', fontSize: 12, marginTop: 8 }}>{error}</div>
+            <div className="text-[#ff6b6b] text-xs mt-2">{error}</div>
           )}
         </div>
         <div className="dialog-actions">

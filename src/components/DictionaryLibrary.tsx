@@ -240,7 +240,7 @@ const DictionaryLibrary: React.FC<DictionaryLibraryProps> = ({ onClose }) => {
           </div>
         </div>
         <div className="dialog-footer">
-          <button className="dialog-primary" onClick={onClose}>Done</button>
+          <button className="bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90" onClick={onClose}>Done</button>
         </div>
       </div>
     </div>

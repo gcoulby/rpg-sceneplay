@@ -15,8 +15,6 @@ import {
   PieChart, Pie, Legend,
   AreaChart, Area,
 } from 'recharts';
-import '../styles/statistics.css';
-
 interface Props {
   editor: Editor;
 }
@@ -57,41 +55,41 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
   }, [statisticsScrollTo, setStatisticsScrollTo]);
 
   return (
-    <div className="stats-panel">
-      <div className="stats-header">
-        <h2 className="stats-title">Script Statistics</h2>
-        <button className="stats-close" onClick={() => setStatisticsOpen(false)} title="Close">&times;</button>
+    <div className="flex-1 flex flex-col overflow-hidden bg-[var(--fd-bg)] [&_.recharts-cartesian-axis-tick-value]:!fill-[var(--fd-text-muted)] [&_.recharts-cartesian-axis-line]:!stroke-white/[0.08] [&_.recharts-cartesian-grid-horizontal_line]:!stroke-white/[0.08] [&_.recharts-cartesian-grid-vertical_line]:!stroke-white/[0.08] [&_.recharts-legend-item-text]:!text-[var(--fd-text-muted)] [&_.recharts-legend-item-text]:!text-[11px] [&_.recharts-label]:!fill-[var(--fd-text-muted)] [&_.recharts-pie-label-text]:!fill-[var(--fd-text-muted)] [&_.recharts-pie-label-text]:!text-[10px]">
+      <div className="flex items-center justify-between py-3 px-5 border-b border-[var(--fd-border)] shrink-0">
+        <h2 className="text-[15px] font-semibold text-[var(--fd-text)] m-0">Script Statistics</h2>
+        <button className="bg-transparent border-none text-[var(--fd-text-muted)] text-[22px] cursor-pointer py-0 px-1 leading-none rounded hover:text-[var(--fd-text)] hover:bg-white/[0.06]" onClick={() => setStatisticsOpen(false)} title="Close">&times;</button>
       </div>
 
-      <div className="stats-content">
+      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
         {/* A. Overview Cards */}
-        <div className="stats-overview-cards">
-          <div className="stats-card">
-            <div className="stats-card-value">{overview.totalPages}</div>
-            <div className="stats-card-label">Pages</div>
-            <div className="stats-card-sub">Est. {timingResult.totalSeconds > 0 ? formatRuntime(timingResult.totalSeconds) : formatTime(overview.estimatedRuntime)}</div>
+        <div className="grid grid-cols-4 gap-3 max-[768px]:grid-cols-2">
+          <div className="bg-[var(--fd-dropdown-bg)] border border-[var(--fd-border)] rounded-lg p-4 text-center">
+            <div className="text-[28px] font-bold text-[var(--fd-text)] leading-[1.2]">{overview.totalPages}</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] uppercase tracking-[0.5px] mt-1">Pages</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] mt-0.5 opacity-70">Est. {timingResult.totalSeconds > 0 ? formatRuntime(timingResult.totalSeconds) : formatTime(overview.estimatedRuntime)}</div>
           </div>
-          <div className="stats-card">
-            <div className="stats-card-value">{overview.totalScenes}</div>
-            <div className="stats-card-label">Scenes</div>
-            <div className="stats-card-sub">Avg {overview.averageSceneLength.toFixed(1)} pages</div>
+          <div className="bg-[var(--fd-dropdown-bg)] border border-[var(--fd-border)] rounded-lg p-4 text-center">
+            <div className="text-[28px] font-bold text-[var(--fd-text)] leading-[1.2]">{overview.totalScenes}</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] uppercase tracking-[0.5px] mt-1">Scenes</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] mt-0.5 opacity-70">Avg {overview.averageSceneLength.toFixed(1)} pages</div>
           </div>
-          <div className="stats-card">
-            <div className="stats-card-value">{overview.totalCharacters}</div>
-            <div className="stats-card-label">Characters</div>
-            <div className="stats-card-sub">{overview.totalDialogueLines} dialogue lines</div>
+          <div className="bg-[var(--fd-dropdown-bg)] border border-[var(--fd-border)] rounded-lg p-4 text-center">
+            <div className="text-[28px] font-bold text-[var(--fd-text)] leading-[1.2]">{overview.totalCharacters}</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] uppercase tracking-[0.5px] mt-1">Characters</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] mt-0.5 opacity-70">{overview.totalDialogueLines} dialogue lines</div>
           </div>
-          <div className="stats-card">
-            <div className="stats-card-value">{overview.totalWords.toLocaleString()}</div>
-            <div className="stats-card-label">Words</div>
-            <div className="stats-card-sub">{overview.totalPages > 0 ? Math.round(overview.totalWords / overview.totalPages) : 0} per page</div>
+          <div className="bg-[var(--fd-dropdown-bg)] border border-[var(--fd-border)] rounded-lg p-4 text-center">
+            <div className="text-[28px] font-bold text-[var(--fd-text)] leading-[1.2]">{overview.totalWords.toLocaleString()}</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] uppercase tracking-[0.5px] mt-1">Words</div>
+            <div className="text-[11px] text-[var(--fd-text-muted)] mt-0.5 opacity-70">{overview.totalPages > 0 ? Math.round(overview.totalWords / overview.totalPages) : 0} per page</div>
           </div>
         </div>
 
         {/* B. Dialogue Distribution */}
-        <div className="stats-section">
-          <h3 className="stats-section-title">Dialogue Distribution</h3>
-          <div className="stats-dialogue-chart">
+        <div className="bg-[var(--fd-dropdown-bg)] border border-[var(--fd-border)] rounded-lg p-4">
+          <h3 className="text-[13px] font-semibold text-[var(--fd-text)] m-0 mb-3 uppercase tracking-[0.3px]">Dialogue Distribution</h3>
+          <div className="mb-3">
             {charDialogue.length > 0 ? (
               <ResponsiveContainer width="100%" height={Math.max(200, charDialogue.slice(0, 15).length * 28)}>
                 <BarChart data={charDialogue.slice(0, 15)} layout="vertical" margin={{ left: 100, right: 20, top: 5, bottom: 5 }}>
@@ -112,11 +110,11 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="stats-empty">No dialogue found</div>
+              <div className="text-[var(--fd-text-muted)] text-xs text-center p-6 italic">No dialogue found</div>
             )}
           </div>
           {charDialogue.length > 0 && (
-            <table className="stats-table">
+            <table className="w-full border-collapse text-xs [&_th]:text-left [&_th]:text-[10px] [&_th]:text-[var(--fd-text-muted)] [&_th]:uppercase [&_th]:tracking-[0.3px] [&_th]:py-1.5 [&_th]:px-2 [&_th]:border-b [&_th]:border-[var(--fd-border)] [&_th]:font-medium [&_td]:py-[5px] [&_td]:px-2 [&_td]:text-[var(--fd-text)] [&_td]:border-b [&_td]:border-white/[0.04] [&_tbody_tr:hover]:bg-white/[0.03]">
               <thead>
                 <tr>
                   <th>Character</th>
@@ -131,7 +129,7 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
                 {charDialogue.map((c) => (
                   <tr key={c.name}>
                     <td>
-                      <span className="stats-color-dot" style={{ background: c.color || '#666' }} />
+                      <span className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle" style={{ background: c.color || '#666' }} />
                       {c.name}
                     </td>
                     <td>{c.lineCount}</td>
@@ -148,10 +146,10 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
 
         {/* C. Gender Analysis */}
         {genderStats.length > 0 && (
-          <div className="stats-section">
-            <h3 className="stats-section-title">Gender Analysis</h3>
-            <div className="stats-gender-row">
-              <div className="stats-gender-chart">
+          <div className="bg-[var(--fd-dropdown-bg)] border border-[var(--fd-border)] rounded-lg p-4">
+            <h3 className="text-[13px] font-semibold text-[var(--fd-text)] m-0 mb-3 uppercase tracking-[0.3px]">Gender Analysis</h3>
+            <div className="grid grid-cols-2 gap-4 items-start max-[768px]:grid-cols-1">
+              <div className="flex items-center justify-center">
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
@@ -176,7 +174,7 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <table className="stats-table stats-gender-table">
+              <table className="self-center w-full border-collapse text-xs [&_th]:text-left [&_th]:text-[10px] [&_th]:text-(--fd-text-muted) [&_th]:uppercase [&_th]:tracking-[0.3px] [&_th]:py-1.5 [&_th]:px-2 [&_th]:border-b [&_th]:border-(--fd-border) [&_th]:font-medium [&_td]:py-1.25 [&_td]:px-2 [&_td]:text-(--fd-text) [&_td]:border-b [&_td]:border-white/4 [&_tbody_tr:hover]:bg-white/3">
                 <thead>
                   <tr><th>Gender</th><th>Characters</th><th>Lines</th><th>Words</th><th>%</th></tr>
                 </thead>
@@ -184,7 +182,7 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
                   {genderStats.map((g, idx) => (
                     <tr key={g.gender}>
                       <td>
-                        <span className="stats-color-dot" style={{ background: COLORS[idx % COLORS.length] }} />
+                        <span className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle" style={{ background: COLORS[idx % COLORS.length] }} />
                         {g.gender}
                       </td>
                       <td>{g.characters}</td>
@@ -200,12 +198,12 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
         )}
 
         {/* D. Scene Breakdown — 2×2 grid */}
-        <div className="stats-section">
-          <h3 className="stats-section-title">Scene Breakdown</h3>
-          <div className="stats-breakdown-grid">
+        <div className="bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg p-4">
+          <h3 className="text-[13px] font-semibold text-(--fd-text) m-0 mb-3 uppercase tracking-[0.3px]">Scene Breakdown</h3>
+          <div className="grid grid-cols-2 gap-3 max-[768px]:grid-cols-1">
             {/* INT vs EXT */}
-            <div className="stats-mini-chart">
-              <div className="stats-mini-title">Interior / Exterior</div>
+            <div className="bg-black/15 rounded-md p-2.5">
+              <div className="text-[11px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-1.5 text-center">Interior / Exterior</div>
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
                   <Pie
@@ -229,8 +227,8 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
             </div>
 
             {/* DAY vs NIGHT */}
-            <div className="stats-mini-chart">
-              <div className="stats-mini-title">Time of Day</div>
+            <div className="bg-black/15 rounded-md p-2.5">
+              <div className="text-[11px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-1.5 text-center">Time of Day</div>
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
                   <Pie
@@ -254,8 +252,8 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
             </div>
 
             {/* Scene Length Distribution */}
-            <div className="stats-mini-chart">
-              <div className="stats-mini-title">Scene Length Distribution</div>
+            <div className="bg-black/15 rounded-md p-2.5">
+              <div className="text-[11px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-1.5 text-center">Scene Length Distribution</div>
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={sceneBreakdown.sceneLengthBuckets} margin={{ left: 0, right: 10, top: 5, bottom: 5 }}>
                   <XAxis dataKey="label" tick={{ fontSize: 10 }} />
@@ -267,8 +265,8 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
             </div>
 
             {/* Location Frequency */}
-            <div className="stats-mini-chart">
-              <div className="stats-mini-title">Top Locations</div>
+            <div className="bg-black/15 rounded-md p-2.5">
+              <div className="text-[11px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-1.5 text-center">Top Locations</div>
               {sceneBreakdown.locationFrequency.length > 0 ? (
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={sceneBreakdown.locationFrequency.slice(0, 8)} layout="vertical" margin={{ left: 80, right: 10, top: 5, bottom: 5 }}>
@@ -279,7 +277,7 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="stats-empty">No locations found</div>
+                <div className="text-(--fd-text-muted) text-xs text-center p-6 italic">No locations found</div>
               )}
             </div>
           </div>
@@ -287,8 +285,8 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
 
         {/* E. Pacing Chart */}
         {pacingData.length > 0 && (
-          <div className="stats-section">
-            <h3 className="stats-section-title">Pacing — Dialogue vs Action by Scene</h3>
+          <div className="bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg p-4">
+            <h3 className="text-[13px] font-semibold text-(--fd-text) m-0 mb-3 uppercase tracking-[0.3px]">Pacing — Dialogue vs Action by Scene</h3>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={pacingData} margin={{ left: 10, right: 10, top: 5, bottom: 5 }}>
                 <XAxis
@@ -312,15 +310,15 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
 
         {/* F. Character Presence Map */}
         {charPresence.length > 0 && (
-          <div className="stats-section">
-            <h3 className="stats-section-title">Character Presence by Scene</h3>
-            <div className="stats-presence-scroll">
-              <table className="stats-presence-table">
+          <div className="bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg p-4">
+            <h3 className="text-[13px] font-semibold text-(--fd-text) m-0 mb-3 uppercase tracking-[0.3px]">Character Presence by Scene</h3>
+            <div className="overflow-x-auto -mx-4 px-4">
+              <table className="border-collapse text-[11px] whitespace-nowrap [&_th]:p-[3px] [&_th]:text-center [&_td]:p-[3px] [&_td]:text-center">
                 <thead>
                   <tr>
-                    <th className="stats-presence-name-col">Character</th>
+                    <th className="!text-left !pr-3 sticky left-0 bg-(--fd-dropdown-bg) z-1 min-w-[100px] text-(--fd-text) font-medium">Character</th>
                     {pacingData.map((_, i) => (
-                      <th key={i} className="stats-presence-scene-col" title={sceneHeadings[i]}>
+                      <th key={i} className="text-[9px] text-(--fd-text-muted) min-w-[18px] !font-normal" title={sceneHeadings[i]}>
                         {i + 1}
                       </th>
                     ))}
@@ -329,14 +327,14 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
                 <tbody>
                   {charPresence.slice(0, 20).map((cp) => (
                     <tr key={cp.name}>
-                      <td className="stats-presence-name-col">
-                        <span className="stats-color-dot" style={{ background: cp.color || '#666' }} />
+                      <td className="!text-left !pr-3 sticky left-0 bg-(--fd-dropdown-bg) z-1 min-w-[100px] text-(--fd-text) font-medium">
+                        <span className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle" style={{ background: cp.color || '#666' }} />
                         {cp.name}
                       </td>
                       {cp.scenes.map((present, i) => (
-                        <td key={i} className="stats-presence-cell">
+                        <td key={i} className="min-w-[18px] h-[18px]">
                           {present && (
-                            <span className="stats-presence-dot" style={{ background: cp.color || '#3b82f6' }} />
+                            <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: cp.color || '#3b82f6' }} />
                           )}
                         </td>
                       ))}
@@ -350,9 +348,9 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
 
         {/* G. Timing Report */}
         {timingResult.scenes.length > 0 && (
-          <div className="stats-section" id="stats-timing-report">
-            <h3 className="stats-section-title">Timing Report — Est. {formatRuntime(timingResult.totalSeconds)}</h3>
-            <table className="stats-table">
+          <div className="bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg p-4" id="stats-timing-report">
+            <h3 className="text-[13px] font-semibold text-(--fd-text) m-0 mb-3 uppercase tracking-[0.3px]">Timing Report — Est. {formatRuntime(timingResult.totalSeconds)}</h3>
+            <table className="w-full border-collapse text-xs [&_th]:text-left [&_th]:text-[10px] [&_th]:text-(--fd-text-muted) [&_th]:uppercase [&_th]:tracking-[0.3px] [&_th]:py-1.5 [&_th]:px-2 [&_th]:border-b [&_th]:border-(--fd-border) [&_th]:font-medium [&_td]:py-1.25 [&_td]:px-2 [&_td]:text-(--fd-text) [&_td]:border-b [&_td]:border-white/4 [&_tbody_tr:hover]:bg-white/3">
               <thead>
                 <tr>
                   <th>#</th>

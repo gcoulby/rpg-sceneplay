@@ -65,31 +65,22 @@ const ResetPasswordRoute: React.FC = () => {
   };
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      minHeight: '70vh', padding: 24,
-    }}>
+    <div className="flex items-center justify-center min-h-[70vh] p-6">
       <div
-        style={{
-          maxWidth: 440, width: '100%', padding: 24, borderRadius: 8,
-          background: 'var(--fd-surface, #1e1e1e)',
-          color: 'var(--fd-text, #eee)',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
-        }}
+        className="max-w-[440px] w-full p-6 rounded-lg bg-(--fd-surface,#1e1e1e) text-(--fd-text,#eee) shadow-[0_4px_24px_rgba(0,0,0,0.25)]"
         onKeyDown={handleKeyDown}
       >
-        <h2 style={{ marginTop: 0 }}>Choose a new password</h2>
+        <h2 className="mt-0">Choose a new password</h2>
 
         {missingToken ? (
           <>
-            <p style={{ color: 'var(--fd-text-muted, #aaa)' }}>
+            <p className="text-(--fd-text-muted,#aaa)">
               This reset link is missing its token. Request a new password-reset
               email from the sign-in screen.
             </p>
             <button
-              className="dialog-btn dialog-btn-primary"
+              className="dialog-btn dialog-btn-primary mt-3 h-8.5 px-4.5 bg-(--fd-accent) border border-(--fd-accent) text-white rounded cursor-pointer text-sm hover:opacity-90"
               onClick={() => navigate('/', { replace: true })}
-              style={{ marginTop: 12 }}
             >
               Go to sign in
             </button>
@@ -99,12 +90,12 @@ const ResetPasswordRoute: React.FC = () => {
             <p>Your password was updated. Redirecting to the sign-in screen…</p>
           </>
         ) : (
-          <div className="settings-auth-form">
-            <div className="settings-field">
-              <label>New Password</label>
-              <div className="password-input-wrapper">
+          <div className="flex flex-col gap-3.5">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-(--fd-text-muted)">New Password</label>
+              <div className="relative flex items-center">
                 <input
-                  className="dialog-input"
+                  className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border pr-[38px] focus:border-(--fd-accent)"
                   type={showPw ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -114,7 +105,7 @@ const ResetPasswordRoute: React.FC = () => {
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="absolute right-1 flex items-center justify-center w-[30px] h-[30px] bg-transparent border-none cursor-pointer text-(--fd-text-muted) text-sm rounded p-0 hover:text-(--fd-text) hover:bg-(--fd-toolbar-hover)"
                   onClick={() => setShowPw(!showPw)}
                   tabIndex={-1}
                   aria-label={showPw ? 'Hide password' : 'Show password'}
@@ -123,11 +114,11 @@ const ResetPasswordRoute: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="settings-field">
-              <label>Confirm Password</label>
-              <div className="password-input-wrapper">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-(--fd-text-muted)">Confirm Password</label>
+              <div className="relative flex items-center">
                 <input
-                  className="dialog-input"
+                  className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border pr-[38px] focus:border-(--fd-accent)"
                   type={showConfirm ? 'text' : 'password'}
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
@@ -136,7 +127,7 @@ const ResetPasswordRoute: React.FC = () => {
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="absolute right-1 flex items-center justify-center w-[30px] h-[30px] bg-transparent border-none cursor-pointer text-(--fd-text-muted) text-sm rounded p-0 hover:text-(--fd-text) hover:bg-(--fd-toolbar-hover)"
                   onClick={() => setShowConfirm(!showConfirm)}
                   tabIndex={-1}
                   aria-label={showConfirm ? 'Hide password' : 'Show password'}
@@ -147,18 +138,18 @@ const ResetPasswordRoute: React.FC = () => {
             </div>
 
             {error && (
-              <p style={{ color: '#e57373', fontSize: 13, margin: 0 }}>{error}</p>
+              <p className="text-[#e57373] text-[13px] m-0">{error}</p>
             )}
 
             <button
-              className="dialog-btn dialog-btn-primary settings-auth-submit"
+              className="dialog-btn dialog-btn-primary mt-1 self-start min-w-[160px] h-9 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSubmit}
               disabled={!password || !confirm || status === 'submitting'}
             >
               {status === 'submitting' ? 'Updating…' : 'Update password'}
             </button>
             <button
-              className="dialog-btn"
+              className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover) disabled:opacity-50 disabled:cursor-default"
               onClick={() => navigate('/', { replace: true })}
               disabled={status === 'submitting'}
             >

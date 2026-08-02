@@ -519,7 +519,7 @@ const SortableBeatCard: React.FC<SortableBeatCardProps> = ({ beat, onUpdate, onD
   const resizePointerDown = useResizeHandle(handleResize);
 
   return (
-    <div ref={setNodeRef} style={wrapStyle} className="beat-card-wrap">
+    <div ref={setNodeRef} style={wrapStyle} className="min-w-0 touch-manipulation">
       <BeatCardContent
         beat={beat}
         onUpdate={onUpdate}
@@ -584,7 +584,7 @@ const FreeBeatCard: React.FC<FreeBeatCardProps> = ({ beat, onUpdate, onDelete })
   };
 
   return (
-    <div style={wrapStyle} className="beat-card-wrap beat-card-wrap-free">
+    <div style={wrapStyle} className="min-w-0 touch-manipulation beat-card-wrap-free">
       <BeatCardContent
         beat={beat}
         onUpdate={onUpdate}
@@ -756,37 +756,37 @@ const BeatBoard: React.FC = () => {
   if (!beatBoardOpen) return null;
 
   return (
-    <div className="beat-board" ref={boardRef}>
-      <div className="beat-board-header">
-        <span className="beat-board-title">Beat Board</span>
-        <span className="beat-board-info">
+    <div className="flex-1 flex flex-col bg-(--fd-bg) overflow-hidden" ref={boardRef}>
+      <div className="flex items-center gap-3 py-2.5 px-4 border-b border-(--fd-border) bg-(--fd-navigator-bg) shrink-0">
+        <span className="font-semibold text-xs uppercase tracking-[0.5px] text-(--fd-text-muted)">Beat Board</span>
+        <span className="text-[11px] text-(--fd-text-muted) mr-auto">
           {beats.length} beat{beats.length !== 1 ? 's' : ''}
         </span>
 
         {/* Mode toggle */}
-        <div className="beat-mode-toggle">
+        <div className="flex border border-(--fd-border) rounded-[5px] overflow-hidden mr-auto">
           <button
-            className={`beat-mode-btn${beatArrangeMode === 'auto' ? ' active' : ''}`}
+            className={`text-[11px] py-1 px-3 cursor-pointer transition-all duration-150 whitespace-nowrap border-none first:border-r first:border-(--fd-border) ${beatArrangeMode === 'auto' ? 'bg-(--fd-accent) text-white' : 'bg-transparent text-(--fd-text-muted) hover:text-(--fd-text) hover:bg-white/4'}`}
             onClick={() => setBeatArrangeMode('auto')}
             title="Auto Arrange — column-based layout"
           >Auto Arrange</button>
           <button
-            className={`beat-mode-btn${beatArrangeMode === 'custom' ? ' active' : ''}`}
+            className={`text-[11px] py-1 px-3 cursor-pointer transition-all duration-150 whitespace-nowrap border-none first:border-r first:border-(--fd-border) ${beatArrangeMode === 'custom' ? 'bg-(--fd-accent) text-white' : 'bg-transparent text-(--fd-text-muted) hover:text-(--fd-text) hover:bg-white/4'}`}
             onClick={() => setBeatArrangeMode('custom')}
             title="Custom Arrange — free-form placement"
           >Custom</button>
         </div>
 
         {beatArrangeMode === 'auto' ? (
-          <button className="beat-board-add-col-btn" onClick={handleAddColumn}>+ Add Column</button>
+          <button className="bg-transparent border border-(--fd-border) rounded text-(--fd-text-muted) text-xs py-1 px-3 cursor-pointer transition-all duration-150 whitespace-nowrap hover:border-(--fd-accent) hover:text-(--fd-accent)" onClick={handleAddColumn}>+ Add Column</button>
         ) : (
-          <button className="beat-board-add-col-btn" onClick={handleAddBeatFree}>+ Add Beat</button>
+          <button className="bg-transparent border border-(--fd-border) rounded text-(--fd-text-muted) text-xs py-1 px-3 cursor-pointer transition-all duration-150 whitespace-nowrap hover:border-(--fd-accent) hover:text-(--fd-accent)" onClick={handleAddBeatFree}>+ Add Beat</button>
         )}
       </div>
 
       {beatArrangeMode === 'auto' ? (
         <DndContext sensors={sensors} collisionDetection={beatCollisionDetection} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-          <div className={`beat-board-columns${maximizedColumnId ? ' beat-board-columns-maximized' : ''}`}>
+          <div className={`beat-board-columns flex gap-4 overflow-auto flex-1 items-start ${maximizedColumnId ? 'p-2' : 'pt-4 pr-8 pb-8 pl-4'}`}>
             {sortedColumns.map((col) => {
               if (maximizedColumnId && maximizedColumnId !== col.id) return null;
               const colBeats = beats.filter((b) => b.columnId === col.id).sort((a, b) => a.position - b.position);
@@ -851,33 +851,36 @@ const BeatColumnView: React.FC<BeatColumnViewProps> = ({
         : {};
 
   return (
-    <div className={`beat-column${isMaximized ? ' beat-column-maximized' : ''}`} style={colStyle}>
-      <div className="beat-column-header">
+    <div
+      className={`beat-column relative min-w-70 max-w-125 shrink-0 bg-(--fd-navigator-bg) border border-(--fd-border) rounded-lg flex flex-col overflow-hidden ${isMaximized ? 'max-w-none! flex-1! min-w-0! h-full' : ''}`}
+      style={colStyle}
+    >
+      <div className="beat-column-header group flex items-center gap-1.5 py-2 px-2.5 border-b border-(--fd-border) bg-[rgba(74,158,255,0.05)]">
         <input
-          className="beat-column-title-input"
+          className="flex-1 bg-transparent border-none text-(--fd-accent) font-semibold text-[13px] uppercase tracking-[0.5px] outline-none py-0.5 px-1 min-w-0 placeholder:text-(--fd-text-muted) focus:border-b focus:border-(--fd-accent) focus:normal-case"
           value={col.title}
           onChange={(e) => onUpdateColumn(col.id, { title: e.target.value })}
           placeholder="Column name..."
         />
         {showMaximizeBtn && (
           <button
-            className="beat-column-maximize"
+            className="bg-transparent border-none text-(--fd-text-muted) text-sm cursor-pointer py-0 px-1 leading-none shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:text-(--fd-accent)"
             onClick={onToggleMaximize}
             title={isMaximized ? 'Restore column' : 'Maximize column'}
           >{isMaximized ? '\u29C9' : '\u2922'}</button>
         )}
-        <button className="beat-column-delete" onClick={() => onDeleteColumn(col.id)} title="Delete column">&times;</button>
+        <button className="bg-transparent border-none text-(--fd-text-muted) text-base cursor-pointer py-0 px-1 leading-none shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:text-[#ff6b6b]" onClick={() => onDeleteColumn(col.id)} title="Delete column">&times;</button>
       </div>
       <SortableContext items={colBeats.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-        <div ref={setDropRef} className={`beat-column-cards${isSingleColumn ? ' beat-column-cards-wrap' : ''}`}>
+        <div ref={setDropRef} className={`beat-column-cards p-2 gap-2 min-h-10 flex-1 overflow-y-auto flex ${isSingleColumn ? 'flex-row flex-wrap items-start content-start' : 'flex-col'}`}>
           {colBeats.map((beat) => (
             <SortableBeatCard key={beat.id} beat={beat} onUpdate={onUpdateBeat} onDelete={onDeleteBeat} />
           ))}
         </div>
       </SortableContext>
-      <button className="beat-add-btn" onClick={() => onAddBeat('New Beat', col.id)}>+ Add Beat</button>
+      <button className="mx-2 my-2 p-2 bg-transparent border border-dashed border-(--fd-border) rounded text-(--fd-text-muted) text-xs cursor-pointer transition-all duration-150 hover:border-(--fd-accent) hover:text-(--fd-accent) hover:bg-[rgba(74,158,255,0.05)]" onClick={() => onAddBeat('New Beat', col.id)}>+ Add Beat</button>
       {/* Column resize handle (right edge) */}
-      {!isSingleColumn && !isMaximized && <div className="beat-column-resize-handle" onPointerDown={colResizePointerDown} style={{ touchAction: 'none' }} />}
+      {!isSingleColumn && !isMaximized && <div className="absolute top-0 -right-0.75 w-1.5 h-full cursor-col-resize z-5 hover:bg-(--fd-accent) hover:opacity-40 hover:rounded-[3px]" onPointerDown={colResizePointerDown} style={{ touchAction: 'none' }} />}
     </div>
   );
 };

@@ -402,13 +402,16 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
     ? tags.filter((t) => t.categoryId === pendingCategoryId)
     : [];
 
+  const tabBase = 'tags-tab flex-1 bg-transparent border-none border-b-2 border-transparent text-(--fd-text-muted) text-xs font-medium py-2 cursor-pointer text-center relative transition-colors duration-150 hover:text-(--fd-text) max-[900px]:text-sm max-[900px]:py-3 max-[900px]:min-h-11';
+  const tabActive = 'tags-tab-active text-(--fd-accent) border-b-(--fd-accent)';
+
   return (
-    <div ref={panelRef} className={`tags-panel ${panelClass}`} style={style}>
-      <div className="tags-panel-header">
-        <span className="tags-panel-title">Production Tags</span>
-        <span className="tags-panel-count">{tags.length}</span>
+    <div ref={panelRef} className={`tags-panel w-[300px] min-w-[200px] bg-(--fd-navigator-bg) border-l border-(--fd-border) flex flex-col overflow-hidden ${panelClass}`} style={style}>
+      <div className="flex items-center px-3 py-2.5 border-b border-(--fd-border) shrink-0 gap-2">
+        <span className="font-semibold text-xs uppercase tracking-[0.5px] text-(--fd-text-muted)">Production Tags</span>
+        <span className="text-[10px] text-(--fd-text-muted) mr-auto">{tags.length}</span>
         <button
-          className={`tags-visibility-btn${tagsVisible ? ' active' : ''}`}
+          className={`bg-transparent border-none cursor-pointer p-0.5 flex items-center ${tagsVisible ? 'text-(--fd-accent)' : 'text-(--fd-text-muted) hover:text-(--fd-text)'}`}
           onClick={() => setTagsVisible(!tagsVisible)}
           title={tagsVisible ? 'Hide tag highlights' : 'Show tag highlights'}
           aria-label={tagsVisible ? 'Hide tag highlights' : 'Show tag highlights'}
@@ -420,7 +423,7 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
           )}
         </button>
         <button
-          className="tags-panel-close"
+          className="bg-transparent border-none text-(--fd-text-muted) text-lg cursor-pointer px-1 py-0 leading-none hover:text-(--fd-text)"
           onClick={toggleTagsPanel}
           title="Close"
           aria-label="Close production tags panel"
@@ -430,19 +433,19 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
       </div>
 
       {/* ── Tab bar ──────────────────────────────────────────────────── */}
-      <div className="tags-tab-bar">
+      <div className="flex border-b border-(--fd-border) shrink-0">
         <button
-          className={`tags-tab${activeTab === 'view' ? ' tags-tab-active' : ''}`}
+          className={`${tabBase}${activeTab === 'view' ? ` ${tabActive}` : ''}`}
           onClick={() => setActiveTab('view')}
         >
           View
         </button>
         <button
-          className={`tags-tab${activeTab === 'manage' ? ' tags-tab-active' : ''}`}
+          className={`${tabBase}${activeTab === 'manage' ? ` ${tabActive}` : ''}`}
           onClick={() => setActiveTab('manage')}
         >
           Manage
-          {pendingTagSelection && <span className="tags-tab-dot" />}
+          {pendingTagSelection && <span className="inline-block w-1.5 h-1.5 bg-(--fd-accent) rounded-full ml-[5px] align-middle" />}
         </button>
       </div>
 
@@ -451,9 +454,9 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
            VIEW TAB — clean read-only browse, click to navigate
          ════════════════════════════════════════════════════════════════ */}
       {activeTab === 'view' && (
-        <div className="tags-panel-list">
+        <div className="flex-1 overflow-y-auto py-1 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#444] [&::-webkit-scrollbar-thumb]:rounded-[3px]">
           {tags.length === 0 ? (
-            <div className="tags-panel-empty">
+            <div className="px-3 py-5 text-(--fd-text-muted) text-xs italic text-center leading-[1.5]">
               No tags yet. Select text in the editor, right-click, and choose &ldquo;Tag&rdquo; to get started.
             </div>
           ) : (
@@ -465,43 +468,43 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                 (sum, e) => sum + (occurrencesByTag.get(e.id)?.length || 0), 0,
               );
               return (
-                <div key={cat.id} className="tags-category-section">
+                <div key={cat.id} className="border-b border-(--fd-border)">
                   <div
-                    className="tags-category-header"
+                    className="tags-category-header flex items-center px-3 py-2.5 cursor-pointer gap-2.5 min-h-10 hover:bg-white/[0.03]"
                     onClick={() => toggleCategory(cat.id)}
                   >
-                    <span className="tags-category-swatch" style={{ background: cat.color }} />
-                    <span className="tags-category-name">{cat.name}</span>
-                    <span className="tags-category-count" title={`${entities.length} entities, ${totalOccs} occurrences`}>
+                    <span className="inline-block w-3.5 h-3.5 rounded-[3px] shrink-0" style={{ background: cat.color }} />
+                    <span className="tags-category-name flex-1 text-sm text-(--fd-text) font-medium">{cat.name}</span>
+                    <span className="text-[10px] text-(--fd-text-muted) bg-(--fd-overlay-subtle) px-1.5 py-px rounded-full" title={`${entities.length} entities, ${totalOccs} occurrences`}>
                       {entities.length}
                     </span>
-                    <span className={`tags-category-chevron${isExpanded ? ' expanded' : ''}`}>&#9662;</span>
+                    <span className={`text-[10px] text-(--fd-text-muted) transition-transform duration-150${isExpanded ? ' rotate-180' : ''}`}>&#9662;</span>
                   </div>
 
                   {isExpanded && (
-                    <div className="tags-category-items">
+                    <div className="pt-0.5 pb-1.5">
                       {entities.map((entity) => {
                         const entityOccs = occurrencesByTag.get(entity.id) || [];
                         const isViewExpanded = viewExpandedTagId === entity.id;
                         return (
-                          <div key={entity.id} className="tags-item-wrap">
-                            <div className="tags-item">
+                          <div key={entity.id}>
+                            <div className="flex items-center gap-1.5 py-[3px] pr-3 pl-8 text-[11px]">
                               <span
-                                className="tags-item-text tags-entity-name"
+                                className="flex-1 text-(--fd-text) cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis font-semibold hover:text-(--fd-accent)"
                                 onClick={() => handleNavigateToTag(entity.id)}
                                 title="Navigate to first occurrence"
                               >
                                 {entity.name}
                               </span>
-                              <span className="tags-entity-occ-count" title={`${entityOccs.length} occurrence${entityOccs.length !== 1 ? 's' : ''}`}>
+                              <span className="text-[10px] text-(--fd-text-muted) bg-(--fd-overlay-light) px-[5px] py-px rounded-full ml-1 shrink-0" title={`${entityOccs.length} occurrence${entityOccs.length !== 1 ? 's' : ''}`}>
                                 {entityOccs.length}
                               </span>
                               {entity.notes && (
-                                <span className="tags-item-has-notes" title="Has notes">*</span>
+                                <span className="text-(--fd-accent) text-[10px] shrink-0" title="Has notes">*</span>
                               )}
                               {entityOccs.length > 1 && (
                                 <button
-                                  className="tags-item-expand"
+                                  className="bg-transparent border-none text-(--fd-text-muted) text-[10px] cursor-pointer px-0.5 py-0 shrink-0 hover:text-(--fd-text)"
                                   onClick={() => setViewExpandedTagId(isViewExpanded ? null : entity.id)}
                                   title={isViewExpanded ? 'Hide occurrences' : 'Show occurrences'}
                                   aria-label={isViewExpanded ? `Hide occurrences for ${entity.name}` : `Show occurrences for ${entity.name}`}
@@ -512,19 +515,19 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                             </div>
                             {/* Read-only occurrence list */}
                             {isViewExpanded && entityOccs.length > 1 && (
-                              <div className="tags-item-detail">
-                                <div className="tags-occ-list" style={{ marginTop: 0, borderTop: 'none', paddingTop: 0 }}>
+                              <div className="pt-1 pr-3 pb-2 pl-8">
+                                <div>
                                   {entityOccs.map((occ, i) => (
-                                    <div key={`${occ.from}-${i}`} className="tags-occ-item">
+                                    <div key={`${occ.from}-${i}`} className="flex items-center gap-1.5 py-[3px] text-[11px]">
                                       <span
-                                        className="tags-occ-text"
+                                        className="flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer text-(--fd-accent) hover:underline"
                                         onClick={() => handleNavigateToOccurrence(occ.from)}
                                         title="Navigate to this occurrence"
                                       >
                                         &ldquo;{occ.text.slice(0, 40)}{occ.text.length > 40 ? '...' : ''}&rdquo;
                                       </span>
                                       {occ.sceneName && (
-                                        <span className="tags-occ-scene">{occ.sceneName.slice(0, 30)}</span>
+                                        <span className="text-[10px] text-(--fd-text-muted) whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] shrink-0">{occ.sceneName.slice(0, 30)}</span>
                                       )}
                                     </div>
                                   ))}
@@ -550,26 +553,26 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
         <>
           {/* ── Pending tag selection: step 1 — pick category ─────────── */}
           {pendingTagSelection && !pendingCategoryId && (
-            <div className="tags-pending">
-              <div className="tags-pending-header">
+            <div className="tags-pending border-b-2 border-(--fd-accent) bg-(--fd-navigator-bg) flex-1 flex flex-col overflow-y-auto">
+              <div className="tags-pending-header flex items-center justify-between px-3.5 pt-2.5 pb-1.5 text-[13px] text-(--fd-text) font-semibold">
                 <span>Tag: &ldquo;{pendingTagSelection.text.slice(0, 40)}{pendingTagSelection.text.length > 40 ? '...' : ''}&rdquo;</span>
                 <button
-                  className="tags-pending-cancel"
+                  className="tags-pending-cancel bg-transparent border-none text-(--fd-text-muted) text-base cursor-pointer leading-none hover:text-(--fd-text)"
                   onClick={handleCancelPending}
                   aria-label="Cancel pending tag selection"
                 >
                   &times;
                 </button>
               </div>
-              <div className="tags-pending-label">Select a category:</div>
-              <div className="tags-pending-list">
+              <div className="text-[11px] text-(--fd-accent) uppercase tracking-[0.4px] px-3.5 pt-1.5 pb-1.5 font-semibold">Select a category:</div>
+              <div className="flex-1 overflow-y-auto pb-1">
                 {tagCategories.map((cat) => (
                   <div
                     key={cat.id}
-                    className="tags-pending-item"
+                    className="tags-pending-item flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer text-sm text-(--fd-text) min-h-10 border-b border-(--fd-border) hover:bg-(--fd-accent) hover:text-white"
                     onClick={() => handlePickCategory(cat.id)}
                   >
-                    <span className="tags-category-swatch" style={{ background: cat.color }} />
+                    <span className="inline-block w-3.5 h-3.5 rounded-[3px] shrink-0" style={{ background: cat.color }} />
                     <span>{cat.name}</span>
                   </div>
                 ))}
@@ -579,14 +582,14 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
 
           {/* ── Pending tag selection: step 2 — pick entity or create ─── */}
           {pendingTagSelection && pendingCategoryId && (
-            <div className="tags-pending">
-              <div className="tags-pending-header">
+            <div className="tags-pending border-b-2 border-(--fd-accent) bg-(--fd-navigator-bg) flex-1 flex flex-col overflow-y-auto">
+              <div className="tags-pending-header flex items-center justify-between px-3.5 pt-2.5 pb-1.5 text-[13px] text-(--fd-text) font-semibold">
                 <span>
                   {tagCategories.find((c) => c.id === pendingCategoryId)?.name}
                   {' '}&rarr; &ldquo;{pendingTagSelection.text.slice(0, 30)}{pendingTagSelection.text.length > 30 ? '...' : ''}&rdquo;
                 </span>
                 <button
-                  className="tags-pending-cancel"
+                  className="tags-pending-cancel bg-transparent border-none text-(--fd-text-muted) text-base cursor-pointer leading-none hover:text-(--fd-text)"
                   onClick={handleCancelPending}
                   aria-label="Cancel pending tag selection"
                 >
@@ -594,11 +597,11 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                 </button>
               </div>
 
-              <div className="tags-entity-create">
-                <div className="tags-pending-label">Create new:</div>
-                <div className="tags-entity-create-row">
+              <div className="px-3.5 py-2.5 border-b border-white/[0.06]">
+                <div className="text-[11px] text-(--fd-accent) uppercase tracking-[0.4px] pt-1.5 pb-1.5 font-semibold">Create new:</div>
+                <div className="flex gap-2 mt-1.5 items-center">
                   <input
-                    className="tags-entity-name-input"
+                    className="flex-1 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded-md px-3 py-2.5 text-base outline-none min-h-11 focus:border-(--fd-accent)"
                     type="text"
                     value={newEntityName}
                     onChange={(e) => setNewEntityName(e.target.value)}
@@ -612,7 +615,7 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                   />
                   <button
                     ref={createBtnRef}
-                    className="tags-entity-create-btn"
+                    className="bg-(--fd-accent) text-white border-none rounded-md px-5 py-2.5 min-h-11 text-[11px] font-semibold cursor-pointer shrink-0 [-webkit-tap-highlight-color:rgba(0,0,0,0.1)] [touch-action:manipulation] disabled:opacity-40 disabled:cursor-default disabled:pointer-events-none hover:opacity-85"
                     onClick={() => { if (pendingCategoryId) handleCreateNewEntity(pendingCategoryId); }}
                   >
                     Create
@@ -622,18 +625,18 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
 
               {pendingCatEntities.length > 0 && (
                 <>
-                  <div className="tags-pending-label tags-pending-separator">Or add to existing:</div>
-                  <div className="tags-pending-list">
+                  <div className="text-[11px] text-(--fd-accent) uppercase tracking-[0.4px] px-3.5 pb-1.5 font-semibold mt-1.5 pt-1.5 border-t border-(--fd-overlay-subtle)">Or add to existing:</div>
+                  <div className="flex-1 overflow-y-auto pb-1">
                     {pendingCatEntities.map((entity) => {
                       const occCount = occurrencesByTag.get(entity.id)?.length || 0;
                       return (
                         <div
                           key={entity.id}
-                          className="tags-pending-item tags-entity-pick"
+                          className="tags-pending-item flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer text-sm text-(--fd-text) min-h-10 border-b border-(--fd-border) justify-between hover:bg-(--fd-accent) hover:text-white"
                           onClick={() => handleAddToExistingEntity(entity)}
                         >
-                          <span className="tags-entity-pick-name">{entity.name}</span>
-                          <span className="tags-entity-pick-count">{occCount}</span>
+                          <span className="font-medium">{entity.name}</span>
+                          <span className="text-[10px] text-(--fd-text-muted) bg-(--fd-overlay-light) px-1.5 py-px rounded-full">{occCount}</span>
                         </div>
                       );
                     })}
@@ -642,7 +645,7 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
               )}
 
               <button
-                className="tags-pending-back"
+                className="block w-full bg-transparent border-none border-t border-(--fd-overlay-subtle) text-(--fd-text-muted) text-[11px] px-2.5 py-2 text-left cursor-pointer hover:text-(--fd-accent)"
                 onClick={() => setPendingCategoryId(null)}
               >
                 &larr; Back to categories
@@ -651,9 +654,9 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
           )}
 
           {/* ── Editable tag list (hidden during pending selection) ───── */}
-          <div className="tags-panel-list" style={pendingTagSelection ? { display: 'none' } : undefined}>
+          <div className="flex-1 overflow-y-auto py-1 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#444] [&::-webkit-scrollbar-thumb]:rounded-[3px]" style={pendingTagSelection ? { display: 'none' } : undefined}>
             {tagCategories.length === 0 ? (
-              <div className="tags-panel-empty">No categories yet. Add one below.</div>
+              <div className="px-3 py-5 text-(--fd-text-muted) text-xs italic text-center leading-[1.5]">No categories yet. Add one below.</div>
             ) : (
               tagCategories.map((cat) => {
                 const entities = tagsByCategory.get(cat.id) || [];
@@ -662,21 +665,21 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                   (sum, e) => sum + (occurrencesByTag.get(e.id)?.length || 0), 0,
                 );
                 return (
-                  <div key={cat.id} className={`tags-category-section${entities.length === 0 ? ' tags-cat-empty' : ''}`}>
+                  <div key={cat.id} className="border-b border-(--fd-border)">
                     <div
-                      className="tags-category-header"
+                      className="tags-category-header flex items-center px-3 py-2.5 cursor-pointer gap-2.5 min-h-10 hover:bg-white/[0.03]"
                       onClick={() => entities.length > 0 && toggleCategory(cat.id)}
                     >
-                      <span className="tags-category-swatch" style={{ background: cat.color }} />
-                      <span className="tags-category-name">{cat.name}</span>
+                      <span className="inline-block w-3.5 h-3.5 rounded-[3px] shrink-0" style={{ background: cat.color }} />
+                      <span className={`tags-category-name flex-1 text-sm font-medium${entities.length === 0 ? '' : ' text-(--fd-text)'}`} style={entities.length === 0 ? { color: 'var(--fd-text-muted)' } : undefined}>{cat.name}</span>
                       {entities.length > 0 && (
-                        <span className="tags-category-count" title={`${entities.length} entities, ${totalOccs} occurrences`}>
+                        <span className="text-[10px] text-(--fd-text-muted) bg-(--fd-overlay-subtle) px-1.5 py-px rounded-full" title={`${entities.length} entities, ${totalOccs} occurrences`}>
                           {entities.length}
                         </span>
                       )}
                       {!cat.isBuiltIn && (
                         <button
-                          className="tags-item-delete"
+                          className="bg-transparent border-none text-(--fd-text-muted) text-sm cursor-pointer px-0.5 py-0 leading-none shrink-0 hover:text-[#ff6b6b]"
                           onClick={(e) => { e.stopPropagation(); deleteTagCategory(cat.id); }}
                           title="Delete custom category"
                           aria-label={`Delete custom category ${cat.name}`}
@@ -685,34 +688,34 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                         </button>
                       )}
                       {entities.length > 0 && (
-                        <span className={`tags-category-chevron${isExpanded ? ' expanded' : ''}`}>&#9662;</span>
+                        <span className={`text-[10px] text-(--fd-text-muted) transition-transform duration-150${isExpanded ? ' rotate-180' : ''}`}>&#9662;</span>
                       )}
                     </div>
 
                     {isExpanded && entities.length > 0 && (
-                      <div className="tags-category-items">
+                      <div className="pt-0.5 pb-1.5">
                         {entities.map((entity) => {
                           const entityOccs = occurrencesByTag.get(entity.id) || [];
                           const isEntityExpanded = expandedTagId === entity.id;
                           return (
                             <div
                               key={entity.id}
-                              className={`tags-item-wrap${isEntityExpanded ? ' tags-item-editing' : ''}`}
+                              className={isEntityExpanded ? 'bg-[rgba(74,158,255,0.06)] rounded' : ''}
                               ref={(el) => { if (el) tagItemRefs.current.set(entity.id, el); }}
                             >
-                              <div className="tags-item">
+                              <div className="flex items-center gap-1.5 py-[3px] pr-3 pl-8 text-[11px]">
                                 <span
-                                  className="tags-item-text tags-entity-name"
+                                  className="flex-1 text-(--fd-text) cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis font-semibold hover:text-(--fd-accent)"
                                   onClick={() => setExpandedTagId(isEntityExpanded ? null : entity.id)}
                                   title="Click to edit"
                                 >
                                   {entity.name}
                                 </span>
-                                <span className="tags-entity-occ-count" title={`${entityOccs.length} occurrence${entityOccs.length !== 1 ? 's' : ''}`}>
+                                <span className="text-[10px] text-(--fd-text-muted) bg-(--fd-overlay-light) px-[5px] py-px rounded-full ml-1 shrink-0" title={`${entityOccs.length} occurrence${entityOccs.length !== 1 ? 's' : ''}`}>
                                   {entityOccs.length}
                                 </span>
                                 <button
-                                  className="tags-item-delete"
+                                  className="bg-transparent border-none text-(--fd-text-muted) text-sm cursor-pointer px-0.5 py-0 leading-none shrink-0 hover:text-[#ff6b6b]"
                                   onClick={() => handleDeleteEntity(entity.id)}
                                   title="Delete entity and all occurrences"
                                   aria-label={`Delete entity ${entity.name} and all occurrences`}
@@ -722,11 +725,11 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                               </div>
 
                               {isEntityExpanded && (
-                                <div className="tags-item-detail">
-                                  <div className="tags-entity-name-row">
-                                    <label className="tags-detail-label">Name</label>
+                                <div className="pt-1 pr-3 pb-2 pl-8">
+                                  <div className="flex items-center gap-1.5 mb-1.5">
+                                    <label className="text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] shrink-0">Name</label>
                                     <input
-                                      className="tags-entity-name-edit"
+                                      className="flex-1 bg-(--fd-input-bg) text-(--fd-text) border border-transparent rounded-[3px] px-1.5 py-1 text-xs font-semibold outline-none focus:border-(--fd-accent) focus:bg-black/30"
                                       type="text"
                                       value={entity.name}
                                       onChange={(e) => updateTag(entity.id, { name: e.target.value })}
@@ -734,7 +737,7 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                                     />
                                   </div>
                                   <textarea
-                                    className="tags-item-notes"
+                                    className="w-full bg-(--fd-input-bg) text-(--fd-text) border border-transparent rounded-[3px] px-2 py-1.5 text-[11px] leading-[1.4] resize-y outline-none placeholder:text-(--fd-text-muted) focus:border-(--fd-accent) focus:bg-black/30"
                                     value={entity.notes}
                                     onChange={(e) => updateTag(entity.id, { notes: e.target.value })}
                                     placeholder="Add details: description, requirements, budget notes..."
@@ -742,22 +745,22 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
                                     aria-label={`Notes for ${entity.name}`}
                                   />
                                   {entityOccs.length > 0 && (
-                                    <div className="tags-occ-list">
-                                      <div className="tags-detail-label">Occurrences ({entityOccs.length})</div>
+                                    <div className="mt-2 border-t border-(--fd-overlay-subtle) pt-1.5">
+                                      <div className="text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] shrink-0">Occurrences ({entityOccs.length})</div>
                                       {entityOccs.map((occ, i) => (
-                                        <div key={`${occ.from}-${i}`} className="tags-occ-item">
+                                        <div key={`${occ.from}-${i}`} className="flex items-center gap-1.5 py-[3px] text-[11px]">
                                           <span
-                                            className="tags-occ-text"
+                                            className="flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer text-(--fd-accent) hover:underline"
                                             onClick={() => handleNavigateToOccurrence(occ.from)}
                                             title="Navigate to this occurrence"
                                           >
                                             &ldquo;{occ.text.slice(0, 40)}{occ.text.length > 40 ? '...' : ''}&rdquo;
                                           </span>
                                           {occ.sceneName && (
-                                            <span className="tags-occ-scene">{occ.sceneName.slice(0, 30)}</span>
+                                            <span className="text-[10px] text-(--fd-text-muted) whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] shrink-0">{occ.sceneName.slice(0, 30)}</span>
                                           )}
                                           <button
-                                            className="tags-occ-remove"
+                                            className="bg-transparent border-none text-(--fd-text-muted) text-xs cursor-pointer px-[3px] py-0 shrink-0 hover:text-[#ff6b6b]"
                                             onClick={() => handleRemoveOccurrence(occ.tagId, occ.from, occ.to)}
                                             title="Remove this occurrence"
                                             aria-label={`Remove occurrence of ${entity.name}`}
@@ -783,10 +786,10 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
 
           {/* Add custom category */}
           {showAddForm ? (
-            <div className="tags-add-form">
+            <div className="flex gap-1 px-3 py-2 border-t border-(--fd-border) shrink-0">
               <input
                 type="text"
-                className="tags-add-input"
+                className="flex-1 h-[26px] bg-[#222] text-(--fd-text) border border-(--fd-border) rounded-[3px] px-2 text-[11px] outline-none focus:border-(--fd-accent)"
                 placeholder="Category name..."
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
@@ -796,16 +799,16 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor, style }) => {
               />
               <input
                 type="color"
-                className="tags-add-color"
+                className="w-[26px] h-[26px] p-0 border-none rounded-[3px] cursor-pointer bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border [&::-webkit-color-swatch]:border-white/15 [&::-webkit-color-swatch]:rounded-[3px]"
                 value={newCatColor}
                 onChange={(e) => setNewCatColor(e.target.value)}
                 aria-label="New category color"
               />
-              <button className="tags-add-ok" onClick={handleAddCategory}>Add</button>
-              <button className="tags-add-cancel" onClick={() => setShowAddForm(false)}>Cancel</button>
+              <button className="px-2 h-[26px] bg-transparent border border-(--fd-accent) rounded-[3px] text-(--fd-accent) text-[11px] cursor-pointer hover:bg-[rgba(74,158,255,0.1)]" onClick={handleAddCategory}>Add</button>
+              <button className="px-2 h-[26px] bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[11px] cursor-pointer" onClick={() => setShowAddForm(false)}>Cancel</button>
             </div>
           ) : (
-            <button className="tags-add-btn" onClick={() => setShowAddForm(true)}>
+            <button className="mx-3 mt-2 mb-3 p-2 bg-transparent border border-dashed border-(--fd-border) rounded text-(--fd-text-muted) text-xs cursor-pointer shrink-0 text-center hover:border-(--fd-accent) hover:text-(--fd-accent)" onClick={() => setShowAddForm(true)}>
               + Add Category
             </button>
           )}

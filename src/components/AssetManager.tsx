@@ -175,10 +175,10 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
   };
 
   const content = (
-    <div className="asset-manager-content">
+    <div className="flex flex-col gap-3 p-4 overflow-y-auto flex-1">
       {/* Upload section */}
       <div
-        className={`asset-upload-zone ${dragOver ? 'drag-over' : ''}`}
+        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-150 ${dragOver ? 'border-(--fd-accent) bg-[rgba(74,158,255,0.05)]' : 'border-(--fd-border) hover:border-(--fd-accent) hover:bg-[rgba(74,158,255,0.05)]'}`}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
@@ -191,36 +191,36 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
           style={{ display: 'none' }}
           onChange={(e) => handleUpload(e.target.files)}
         />
-        <div className="asset-upload-icon">{uploading ? '\u23f3' : '\u2b06'}</div>
-        <div className="asset-upload-text">
+        <div className="text-2xl mb-2">{uploading ? '\u23f3' : '\u2b06'}</div>
+        <div className="text-[13px] text-(--fd-text-muted)">
           {uploading ? 'Uploading...' : 'Drop files here or click to upload'}
         </div>
       </div>
 
-      <div className="asset-tag-input-row">
+      <div className="flex items-center gap-2 text-xs text-(--fd-text-muted)">
         <label>Tags for upload:</label>
         <input
           type="text"
           placeholder="tag1, tag2, ..."
           value={tagInput}
           onChange={(e) => setTagInput(e.target.value)}
-          className="asset-tag-input"
+          className="flex-1 h-7 bg-[#222] text-(--fd-text) border border-[#555] rounded-[3px] px-2 text-xs outline-none focus:border-(--fd-accent)"
         />
       </div>
 
       {/* Filter bar */}
-      <div className="asset-filter-bar">
+      <div className="flex gap-2">
         <input
           type="text"
           placeholder="Search by name..."
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
-          className="asset-filter-input"
+          className="flex-1 h-7 bg-[#222] text-(--fd-text) border border-[#555] rounded-[3px] px-2 text-xs outline-none focus:border-(--fd-accent)"
         />
         <select
           value={filterTag}
           onChange={(e) => setFilterTag(e.target.value)}
-          className="asset-filter-select"
+          className="h-7 bg-[#222] text-(--fd-text) border border-[#555] rounded-[3px] px-2 text-xs cursor-pointer outline-none min-w-30 focus:border-(--fd-accent)"
         >
           <option value="">All Tags</option>
           {allTags.map((tag) => (
@@ -230,13 +230,13 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
       </div>
 
       {/* Asset list */}
-      <div className="asset-list">
+      <div className="asset-list overflow-y-auto max-h-100">
         {filtered.length === 0 ? (
-          <div className="asset-list-empty">
+          <div className="p-6 text-center text-(--fd-text-muted) text-[13px] italic">
             {assets.length === 0 ? 'No assets yet. Upload files to get started.' : 'No assets match your filters.'}
           </div>
         ) : (
-          <table className="asset-table">
+          <table className="w-full border-collapse text-xs [&_th]:text-left [&_th]:px-2.5 [&_th]:py-2 [&_th]:text-(--fd-text-muted) [&_th]:text-[10px] [&_th]:uppercase [&_th]:tracking-[0.5px] [&_th]:border-b [&_th]:border-(--fd-border) [&_th]:font-semibold">
             <thead>
               <tr>
                 <th>Type</th>
@@ -248,21 +248,21 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
             </thead>
             <tbody>
               {filtered.map((asset) => (
-                <tr key={asset.id} className="asset-row">
-                  <td className="asset-cell-icon">
+                <tr key={asset.id} className="border-b border-[rgba(255,255,255,0.04)] transition-colors duration-100 hover:bg-[rgba(74,158,255,0.05)]">
+                  <td className="py-2 px-2.5 text-base w-10">
                     <span title={asset.mime_type}>{getMimeIcon(asset.mime_type)}</span>
                   </td>
                   <td
-                    className="asset-cell-name"
+                    className="px-2.5 py-2 text-(--fd-accent) cursor-pointer font-medium hover:underline"
                     onClick={() => setPreviewAsset(asset)}
                     title="Click to preview"
                   >
                     {asset.original_name}
                   </td>
-                  <td className="asset-cell-size">{formatSize(asset.size_bytes)}</td>
-                  <td className="asset-cell-tags">
+                  <td className="px-2.5 py-2 text-(--fd-text-muted) whitespace-nowrap w-20">{formatSize(asset.size_bytes)}</td>
+                  <td className="px-2.5 py-2 min-w-30">
                     {editingTagsId === asset.id ? (
-                      <div className="asset-tags-edit">
+                      <div className="flex gap-1 items-center">
                         <input
                           type="text"
                           value={editTagsValue}
@@ -271,12 +271,12 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
                             if (e.key === 'Enter') handleSaveTags(asset.id);
                             if (e.key === 'Escape' && !savingTagsId) setEditingTagsId(null);
                           }}
-                          className="asset-tags-edit-input"
+                          className="flex-1 h-6 bg-[#222] text-(--fd-text) border border-(--fd-accent) rounded-[3px] px-1.5 text-[11px] outline-none disabled:opacity-50"
                           disabled={savingTagsId === asset.id}
                           autoFocus
                         />
                         <button
-                          className="asset-tags-save-btn"
+                          className="h-6 px-2 bg-(--fd-accent) text-white border-none rounded-[3px] text-[10px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => handleSaveTags(asset.id)}
                           disabled={savingTagsId === asset.id}
                         >
@@ -285,7 +285,7 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
                       </div>
                     ) : (
                       <div
-                        className="asset-tags-display"
+                        className="flex flex-wrap gap-1 cursor-pointer"
                         onClick={() => {
                           setEditingTagsId(asset.id);
                           setEditTagsValue(asset.tags.join(', '));
@@ -294,16 +294,16 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
                       >
                         {asset.tags.length > 0
                           ? asset.tags.map((t) => (
-                              <span key={t} className="asset-tag-badge">#{t}</span>
+                              <span key={t} className="inline-block bg-[rgba(74,158,255,0.15)] text-(--fd-accent) px-1.5 py-0.5 rounded-[3px] text-[10px] font-medium">#{t}</span>
                             ))
-                          : <span className="asset-no-tags">no tags</span>
+                          : <span className="text-(--fd-text-muted) text-[11px] italic">no tags</span>
                         }
                       </div>
                     )}
                   </td>
-                  <td className="asset-cell-actions">
+                  <td className="px-2.5 py-2 whitespace-nowrap w-20">
                     <button
-                      className="asset-action-btn"
+                      className="bg-transparent border-none text-(--fd-text-muted) text-sm cursor-pointer px-1.5 py-0.5 rounded-[3px] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:text-(--fd-accent) enabled:hover:bg-[rgba(74,158,255,0.1)]"
                       onClick={() => handleDownload(asset)}
                       title="Download"
                       disabled={deletingId === asset.id}
@@ -311,7 +311,7 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
                       &#x2B07;
                     </button>
                     <button
-                      className="asset-action-btn asset-action-delete"
+                      className="bg-transparent border-none text-(--fd-text-muted) text-sm cursor-pointer px-1.5 py-0.5 rounded-[3px] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:text-[#ff6b6b] enabled:hover:bg-[rgba(255,107,107,0.1)]"
                       onClick={() => handleDelete(asset.id)}
                       title="Delete"
                       disabled={deletingId === asset.id}
@@ -339,18 +339,18 @@ const AssetManager: React.FC<AssetManagerProps> = ({ projectId, embedded = false
 
   // If embedded (inside ProjectView), render without dialog overlay
   if (embedded) {
-    return <div className="asset-manager embedded">{content}</div>;
+    return <div className="asset-manager bg-transparent">{content}</div>;
   }
 
   // Otherwise render as dialog
   if (!assetManagerOpen) return null;
 
   return (
-    <div className="dialog-overlay" onClick={() => setAssetManagerOpen(false)}>
-      <div className="asset-manager dialog" onClick={(e) => e.stopPropagation()}>
-        <div className="asset-manager-header">
+    <div className="dialog-overlay fixed left-0 top-0 right-0 bg-[rgba(0,0,0,0.5)] z-3000 flex items-start justify-center h-(--vv-height,100dvh) pt-[5vh] px-4 pb-4 overflow-y-auto" onClick={() => setAssetManagerOpen(false)}>
+      <div className="asset-manager dialog bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] w-180 max-w-[90vw] max-h-[80vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center px-4 py-3 border-b border-(--fd-border) font-semibold text-sm shrink-0">
           <span>Asset Manager</span>
-          <button className="asset-manager-close" onClick={() => setAssetManagerOpen(false)}>
+          <button className="asset-manager-close bg-transparent border-none text-(--fd-text-muted) text-xl cursor-pointer px-1 py-0 leading-none hover:text-(--fd-text)" onClick={() => setAssetManagerOpen(false)}>
             &times;
           </button>
         </div>

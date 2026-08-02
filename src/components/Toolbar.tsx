@@ -508,7 +508,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
 
   const renderFontFaceSize = useCallback((inOverflow = false) => (
     <React.Fragment key="font-face-size">
-      <div className="toolbar-group" style={locked.fontFamily ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
+      <div className="toolbar-group flex items-center gap-px" style={locked.fontFamily ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
         <FontPicker
           value={cursorFont}
           extraFonts={extraFonts}
@@ -527,9 +527,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           }}
         />
       </div>
-      <div className="toolbar-group">
+      <div className="toolbar-group flex items-center gap-px">
         <select
-          className="font-size-selector"
+          className="font-size-selector h-5.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-overlay-medium) rounded-[5px] px-2 text-[11.5px] cursor-pointer outline-none min-w-15 focus:border-(--fd-accent)"
           value={cursorSize ?? ''}
           disabled={locked.fontSize}
           onChange={(e) => {
@@ -567,9 +567,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
   // This prevents the hidden inline copy from stealing popup state from the overflow copy.
   const renderFontStyleColors = useCallback((inOverflow = false, showPopups = true) => (
     <React.Fragment key="font-style-colors">
-      <div className="toolbar-group">
+      <div className="toolbar-group flex items-center gap-px">
         <button
-          className={`toolbar-btn ${isActive('bold') ? 'active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${isActive('bold') ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Bold (⌘B)"
           disabled={locked.bold}
           onClick={() => {
@@ -584,7 +584,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           <FaBold />
         </button>
         <button
-          className={`toolbar-btn ${isActive('italic') ? 'active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${isActive('italic') ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Italic (⌘I)"
           disabled={locked.italic}
           onClick={() => {
@@ -599,7 +599,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           <FaItalic />
         </button>
         <button
-          className={`toolbar-btn ${isActive('underline') ? 'active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${isActive('underline') ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Underline (⌘U)"
           disabled={locked.underline}
           onClick={() => {
@@ -614,7 +614,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           <FaUnderline />
         </button>
         <button
-          className={`toolbar-btn ${isActive('strike') ? 'active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${isActive('strike') ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Strikethrough"
           disabled={locked.strikethrough}
           onClick={() => { if (!locked.strikethrough) editor?.chain().focus(undefined, { scrollIntoView: false }).toggleStrike().run(); }}
@@ -622,7 +622,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           <FaStrikethrough />
         </button>
         <button
-          className={`toolbar-btn ${isActive('subscript') ? 'active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${isActive('subscript') ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Subscript"
           disabled={locked.subscript}
           onClick={() => { if (!locked.subscript) editor?.chain().focus(undefined, { scrollIntoView: false }).toggleSubscript().run(); }}
@@ -630,7 +630,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           <FaSubscript />
         </button>
         <button
-          className={`toolbar-btn ${isActive('superscript') ? 'active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${isActive('superscript') ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Superscript"
           disabled={locked.superscript}
           onClick={() => { if (!locked.superscript) editor?.chain().focus(undefined, { scrollIntoView: false }).toggleSuperscript().run(); }}
@@ -639,11 +639,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         </button>
       </div>
 
-      <div className={inOverflow ? 'toolbar-overflow-sep' : 'toolbar-separator'} />
+      <div className={inOverflow ? 'toolbar-overflow-sep w-full h-px bg-(--fd-border) my-0.5' : `toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]`} />
 
-      <div className="toolbar-group" style={{ position: 'relative' }}>
+      <div className="toolbar-group flex items-center gap-px" style={{ position: 'relative' }}>
         <button
-          className="toolbar-btn"
+          className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
           title="Text Color"
           disabled={locked.textColor}
           onClick={() => { if (!locked.textColor) { setTextColorOpen(!textColorOpen); setBgColorOpen(false); } }}
@@ -667,7 +667,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         )}
 
         <button
-          className="toolbar-btn"
+          className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
           title="Highlight Color"
           disabled={locked.backgroundColor}
           onClick={() => { if (!locked.backgroundColor) { setBgColorOpen(!bgColorOpen); setTextColorOpen(false); } }}
@@ -691,16 +691,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         )}
       </div>
 
-      <div className={inOverflow ? 'toolbar-overflow-sep' : 'toolbar-separator'} />
+      <div className={inOverflow ? 'toolbar-overflow-sep w-full h-px bg-(--fd-border) my-0.5' : `toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]`} />
 
       <LanguageSelector editor={editor} activeElement={activeElement} />
     </React.Fragment>
   ), [editor, isOverrideMode, activeTemplate, activeElement, textColorOpen, bgColorOpen, currentTextColor, currentBgColor, locked]);
 
   const renderAlignment = useCallback((_inOverflow = false) => (
-    <div className="toolbar-group" key="alignment">
+    <div className="toolbar-group flex items-center gap-px" key="alignment">
       <button
-        className={`toolbar-btn ${editor?.isActive({ textAlign: 'left' }) ? 'active' : ''}`}
+        className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${editor?.isActive({ textAlign: 'left' }) ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
         title="Align Left"
         onClick={() => editor?.chain().focus().setTextAlign('left').run()}
         disabled={locked.textAlign}
@@ -708,7 +708,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         <FaAlignLeft />
       </button>
       <button
-        className={`toolbar-btn ${editor?.isActive({ textAlign: 'center' }) ? 'active' : ''}`}
+        className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${editor?.isActive({ textAlign: 'center' }) ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
         title="Align Center"
         onClick={() => editor?.chain().focus().setTextAlign('center').run()}
         disabled={locked.textAlign}
@@ -716,7 +716,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         <FaAlignCenter />
       </button>
       <button
-        className={`toolbar-btn ${editor?.isActive({ textAlign: 'right' }) ? 'active' : ''}`}
+        className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${editor?.isActive({ textAlign: 'right' }) ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
         title="Align Right"
         onClick={() => editor?.chain().focus().setTextAlign('right').run()}
         disabled={locked.textAlign}
@@ -724,7 +724,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         <FaAlignRight />
       </button>
       <button
-        className={`toolbar-btn ${editor?.isActive({ textAlign: 'justify' }) ? 'active' : ''}`}
+        className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default ${editor?.isActive({ textAlign: 'justify' }) ? 'active bg-(--fd-overlay-medium) border-transparent' : ''}`}
         title="Justify"
         onClick={() => editor?.chain().focus().setTextAlign('justify').run()}
         disabled={locked.textAlign}
@@ -735,16 +735,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
   ), [editor, locked]);
 
   const renderSearchGoto = useCallback((inOverflow = false) => (
-    <div className="toolbar-group" key="search-goto">
+    <div className="toolbar-group flex items-center gap-px" key="search-goto">
       <button
-        className="toolbar-btn"
+        className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
         title="Find & Replace (⌘F)"
         onClick={() => { setSearchOpen(true); if (inOverflow) setOverflowOpen(false); }}
       >
         <FaSearch />
       </button>
       <button
-        className="toolbar-btn"
+        className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
         title="Go to Page (⌘G)"
         onClick={() => { setGoToPageOpen(true); if (inOverflow) setOverflowOpen(false); }}
       >
@@ -754,9 +754,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
   ), [setSearchOpen, setGoToPageOpen]);
 
   const renderZoom = useCallback((_inOverflow = false) => (
-    <div className="toolbar-group zoom-group" key="zoom">
+    <div className="toolbar-group zoom-group flex items-center gap-1" key="zoom">
       <button
-        className="toolbar-btn"
+        className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
         title="Zoom Out"
         onClick={() => setZoomLevel(zoomLevel - 10)}
         disabled={zoomLevel <= 50}
@@ -766,7 +766,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
       {zoomEditing ? (
         <input
           ref={zoomInputRef}
-          className="zoom-input"
+          className="zoom-input w-10 bg-(--fd-input-bg) border border-(--fd-accent) rounded-[3px] text-(--fd-text) text-[11px] text-center outline-none py-px px-0.5 [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0"
           type="number"
           min={50}
           max={200}
@@ -779,7 +779,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         />
       ) : (
         <span
-          className="zoom-label"
+          className="zoom-label text-(--fd-text-muted) text-[11px] min-w-9 text-center tabular-nums cursor-pointer"
           onClick={() => { setZoomEditing(true); setTimeout(() => zoomInputRef.current?.select(), 0); }}
           title="Click to edit zoom"
         >
@@ -787,7 +787,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         </span>
       )}
       <button
-        className="toolbar-btn"
+        className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
         title="Zoom In"
         onClick={() => setZoomLevel(zoomLevel + 10)}
         disabled={zoomLevel >= 300}
@@ -798,9 +798,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
   ), [zoomLevel, zoomEditing, zoomInput, setZoomLevel, commitZoom]);
 
   const renderZoomMin = useCallback((_inOverflow = false) => (
-    <div className="toolbar-group zoom-group" key="zoom-min">
+    <div className="toolbar-group zoom-group flex items-center gap-1" key="zoom-min">
       <button
-        className="toolbar-btn"
+        className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
         title="Zoom Out"
         onClick={() => setZoomLevel(zoomLevel - 10)}
         disabled={zoomLevel <= 50}
@@ -820,7 +820,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
   const overflowContent = useMemo(() => {
     if (hiddenPriorities.size === 0) return null;
     const items: React.ReactNode[] = [];
-    const addSep = () => { if (items.length > 0) items.push(<div className="toolbar-overflow-sep" key={`sep-${items.length}`} />); };
+    const addSep = () => { if (items.length > 0) items.push(<div className="toolbar-overflow-sep w-full h-px bg-(--fd-border) my-0.5" key={`sep-${items.length}`} />); };
 
     // Show items in logical order (most important first within overflow)
     if (isHidden('5')) { addSep(); items.push(renderFontFaceSize(true)); }
@@ -835,11 +835,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
   if (toolbarMode === 'hidden') return null;
 
   return (
-    <div className={`toolbar${toolbarMode === 'comfortable' ? ' toolbar-comfortable' : ''}`} ref={toolbarRef}>
+    <div className={`toolbar flex items-center h-[30px] bg-(--fd-toolbar-bg) shadow-(--fd-chrome-shadow) px-2 gap-0.5 shrink-0 relative z-[1]${toolbarMode === 'comfortable' ? ' toolbar-comfortable h-9' : ''}`} ref={toolbarRef}>
       {/* Undo / Redo — always visible */}
-      <div className="toolbar-group">
+      <div className="toolbar-group flex items-center gap-px">
         <button
-          className="toolbar-btn"
+          className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
           title="Undo (⌘Z)"
           onClick={() => { try { editor?.chain().focus().undo().run(); } catch {} }}
           disabled={!editor || typeof (editor.can() as any).undo !== 'function' || !(editor.can() as any).undo()}
@@ -847,7 +847,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           <FaUndo />
         </button>
         <button
-          className="toolbar-btn"
+          className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
           title="Redo (⇧⌘Z)"
           onClick={() => { try { editor?.chain().focus().redo().run(); } catch {} }}
           disabled={!editor || typeof (editor.can() as any).redo !== 'function' || !(editor.can() as any).redo()}
@@ -856,12 +856,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         </button>
       </div>
 
-      <div className="toolbar-separator" />
+      <div className="toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]" />
 
       {/* Element type selector — always visible */}
-      <div className="toolbar-group">
+      <div className="toolbar-group flex items-center gap-px">
         <select
-          className="element-selector"
+          className="element-selector h-5.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-overlay-medium) rounded-[5px] px-2 text-[11.5px] cursor-pointer outline-none min-w-[140px] focus:border-(--fd-accent)"
           value={activeElement}
           onChange={handleElementChange}
         >
@@ -878,45 +878,45 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         </select>
       </div>
 
-      <div className="toolbar-separator" />
+      <div className="toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]" />
 
       {/* Priority 5: Font face & size — hidden on mobile, collapsible on desktop */}
-      <div className="toolbar-desktop-only toolbar-priority-block" data-priority="5">
+      <div className="toolbar-desktop-only toolbar-priority-block flex items-center gap-0.5" data-priority="5">
         {renderFontFaceSize()}
-        <div className="toolbar-separator" />
+        <div className="toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]" />
       </div>
 
       {/* Priority 4: Font style & colors — hidden on mobile, collapsible on desktop.
           Suppress ColorPicker popups when hidden so they only render in the overflow copy. */}
-      <div className="toolbar-desktop-only toolbar-priority-block" data-priority="4">
+      <div className="toolbar-desktop-only toolbar-priority-block flex items-center gap-0.5" data-priority="4">
         {renderFontStyleColors(false, !isHidden('4'))}
-        <div className="toolbar-separator" />
+        <div className="toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]" />
       </div>
 
       {/* Priority 3: Alignment — hidden on mobile, collapsible on desktop */}
-      <div className="toolbar-desktop-only toolbar-priority-block" data-priority="3">
+      <div className="toolbar-desktop-only toolbar-priority-block flex items-center gap-0.5" data-priority="3">
         {renderAlignment()}
-        <div className="toolbar-separator" />
+        <div className="toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]" />
       </div>
 
       {/* Priority 2: Search & Go to — collapsible on desktop */}
-      <div className="toolbar-priority-block" data-priority="2">
+      <div className="toolbar-priority-block flex items-center gap-0.5" data-priority="2">
         {renderSearchGoto()}
       </div>
 
-      <div className="toolbar-separator" />
+      <div className="toolbar-separator w-px h-4 bg-(--fd-border) opacity-50 mx-[5px]" />
 
       {/* Notes & Tags — always visible */}
-      <div className="toolbar-group">
+      <div className="toolbar-group flex items-center gap-px">
         <button
-          className={`toolbar-btn${scriptNotesOpen ? ' active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default${scriptNotesOpen ? ' active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Script Notes"
           onPointerDown={handleNotesClick}
         >
           <FaStickyNote />
         </button>
         <button
-          className={`toolbar-btn${tagsPanelOpen ? ' active' : ''}`}
+          className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default${tagsPanelOpen ? ' active bg-(--fd-overlay-medium) border-transparent' : ''}`}
           title="Production Tags"
           onPointerDown={handleTagsClick}
         >
@@ -929,16 +929,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
 
       {/* Overflow 3-dot menu */}
       {hasOverflow && (
-        <div className="toolbar-group toolbar-overflow-wrap" ref={overflowRef}>
+        <div className="toolbar-group toolbar-overflow-wrap flex items-center gap-px relative" ref={overflowRef}>
           <button
-            className={`toolbar-btn toolbar-overflow-btn${overflowOpen ? ' active' : ''}`}
+            className={`toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default toolbar-overflow-btn text-sm${overflowOpen ? ' active bg-(--fd-overlay-medium) border-transparent' : ''}`}
             title="More formatting options"
             onClick={() => setOverflowOpen(!overflowOpen)}
           >
             <FaEllipsisV />
           </button>
           {overflowOpen && (
-            <div className="toolbar-overflow-menu">
+            <div className="toolbar-overflow-menu absolute top-full right-0 z-[200] bg-[var(--fd-dropdown-bg,var(--fd-bg))] border border-(--fd-border) rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.18)] py-1.5 px-2 mt-1 flex flex-wrap items-center gap-1 min-w-[200px] max-w-[min(400px,calc(100vw-16px))] overflow-visible [&_.color-picker-popup]:top-auto [&_.color-picker-popup]:bottom-full [&_.color-picker-popup]:left-auto [&_.color-picker-popup]:right-0">
               {overflowContent}
             </div>
           )}
@@ -946,9 +946,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
       )}
 
       {/* Zoom — desktop: P1 hides zoom-out, P2 hides zoom label/in */}
-      <div className="toolbar-priority-block zoom-group" data-priority="1">
+      <div className="toolbar-priority-block zoom-group flex items-center gap-1" data-priority="1">
         <button
-          className="toolbar-btn"
+          className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
           title="Zoom Out"
           onClick={() => setZoomLevel(zoomLevel - 10)}
           disabled={zoomLevel <= 50}
@@ -956,11 +956,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           <FaSearchMinus />
         </button>
       </div>
-      <div className="toolbar-priority-block zoom-group" data-priority="2b">
+      <div className="toolbar-priority-block zoom-group flex items-center gap-1" data-priority="2b">
         {zoomEditing ? (
           <input
             ref={zoomInputRef}
-            className="zoom-input"
+            className="zoom-input w-10 bg-(--fd-input-bg) border border-(--fd-accent) rounded-[3px] text-(--fd-text) text-[11px] text-center outline-none py-px px-0.5 [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0"
             type="number"
             min={50}
             max={200}
@@ -973,7 +973,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           />
         ) : (
           <span
-            className="zoom-label"
+            className="zoom-label text-(--fd-text-muted) text-[11px] min-w-9 text-center tabular-nums cursor-pointer"
             onClick={() => { setZoomEditing(true); setTimeout(() => zoomInputRef.current?.select(), 0); }}
             title="Click to edit zoom"
           >
@@ -981,7 +981,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
           </span>
         )}
         <button
-          className="toolbar-btn"
+          className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
           title="Zoom In"
           onClick={() => setZoomLevel(zoomLevel + 10)}
           disabled={zoomLevel >= 300}
@@ -991,9 +991,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
       </div>
 
       {/* Zoom — mobile: single button */}
-      <div className="toolbar-group zoom-mobile-group">
+      <div className="toolbar-group zoom-mobile-group flex items-center gap-px hidden">
         <button
-          className="toolbar-btn"
+          className="toolbar-btn flex items-center justify-center w-[26px] h-6 bg-transparent border border-transparent rounded-[5px] text-(--fd-text) cursor-pointer text-xs transition-[background] duration-100 hover:bg-(--fd-overlay-light) hover:border-transparent disabled:opacity-30 disabled:cursor-default"
           title="Zoom"
           onClick={() => setZoomPanelOpen(!zoomPanelOpen)}
         >

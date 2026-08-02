@@ -234,41 +234,41 @@ const RecoverBackupDialog: React.FC<Props> = ({ open, onClose, onBeforeReplace }
   if (!open) return null;
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
-      <div className="dialog recover-backup-dialog" onClick={(e) => e.stopPropagation()}>
-        <h2 className="dialog-title">Recover Backup</h2>
+    <div className="dialog-overlay fixed inset-x-0 top-0 z-3000 flex items-start justify-center h-(--vv-height,100dvh) px-4 pt-[5vh] pb-4 overflow-y-auto bg-black/50" onClick={onClose}>
+      <div className="w-[min(900px,92vw)] max-h-[82vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <h2>Recover Backup</h2>
 
-        <div className="recover-backup-body">
-          <div className="recover-backup-list">
-            {loading && <div className="recover-backup-empty">Loading…</div>}
+        <div className="flex gap-4 flex-1 min-h-0 my-3">
+          <div className="flex-none w-80 overflow-y-auto border border-(--fd-border) rounded-md p-1.5">
+            {loading && <div className="p-6 px-3 text-center text-(--fd-text-muted) text-[13px] leading-normal">Loading…</div>}
 
             {!loading && loadError && (
-              <div className="recover-backup-empty">
+              <div className="p-6 px-3 text-center text-(--fd-text-muted) text-[13px] leading-normal">
                 Can't read the backup folder — {loadError}
               </div>
             )}
 
             {!loading && !loadError && entries.length === 0 && (
-              <div className="recover-backup-empty">
+              <div className="p-6 px-3 text-center text-(--fd-text-muted) text-[13px] leading-normal">
                 No backups yet. Turn on automatic backups in Settings, or use
                 File → Backups → Back Up Now.
               </div>
             )}
 
             {grouped.map(([title, items]) => (
-              <div key={title} className="recover-backup-group">
-                <div className="recover-backup-group-title">{title}</div>
+              <div key={title}>
+                <div className="text-xs font-semibold uppercase tracking-[0.04em] text-(--fd-text-muted) pt-2 px-1.5 pb-1">{title}</div>
                 {items.map((e) => (
                   <button
                     key={e.path}
-                    className={`recover-backup-item${selected?.path === e.path ? ' selected' : ''}`}
+                    className={`flex flex-col items-start gap-0.5 w-full py-2 px-2.5 border-none rounded text-left cursor-pointer ${selected?.path === e.path ? 'bg-(--fd-accent) text-white' : 'bg-transparent text-inherit hover:bg-[rgba(127,127,127,0.12)]'}`}
                     onClick={() => setSelected(e)}
                   >
-                    <span className="recover-backup-when">{relativeTime(e.date)}</span>
-                    <span className="recover-backup-meta">
+                    <span className="text-sm">{relativeTime(e.date)}</span>
+                    <span className="text-xs opacity-75 flex items-center gap-1.5 flex-wrap">
                       {e.date.toLocaleString()} · {formatBytes(e.sizeBytes)}
-                      {e.kind === 'manual' && <span className="recover-backup-badge">Manual</span>}
-                      {e.kind === 'external' && <span className="recover-backup-badge">Imported</span>}
+                      {e.kind === 'manual' && <span className="text-[10px] uppercase tracking-[0.04em] border border-current rounded-[3px] px-1">Manual</span>}
+                      {e.kind === 'external' && <span className="text-[10px] uppercase tracking-[0.04em] border border-current rounded-[3px] px-1">Imported</span>}
                     </span>
                   </button>
                 ))}
@@ -276,81 +276,81 @@ const RecoverBackupDialog: React.FC<Props> = ({ open, onClose, onBeforeReplace }
             ))}
           </div>
 
-          <div className="recover-backup-preview">
-            {!selected && <div className="recover-backup-empty">Select a backup to preview it.</div>}
+          <div className="flex-1 min-w-0 overflow-y-auto border border-(--fd-border) rounded-md p-3">
+            {!selected && <div className="p-6 px-3 text-center text-(--fd-text-muted) text-[13px] leading-normal">Select a backup to preview it.</div>}
             {selected && previewError && (
-              <div className="recover-backup-empty">Could not read this backup — {previewError}</div>
+              <div className="p-6 px-3 text-center text-(--fd-text-muted) text-[13px] leading-normal">Could not read this backup — {previewError}</div>
             )}
-            {selected && !preview && !previewError && <div className="recover-backup-empty">Reading…</div>}
+            {selected && !preview && !previewError && <div className="p-6 px-3 text-center text-(--fd-text-muted) text-[13px] leading-normal">Reading…</div>}
             {preview && (
               <>
-                <div className="recover-backup-preview-meta">
+                <div className="mb-2.5 text-[13px] leading-normal">
                   <div><strong>{preview.meta.title || selected?.title}</strong></div>
                   {preview.meta.author && <div>{preview.meta.author}</div>}
                   {preview.meta.page_count > 0 && <div>{preview.meta.page_count} pages</div>}
                   {selected && <div>Saved {selected.date.toLocaleString()}</div>}
                   {preview.meta.assets_omitted && (
-                    <div className="settings-hint settings-hint-warning">
+                    <div className="text-[13px] mt-2 not-italic text-[#e0a800]">
                       Images are not included in this backup — a restored script
                       will be missing them.
                     </div>
                   )}
                   {preview.assets.length > 0 && (
-                    <div className="settings-hint">
+                    <div className="text-[13px] mt-2 italic text-(--fd-text-muted)">
                       Includes {preview.assets.length} image{preview.assets.length === 1 ? '' : 's'}.
                     </div>
                   )}
                 </div>
-                <pre className="recover-backup-preview-text">{previewText(preview.content)}</pre>
+                <pre className="font-['Courier_Prime','Courier_New',monospace] text-xs leading-[1.4] whitespace-pre-wrap wrap-break-word m-0 opacity-85">{previewText(preview.content)}</pre>
               </>
             )}
           </div>
         </div>
 
         {confirmReplace ? (
-          <div className="recover-backup-confirm">
+          <div className="border-t border-(--fd-border) pt-3 text-[13px] leading-normal">
             Replace the script you have open with this backup? Its current
             contents will be overwritten. A backup of the current state is saved
             first, so this can be undone.
-            <div className="dialog-actions">
-              <button className="dialog-btn" onClick={() => setConfirmReplace(false)}>Cancel</button>
-              <button className="dialog-btn dialog-btn-danger" disabled={busy} onClick={() => void replaceCurrent()}>
+            <div className="dialog-actions flex justify-end gap-2 py-3.5 px-5 border-t border-(--fd-border) shrink-0">
+              <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={() => setConfirmReplace(false)}>Cancel</button>
+              <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) border border-(--fd-border) rounded cursor-pointer text-sm text-[#ff4444]! hover:bg-[rgba(255,68,68,0.1)]!" disabled={busy} onClick={() => void replaceCurrent()}>
                 Replace Script
               </button>
             </div>
           </div>
         ) : (
-          <div className="dialog-actions">
-            <button className="dialog-btn" onClick={() => void handleImportFile()}>Import from a file…</button>
+          <div className="dialog-actions flex justify-end gap-2 py-3.5 px-5 border-t border-(--fd-border) shrink-0">
+            <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={() => void handleImportFile()}>Import from a file…</button>
             <button
-              className="dialog-btn"
+              className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)"
               disabled={!selected || selected.kind === 'external'}
               onClick={() => selected && void revealSnapshot(selected.path)}
             >
               Reveal
             </button>
             <button
-              className="dialog-btn dialog-btn-danger"
+              className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) border border-(--fd-border) rounded cursor-pointer text-sm text-[#ff4444]! hover:bg-[rgba(255,68,68,0.1)]!"
               disabled={!selected || selected.kind === 'external'}
               onClick={() => void handleDelete()}
             >
               Delete
             </button>
             <button
-              className="dialog-btn"
+              className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)"
               disabled={!preview || busy || !currentScriptId}
               onClick={() => setConfirmReplace(true)}
             >
               Replace Current Script…
             </button>
             <button
-              className="dialog-btn dialog-btn-primary"
+              className="dialog-btn dialog-btn-primary h-8.5 px-4.5 bg-(--fd-accent) border border-(--fd-accent) rounded cursor-pointer text-sm text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-default"
               disabled={!preview || busy}
               onClick={() => void restoreAsNew()}
             >
               Open as New Script
             </button>
-            <button className="dialog-btn" onClick={onClose}>Close</button>
+            <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={onClose}>Close</button>
           </div>
         )}
       </div>

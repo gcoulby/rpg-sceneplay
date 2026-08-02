@@ -135,9 +135,9 @@ const BackupSettingsSection: React.FC = () => {
 
   if (!desktop) {
     return (
-      <section className="settings-section">
-        <h2 className="settings-section-title">Automatic Backups</h2>
-        <p className="settings-section-desc">
+      <section className="mb-10">
+        <h2 className="text-lg font-bold m-0 mb-1.5 text-(--fd-text)">Automatic Backups</h2>
+        <p className="text-sm text-(--fd-text-muted) m-0 mb-5 leading-normal">
           Timed backups write files to a folder on your computer, which the
           desktop app can do. In the browser and on phones and tablets, use{' '}
           <strong>File → Export → OpenDraft (.odraft)</strong> to save a copy
@@ -149,9 +149,9 @@ const BackupSettingsSection: React.FC = () => {
   }
 
   return (
-    <section className="settings-section">
-      <h2 className="settings-section-title">Automatic Backups</h2>
-      <p className="settings-section-desc">
+    <section className="mb-10">
+      <h2 className="text-lg font-bold m-0 mb-1.5 text-(--fd-text)">Automatic Backups</h2>
+      <p className="text-sm text-(--fd-text-muted) m-0 mb-5 leading-normal">
         OpenDraft can save timestamped copies of your script to a folder you
         choose while you write. Each project gets its own folder inside it, and
         the first copy is written as soon as you turn this on. Backups live
@@ -160,8 +160,8 @@ const BackupSettingsSection: React.FC = () => {
         checkpoints inside the database.
       </p>
 
-      <div className="settings-row">
-        <label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2 text-(--fd-text)">
           <input
             type="checkbox"
             checked={backupEnabled}
@@ -171,23 +171,23 @@ const BackupSettingsSection: React.FC = () => {
         </label>
       </div>
 
-      <div className="settings-row">
-        <label>Backup folder</label>
-        <div className="settings-url-row">
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2 text-(--fd-text)">Backup folder</label>
+        <div className="flex gap-2">
           <input
-            className="dialog-input settings-url-input"
+            className="flex-1 h-9 text-sm bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded outline-none px-2.5 focus:border-(--fd-accent)"
             value={backupFolder}
             readOnly
             placeholder="No folder chosen"
           />
-          <button className="dialog-btn dialog-btn-primary" onClick={() => void handleBrowse()}>
+          <button className="dialog-btn dialog-btn-primary h-8.5 px-4.5 bg-(--fd-accent) border border-(--fd-accent) text-white rounded cursor-pointer text-sm hover:opacity-90" onClick={() => void handleBrowse()}>
             Browse…
           </button>
-          <button className="dialog-btn" onClick={() => void handleUseDefault()}>
+          <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={() => void handleUseDefault()}>
             Use Default
           </button>
           <button
-            className="dialog-btn"
+            className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover) disabled:opacity-50 disabled:cursor-default"
             disabled={!backupFolder || folderStatus !== 'ok'}
             onClick={() => void revealSnapshot(backupFolder).catch(() => showToast('Could not open the folder', 'error'))}
           >
@@ -196,41 +196,41 @@ const BackupSettingsSection: React.FC = () => {
         </div>
 
         {folderStatus === 'ok' && stats && (
-          <div className="settings-status settings-status-ok">
+          <div className="text-[13px] mt-2 py-1 text-[#66bb6a]">
             Folder is writable — {stats.count} backup{stats.count === 1 ? '' : 's'}, {formatBytes(stats.bytes)}
           </div>
         )}
         {folderStatus === 'missing' && backupFolder && (
-          <div className="settings-status settings-status-fail">
+          <div className="text-[13px] mt-2 py-1 text-[#ef5350]">
             Folder not found — {folderDetail}{' '}
-            <button className="dialog-btn" onClick={() => void handleCreateFolder()}>Create it</button>
+            <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={() => void handleCreateFolder()}>Create it</button>
           </div>
         )}
         {folderStatus === 'unwritable' && (
-          <div className="settings-status settings-status-fail">
+          <div className="text-[13px] mt-2 py-1 text-[#ef5350]">
             OpenDraft can't write here — {folderDetail}
           </div>
         )}
         {isUnderOneDrive(backupFolder) && (
-          <div className="settings-hint settings-hint-warning">
+          <div className="text-[13px] mt-2 not-italic text-[#e0a800]">
             This folder is inside OneDrive. Cloud sync can interfere with files
             as they're written — a local folder is safer for backups.
           </div>
         )}
         {pausedByError && (
-          <div className="settings-status settings-status-fail">
+          <div className="text-[13px] mt-2 py-1 text-[#ef5350]">
             Automatic backups are paused — {lastError}{' '}
-            <button className="dialog-btn" onClick={() => { resumeBackups(); void refreshFolder(backupFolder); }}>
+            <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={() => { resumeBackups(); void refreshFolder(backupFolder); }}>
               Resume
             </button>
           </div>
         )}
       </div>
 
-      <div className="settings-row">
-        <label>Back up every</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2 text-(--fd-text)">Back up every</label>
         <select
-          className="dialog-input"
+          className="h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
           value={backupIntervalMinutes}
           onChange={(e) => setBackupIntervalMinutes(Number(e.target.value))}
         >
@@ -240,10 +240,10 @@ const BackupSettingsSection: React.FC = () => {
         </select>
       </div>
 
-      <div className="settings-row">
-        <label>Keep</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2 text-(--fd-text)">Keep</label>
         <select
-          className="dialog-input"
+          className="h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
           value={backupRetentionCount}
           onChange={(e) => setBackupRetentionCount(Number(e.target.value))}
         >
@@ -251,13 +251,13 @@ const BackupSettingsSection: React.FC = () => {
             <option key={n} value={n}>{n === 0 ? 'All backups' : `${n} most recent`}</option>
           ))}
         </select>
-        <div className="settings-hint">
+        <div className="text-[13px] text-(--fd-text-muted) mt-2 italic">
           Applies per script. Backups you make yourself with <strong>Back Up Now</strong> are never deleted automatically.
         </div>
       </div>
 
-      <div className="settings-row">
-        <label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2 text-(--fd-text)">
           <input
             type="checkbox"
             checked={backupIncludeImages}
@@ -265,14 +265,14 @@ const BackupSettingsSection: React.FC = () => {
           />{' '}
           Include images in backups
         </label>
-        <div className="settings-hint">
+        <div className="text-[13px] text-(--fd-text-muted) mt-2 italic">
           Makes backups larger, but a restored script comes back complete.
           Without this, images in a restored script will be missing.
         </div>
       </div>
 
-      <div className="settings-row">
-        <label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2 text-(--fd-text)">
           <input
             type="checkbox"
             checked={backupUnsavedDocs}

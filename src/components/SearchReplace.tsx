@@ -286,30 +286,31 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
   return (
     <div
       ref={panelRef}
-      className="search-replace-panel"
+      className="search-replace-panel fixed top-16 right-5 w-[380px] bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_8px_24px_rgba(0,0,0,.5)] z-2000 text-[13px]"
       style={panelStyle}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div
-        className="search-replace-header"
+        className="flex justify-between items-center py-2 px-3 border-b border-(--fd-border) font-semibold text-xs text-(--fd-text-muted) uppercase tracking-[0.5px]"
         onMouseDown={handleDragStart}
         style={{ cursor: 'grab' }}
       >
         <span>Find & Replace</span>
         <button
-          className="search-close-btn"
+          className="bg-transparent border-none text-(--fd-text-muted) cursor-pointer text-sm py-0.5 px-1 hover:text-(--fd-text)"
           onClick={() => setSearchOpen(false)}
           aria-label="Close find and replace"
         >
           ✕
         </button>
       </div>
-      <div className="search-replace-body">
-        <div className="search-row">
-          <label>Find:</label>
+      <div className="search-replace-body p-3">
+        <div className="search-row flex items-center gap-2 mb-2">
+          <label className="min-w-[55px] text-xs text-(--fd-text-muted)">Find:</label>
           <input
             ref={inputRef}
             type="text"
+            className="flex-1 h-7 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] px-2 text-[13px] outline-none focus:border-(--fd-accent)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Find text"
@@ -324,16 +325,17 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
             }}
             placeholder="Search text..."
           />
-          <span className="match-info">
+          <span className="match-info text-[11px] text-(--fd-text-muted) min-w-[50px] text-right">
             {searchTerm
               ? `${matches.length > 0 ? currentIndex + 1 : 0} / ${matches.length}`
               : ''}
           </span>
         </div>
-        <div className="search-row">
-          <label>Replace:</label>
+        <div className="search-row flex items-center gap-2 mb-2">
+          <label className="min-w-[55px] text-xs text-(--fd-text-muted)">Replace:</label>
           <input
             type="text"
+            className="flex-1 h-7 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] px-2 text-[13px] outline-none focus:border-(--fd-accent)"
             value={replaceTerm}
             onChange={(e) => setReplaceTerm(e.target.value)}
             aria-label="Replace with text"
@@ -346,26 +348,29 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
             placeholder="Replace with..."
           />
         </div>
-        <div className="search-options">
-          <label className="search-checkbox">
+        <div className="search-options flex gap-4 mb-2.5">
+          <label className="flex items-center gap-1.5 text-xs text-(--fd-text-muted) cursor-pointer">
             <input
               type="checkbox"
+              className="cursor-pointer"
               checked={matchCase}
               onChange={(e) => setMatchCase(e.target.checked)}
             />
             Match Case
           </label>
-          <label className="search-checkbox">
+          <label className="flex items-center gap-1.5 text-xs text-(--fd-text-muted) cursor-pointer">
             <input
               type="checkbox"
+              className="cursor-pointer"
               checked={wholeWord}
               onChange={(e) => setWholeWord(e.target.checked)}
             />
             Whole Word
           </label>
         </div>
-        <div className="search-actions">
+        <div className="search-actions flex gap-1.5">
           <button
+            className="flex-1 h-7 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] cursor-pointer text-xs hover:bg-(--fd-menu-hover) disabled:opacity-40 disabled:cursor-default"
             onClick={findPrev}
             disabled={!searchTerm || matches.length === 0}
             aria-label="Find previous match"
@@ -373,6 +378,7 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
             ◀ Prev
           </button>
           <button
+            className="flex-1 h-7 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] cursor-pointer text-xs hover:bg-(--fd-menu-hover) disabled:opacity-40 disabled:cursor-default"
             onClick={findNext}
             disabled={!searchTerm || matches.length === 0}
             aria-label="Find next match"
@@ -380,6 +386,7 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
             Next ▶
           </button>
           <button
+            className="flex-1 h-7 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] cursor-pointer text-xs hover:bg-(--fd-menu-hover) disabled:opacity-40 disabled:cursor-default"
             onClick={replaceOne}
             disabled={!searchTerm || matches.length === 0}
             aria-label="Replace current match"
@@ -387,6 +394,7 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
             Replace
           </button>
           <button
+            className="flex-1 h-7 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] cursor-pointer text-xs hover:bg-(--fd-menu-hover) disabled:opacity-40 disabled:cursor-default"
             onClick={replaceAll}
             disabled={!searchTerm || matches.length === 0}
             aria-label="Replace all matches"

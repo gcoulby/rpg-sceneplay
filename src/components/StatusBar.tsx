@@ -7,10 +7,10 @@ import { computeScriptStructure } from '../utils/scriptStructure';
 
 const SAVE_STATUS_DISPLAY: Record<string, { label: string; className: string }> = {
   idle: { label: '', className: '' },
-  unsaved: { label: 'Unsaved changes', className: 'status-save-unsaved' },
-  saving: { label: 'Saving\u2026', className: 'status-save-saving' },
-  saved: { label: 'Saved', className: 'status-save-saved' },
-  error: { label: 'Save failed', className: 'status-save-error' },
+  unsaved: { label: 'Unsaved changes', className: 'text-[#f0ad4e]' },
+  saving: { label: 'Saving\u2026', className: 'text-(--fd-accent)' },
+  saved: { label: 'Saved', className: 'text-[#4ade80]' },
+  error: { label: 'Save failed', className: 'text-[#ef4444] font-medium' },
 };
 
 interface StatusBarProps {
@@ -67,42 +67,42 @@ const StatusBar: React.FC<StatusBarProps> = ({ editorDoc = null }) => {
   }, [editorDoc]);
 
   return (
-    <div className="status-bar">
-      <div className="status-left">
+    <div className="status-bar flex items-center justify-between h-6 flex-1 shrink-0 select-none bg-(--fd-status-bg) border-t border-(--fd-border) px-3">
+      <div className="flex items-center gap-4 flex-1">
         {currentProject && (
-          <span className="status-item status-project">{currentProject.name}</span>
+          <span className="text-[11px] whitespace-nowrap text-(--fd-text) font-medium">{currentProject.name}</span>
         )}
-        {currentProject && <span className="status-sep">/</span>}
-        <span className="status-item">{documentTitle}</span>
+        {currentProject && <span className="text-(--fd-text-muted) text-[10px] -mx-1.5 opacity-50">/</span>}
+        <span className="text-[11px] text-(--fd-text-muted) whitespace-nowrap">{documentTitle}</span>
         {saveDisplay.label && (
           <>
-            <span className="status-sep">&middot;</span>
-            <span className={`status-item ${saveDisplay.className}`}>{saveDisplay.label}</span>
+            <span className="text-(--fd-text-muted) text-[10px] -mx-1.5 opacity-50">&middot;</span>
+            <span className={`text-[11px] whitespace-nowrap ${saveDisplay.className}`}>{saveDisplay.label}</span>
           </>
         )}
       </div>
-      <div className="status-center">
-        <span className="status-item status-element">
+      <div className="flex items-center gap-4 flex-none">
+        <span className="text-[11px] whitespace-nowrap text-(--fd-accent) font-medium">
           {elementLabel}
         </span>
       </div>
-      <div className="status-right">
+      <div className="flex items-center gap-4 flex-1 justify-end">
         {currentAct && (
-          <span className="status-item status-acts" title="Act structure">
+          <span className="text-[11px] text-(--fd-text-muted) whitespace-nowrap" title="Act structure">
             {currentAct}
           </span>
         )}
         {estimatedRuntime && (
-          <span className="status-item status-timing" title="Estimated runtime">
+          <span className="text-[11px] text-(--fd-text-muted) whitespace-nowrap tabular-nums" title="Estimated runtime">
             Est. {estimatedRuntime}
           </span>
         )}
         {revisionMode && (
-          <span className="status-item status-revision">
+          <span className="text-[11px] whitespace-nowrap text-[#f0ad4e]">
             Rev: {revisionColor}
           </span>
         )}
-        <span className="status-item status-page">
+        <span className="text-[11px] text-(--fd-text-muted) whitespace-nowrap tabular-nums">
           Page {currentPage} of {pageCount}
         </span>
       </div>

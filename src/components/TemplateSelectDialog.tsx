@@ -10,24 +10,35 @@
  * violations) and shows a resolution dialog before applying.
  */
 
-import React, { useState, useEffect } from 'react';
-import type { Editor } from '@tiptap/react';
-import { useFormattingTemplateStore, SYSTEM_TEMPLATES, SYSTEM_TEMPLATE_LIST } from '../stores/formattingTemplateStore';
-import { INDUSTRY_STANDARD_ID } from '../stores/formattingTypes';
-import { INDUSTRY_STANDARD_TEMPLATE } from '../stores/industryStandardTemplate';
-import type { FormattingTemplate } from '../stores/formattingTypes';
-import TemplateEditorDialog from './TemplateEditorDialog';
-import TemplateConflictDialog from './TemplateConflictDialog';
-import { detectTemplateConflicts, resolveTemplateConflicts, getEnabledElementOptions } from '../utils/templateConflicts';
-import type { TemplateConflicts } from '../utils/templateConflicts';
-import { showToast } from './Toast';
+import React, { useState, useEffect } from 'react'
+import type { Editor } from '@tiptap/react'
+import {
+  useFormattingTemplateStore,
+  SYSTEM_TEMPLATES,
+  SYSTEM_TEMPLATE_LIST,
+} from '../stores/formattingTemplateStore'
+import { INDUSTRY_STANDARD_ID } from '../stores/formattingTypes'
+import { INDUSTRY_STANDARD_TEMPLATE } from '../stores/industryStandardTemplate'
+import type { FormattingTemplate } from '../stores/formattingTypes'
+import TemplateEditorDialog from './TemplateEditorDialog'
+import TemplateConflictDialog from './TemplateConflictDialog'
+import {
+  detectTemplateConflicts,
+  resolveTemplateConflicts,
+  getEnabledElementOptions,
+} from '../utils/templateConflicts'
+import type { TemplateConflicts } from '../utils/templateConflicts'
+import { showToast } from './Toast'
 
 interface TemplateSelectDialogProps {
-  editor: Editor | null;
-  onClose: () => void;
+  editor: Editor | null
+  onClose: () => void
 }
 
-const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onClose }) => {
+const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({
+  editor,
+  onClose,
+}) => {
   const {
     templates,
     activeTemplateId,
@@ -37,124 +48,166 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
     updateTemplate,
     deleteTemplate,
     duplicateTemplate,
-  } = useFormattingTemplateStore();
+  } = useFormattingTemplateStore()
 
-  const [selectedId, setSelectedId] = useState<string | null>(activeTemplateId);
-  const [editingTemplate, setEditingTemplate] = useState<FormattingTemplate | null>(null);
-  const [pendingConflicts, setPendingConflicts] = useState<TemplateConflicts | null>(null);
-  const [pendingTemplate, setPendingTemplate] = useState<FormattingTemplate | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(activeTemplateId)
+  const [editingTemplate, setEditingTemplate] =
+    useState<FormattingTemplate | null>(null)
+  const [pendingConflicts, setPendingConflicts] =
+    useState<TemplateConflicts | null>(null)
+  const [pendingTemplate, setPendingTemplate] =
+    useState<FormattingTemplate | null>(null)
 
-  useEffect(() => { loadTemplates(); }, [loadTemplates]);
+  useEffect(() => {
+    loadTemplates()
+  }, [loadTemplates])
 
   // Resolve which ID is currently the "active" one (null = Industry Standard)
-  const resolvedActiveId = activeTemplateId || INDUSTRY_STANDARD_ID;
+  const resolvedActiveId = activeTemplateId || INDUSTRY_STANDARD_ID
 
   // Resolve the selected template object — checks system templates first, then user-created.
   const getSelectedTemplate = (): FormattingTemplate => {
     if (!selectedId || selectedId === INDUSTRY_STANDARD_ID) {
-      return INDUSTRY_STANDARD_TEMPLATE;
+      return INDUSTRY_STANDARD_TEMPLATE
     }
-    if (SYSTEM_TEMPLATES[selectedId]) return SYSTEM_TEMPLATES[selectedId];
-    return templates.find((t) => t.id === selectedId) || INDUSTRY_STANDARD_TEMPLATE;
-  };
+    if (SYSTEM_TEMPLATES[selectedId]) return SYSTEM_TEMPLATES[selectedId]
+    return (
+      templates.find((t) => t.id === selectedId) || INDUSTRY_STANDARD_TEMPLATE
+    )
+  }
 
   /** Returns true if the editor doc has no user-authored content (single empty paragraph or empty). */
   const isEmptyDoc = (): boolean => {
-    if (!editor || editor.isDestroyed) return false;
-    const doc = editor.state.doc;
-    if (doc.childCount === 0) return true;
-    if (doc.childCount === 1 && doc.firstChild?.textContent === '') return true;
-    return false;
-  };
+    if (!editor || editor.isDestroyed) return false
+    const doc = editor.state.doc
+    if (doc.childCount === 0) return true
+    if (doc.childCount === 1 && doc.firstChild?.textContent === '') return true
+    return false
+  }
 
   const applyTemplate = (template: FormattingTemplate) => {
     if (template.id === INDUSTRY_STANDARD_ID) {
-      setActiveTemplateId(null);
+      setActiveTemplateId(null)
     } else {
-      setActiveTemplateId(template.id);
+      setActiveTemplateId(template.id)
     }
     // Seed starter content for empty docs (e.g. new-script flow). Existing content is left untouched.
-    if (template.starterDocument && template.starterDocument.length > 0 && editor && !editor.isDestroyed && isEmptyDoc()) {
+    if (
+      template.starterDocument &&
+      template.starterDocument.length > 0 &&
+      editor &&
+      !editor.isDestroyed &&
+      isEmptyDoc()
+    ) {
       try {
-        editor.chain().focus().setContent({ type: 'doc', content: template.starterDocument as unknown as Record<string, unknown>[] }).run();
+        editor
+          .chain()
+          .focus()
+          .setContent({
+            type: 'doc',
+            content: template.starterDocument as unknown as Record<
+              string,
+              unknown
+            >[],
+          })
+          .run()
       } catch (err) {
-        console.warn('[TemplateSelectDialog] failed to seed starter document', err);
+        console.warn(
+          '[TemplateSelectDialog] failed to seed starter document',
+          err,
+        )
       }
     }
-    onClose();
-  };
+    onClose()
+  }
 
   const handleApply = () => {
-    const template = getSelectedTemplate();
+    const template = getSelectedTemplate()
 
     // Detect conflicts if we have an editor with content
     if (editor && !editor.isDestroyed) {
-      const conflicts = detectTemplateConflicts(editor, template);
+      const conflicts = detectTemplateConflicts(editor, template)
       if (conflicts.hasConflicts) {
-        setPendingTemplate(template);
-        setPendingConflicts(conflicts);
-        return;
+        setPendingTemplate(template)
+        setPendingConflicts(conflicts)
+        return
       }
     }
 
-    applyTemplate(template);
-  };
+    applyTemplate(template)
+  }
 
   const handleConflictResolve = (resolved: TemplateConflicts) => {
     if (editor && pendingTemplate) {
-      resolveTemplateConflicts(editor, pendingTemplate, resolved);
+      resolveTemplateConflicts(editor, pendingTemplate, resolved)
     }
-    if (pendingTemplate) applyTemplate(pendingTemplate);
-    setPendingConflicts(null);
-    setPendingTemplate(null);
-  };
+    if (pendingTemplate) applyTemplate(pendingTemplate)
+    setPendingConflicts(null)
+    setPendingTemplate(null)
+  }
 
   const handleConflictSkip = () => {
-    if (pendingTemplate) applyTemplate(pendingTemplate);
-    setPendingConflicts(null);
-    setPendingTemplate(null);
-  };
+    if (pendingTemplate) applyTemplate(pendingTemplate)
+    setPendingConflicts(null)
+    setPendingTemplate(null)
+  }
 
   const handleConflictCancel = () => {
-    setPendingConflicts(null);
-    setPendingTemplate(null);
-  };
+    setPendingConflicts(null)
+    setPendingTemplate(null)
+  }
 
   // Split templates by category — SYSTEM_TEMPLATE_LIST owns the canonical order of script-type templates.
-  const systemTemplates: FormattingTemplate[] = SYSTEM_TEMPLATE_LIST;
-  const userTemplates: FormattingTemplate[] = templates.filter((t) => t.category !== 'system');
+  const systemTemplates: FormattingTemplate[] = SYSTEM_TEMPLATE_LIST
+  const userTemplates: FormattingTemplate[] = templates.filter(
+    (t) => t.category !== 'system',
+  )
 
   const renderTemplateItem = (t: FormattingTemplate) => {
-    const isSystem = t.category === 'system';
-    const isSelected = (t.id === INDUSTRY_STANDARD_ID && (!selectedId || selectedId === INDUSTRY_STANDARD_ID))
-      || t.id === selectedId;
-    const isCurrent = t.id === resolvedActiveId;
+    const isSystem = t.category === 'system'
+    const isSelected =
+      (t.id === INDUSTRY_STANDARD_ID &&
+        (!selectedId || selectedId === INDUSTRY_STANDARD_ID)) ||
+      t.id === selectedId
+    const isCurrent = t.id === resolvedActiveId
     return (
       <div
         key={t.id}
-        className={`template-select-item${isSelected ? ' selected' : ''}`}
+        className={`p-[10px_12px] cursor-pointer border-b border-(--fd-border) transition-[background] duration-100 last:border-b-0 ${isSelected ? 'bg-(--fd-accent-bg,rgba(59,130,246,.15))' : 'hover:bg-(--fd-hover,rgba(255,255,255,.05))'}`}
         onClick={() => setSelectedId(t.id)}
       >
-        <div className="template-select-item-info">
-          <span className="template-select-item-name">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-(--fd-text) flex-1 flex items-center gap-1.5">
             {t.name}
-            {isCurrent && <span className="template-select-current-badge">current</span>}
+            {isCurrent && (
+              <span className="text-[10px] font-semibold uppercase text-(--fd-accent,#3b82f6) bg-(--fd-accent-bg,rgba(59,130,246,.15)) px-1.5 py-px rounded">
+                current
+              </span>
+            )}
           </span>
-          <span className={`template-select-mode-badge template-select-mode-${t.mode}`}>
+          <span
+            className={`text-[11px] px-2 py-px rounded capitalize ${
+              t.mode === 'enforce'
+                ? 'text-[#f59e0b] bg-[rgba(245,158,11,0.15)]'
+                : 'text-[#10b981] bg-[rgba(16,185,129,0.15)]'
+            }`}
+          >
             {t.mode}
           </span>
         </div>
         {t.description && (
-          <span className="template-select-item-desc">{t.description}</span>
+          <span className="block text-xs text-(--fd-text-dim) mt-1">
+            {t.description}
+          </span>
         )}
         {/* Actions: system = duplicate only; user = edit/duplicate/delete */}
-        <div className="template-select-item-actions" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-1.5 mt-2" onClick={(e) => e.stopPropagation()}>
           {isSystem ? (
             <button
-              className="dialog-btn dialog-btn-sm"
+              className="px-2! py-1! text-xs! dialog-btn"
               onClick={async () => {
-                const dup = await duplicateTemplate(t.id);
-                setEditingTemplate(dup);
+                const dup = await duplicateTemplate(t.id)
+                setEditingTemplate(dup)
               }}
             >
               Duplicate
@@ -162,27 +215,27 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
           ) : (
             <>
               <button
-                className="dialog-btn dialog-btn-sm"
+                className="px-2! py-1! text-xs! dialog-btn"
                 onClick={() => setEditingTemplate(t)}
               >
                 Edit
               </button>
               <button
-                className="dialog-btn dialog-btn-sm"
+                className="px-2! py-1! text-xs! dialog-btn"
                 onClick={async () => {
-                  await duplicateTemplate(t.id);
-                  showToast('Template duplicated', 'success');
+                  await duplicateTemplate(t.id)
+                  showToast('Template duplicated', 'success')
                 }}
               >
                 Duplicate
               </button>
               <button
-                className="dialog-btn dialog-btn-sm dialog-btn-danger"
+                className="hover:bg-[rgba(255,68,68,0.1)]! px-2! py-1! text-[#ff4444]! text-xs! dialog-btn"
                 onClick={async () => {
                   if (confirm(`Delete template "${t.name}"?`)) {
-                    await deleteTemplate(t.id);
-                    if (selectedId === t.id) setSelectedId(INDUSTRY_STANDARD_ID);
-                    showToast('Template deleted', 'success');
+                    await deleteTemplate(t.id)
+                    if (selectedId === t.id) setSelectedId(INDUSTRY_STANDARD_ID)
+                    showToast('Template deleted', 'success')
                   }
                 }}
               >
@@ -192,40 +245,54 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
           )}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   return (
-    <div className="template-select-overlay" onClick={onClose}>
-      <div className="template-select-dialog template-select-dialog-wide" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="text-(--fd-text) fixed inset-0 bg-black/50 z-2000 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <div
+        className="bg-(--fd-bg) border border-(--fd-border) rounded-lg p-5 w-130 max-w-[90vw] max-h-[80vh] flex flex-col [&>h3]:m-0 [&>h3]:mb-2 [&>h3]:text-base [&>h3]:text-(--fd-text)"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3>Script Format / Template</h3>
-        <p className="template-select-hint">
-          Choose a script format (screenplay, sitcom, drama, stage play, radio) or a custom formatting template.
-          The template controls element-level formatting rules; for an empty document, choosing a script type also seeds starter content.
+        <p className="text-[13px] text-(--fd-text-dim) mb-3">
+          Choose a script format (screenplay, sitcom, drama, stage play, radio)
+          or a custom formatting template. The template controls element-level
+          formatting rules; for an empty document, choosing a script type also
+          seeds starter content.
         </p>
 
         {/* Template list */}
-        <div className="template-select-list">
+        <div className="flex-1 overflow-y-auto border border-(--fd-border) rounded-md max-h-85">
           {/* Script formats (system templates) */}
-          <div className="template-select-category">Script Formats</div>
+          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.5px] text-(--fd-text-dim) bg-(--fd-bg-dim,rgba(255,255,255,.03)) border-b border-(--fd-border)">
+            Script Formats
+          </div>
           {systemTemplates.map(renderTemplateItem)}
 
           {/* User Defined section */}
-          <div className="template-select-category">User Defined</div>
+          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.5px] text-(--fd-text-dim) bg-(--fd-bg-dim,rgba(255,255,255,.03)) border-b border-(--fd-border)">
+            User Defined
+          </div>
           {userTemplates.length === 0 ? (
-            <div className="template-select-empty">No custom templates yet.</div>
+            <div className="p-3 text-[13px] text-(--fd-text-dim) text-center">
+              No custom templates yet.
+            </div>
           ) : (
             userTemplates.map(renderTemplateItem)
           )}
         </div>
 
         {/* Template management buttons */}
-        <div className="template-select-management">
+        <div className="flex gap-2 mt-3">
           <button
             className="dialog-btn dialog-btn-primary"
             onClick={async () => {
-              const t = await createTemplate({ name: 'New Template' });
-              setEditingTemplate(t);
+              const t = await createTemplate({ name: 'New Template' })
+              setEditingTemplate(t)
             }}
           >
             + Create Template
@@ -233,9 +300,16 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
         </div>
 
         {/* Actions */}
-        <div className="template-select-actions">
-          <button className="dialog-btn" onClick={onClose}>Cancel</button>
-          <button className="dialog-btn dialog-btn-primary" onClick={handleApply}>Apply</button>
+        <div className="flex justify-end gap-2 mt-4">
+          <button className="dialog-btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            className="dialog-btn dialog-btn-primary"
+            onClick={handleApply}
+          >
+            Apply
+          </button>
         </div>
 
         {/* Template Editor sub-dialog */}
@@ -243,9 +317,9 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
           <TemplateEditorDialog
             template={editingTemplate}
             onSave={async (updated) => {
-              await updateTemplate(updated.id, updated);
-              setEditingTemplate(null);
-              showToast('Template saved', 'success');
+              await updateTemplate(updated.id, updated)
+              setEditingTemplate(null)
+              showToast('Template saved', 'success')
             }}
             onCancel={() => setEditingTemplate(null)}
           />
@@ -264,7 +338,7 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TemplateSelectDialog;
+export default TemplateSelectDialog
