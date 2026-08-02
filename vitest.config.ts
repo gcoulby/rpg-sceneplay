@@ -1,4 +1,6 @@
 import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 // Minimal config for unit tests. Deliberately does NOT load the app's vite
 // plugins (react / legacy transpile) — these are pure-logic tests that need no
@@ -12,4 +14,5 @@ export default defineConfig({
     // (localStorage). Keeps the node environment instead of pulling in jsdom.
     setupFiles: ['./src/test/setup.ts'],
   },
+  plugins: [react(), tailwindcss()],
 })
