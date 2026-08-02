@@ -124,48 +124,49 @@ const SpellCheckContextMenu: React.FC<SpellCheckContextMenuProps> = ({
 
   const hasMultipleTargets = activeTargets.length > 1;
 
+  const itemClass =
+    'flex items-center px-3 py-[5px] cursor-pointer rounded-[3px] mx-1 whitespace-nowrap hover:bg-(--fd-accent) hover:text-white';
+
   return (
     <div
       ref={menuRef}
-      className="spell-context-menu"
+      className="fixed z-3000 min-w-45 bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_8px_30px_rgba(0,0,0,.55)] py-1 text-[13px] text-(--fd-text) select-none"
       style={{ top: adjustedPosition.y, left: adjustedPosition.x }}
     >
       {suggestions.length > 0 ? (
         suggestions.map((s) => (
           <div
             key={s}
-            className="spell-context-item suggestion"
+            className={`${itemClass} font-semibold text-(--fd-accent)`}
             onClick={() => handleSuggestion(s)}
           >
             {s}
           </div>
         ))
       ) : (
-        <div className="spell-context-item" style={{ color: 'var(--fd-text-muted)', cursor: 'default' }}>
+        <div className={`${itemClass} text-(--fd-text-muted)! cursor-default!`}>
           No suggestions
         </div>
       )}
-      <div className="spell-context-separator" />
-      <div className="spell-context-item" onClick={handleIgnore}>
+      <div className="h-px bg-(--fd-border) my-1" />
+      <div className={itemClass} onClick={handleIgnore}>
         Ignore
       </div>
       <div
-        className="spell-context-item"
+        className={`${itemClass}${hasMultipleTargets ? ' justify-between' : ''}`}
         onClick={handleAddToDictionary}
-        style={hasMultipleTargets ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } : undefined}
       >
         <span>Add to Dictionary</span>
-        {hasMultipleTargets && <span style={{ fontSize: 11, color: 'var(--fd-text-muted)' }}>▸</span>}
+        {hasMultipleTargets && <span className="text-[11px] text-(--fd-text-muted)">▸</span>}
       </div>
       {hasMultipleTargets && addOpen && (
-        <div style={{ borderTop: '1px solid var(--fd-border)' }}>
+        <div className="border-t border-(--fd-border)">
           {activeTargets.map((t) => {
             const label = t === PROJECT_DICT_TARGET ? 'Project dictionary' : t;
             return (
               <div
                 key={t}
-                className="spell-context-item"
-                style={{ paddingLeft: 24 }}
+                className={`${itemClass} pl-6`}
                 onClick={() => addWordTo(t)}
               >
                 {label}

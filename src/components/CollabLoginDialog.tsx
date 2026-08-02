@@ -215,40 +215,43 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
   // confines fixed children to its bounds, which made the dialog open but
   // appear off-screen / clipped — so it looked like the tap did nothing.
   return createPortal(
-    <div className="dialog-overlay" onClick={onClose}>
+    <div
+      className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center h-(--vv-height,100dvh) pt-[5vh] px-4 pb-4 overflow-y-auto"
+      onClick={onClose}
+    >
       <div
-        className="dialog-box"
+        className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-80 flex flex-col max-h-(--vv-height,100dvh)"
         style={{ maxWidth: 440 }}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        <div className="dialog-header">
+        <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">
           Sign in to Collaborate
         </div>
 
-        <div className="dialog-body">
+        <div className="dialog-body p-5 overflow-y-auto flex-1">
           <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--fd-text-muted)' }}>
             A collaboration account is required to use real-time editing.
             You can manage your account in System Settings.
           </p>
 
           {isDemoServer && (
-            <div className="settings-demo-notice" style={{ marginBottom: 16 }}>
+            <div className="bg-[#fef3cd] text-[#856404] border border-[#ffc107] rounded-lg py-3 px-4 mb-4 text-[13px] leading-normal [&_strong]:font-semibold [&_code]:bg-black/8 [&_code]:py-px [&_code]:px-1.5 [&_code]:rounded-[3px] [&_code]:text-xs">
               <strong>Demo Server:</strong> This is a shared demo server. Registered accounts and
               collaboration data are automatically removed every hour. For persistent use,
               deploy your own collab server or upgrade to the paid version.
             </div>
           )}
 
-          <div className="settings-auth-tabs">
+          <div className="flex gap-0 mb-5 border-b border-(--fd-border)">
             <button
-              className={`settings-auth-tab ${tab === 'login' ? 'active' : ''}`}
+              className={`bg-transparent border-none text-[14px] py-2.5 px-5 cursor-pointer border-b-2 -mb-px ${tab === 'login' ? 'text-(--fd-accent) border-(--fd-accent)' : 'text-(--fd-text-muted) border-transparent hover:text-(--fd-text)'}`}
               onClick={() => { setTab('login'); setForgotMode(null); }}
             >
               Sign In
             </button>
             <button
-              className={`settings-auth-tab ${tab === 'register' ? 'active' : ''}`}
+              className={`bg-transparent border-none text-[14px] py-2.5 px-5 cursor-pointer border-b-2 -mb-px ${tab === 'register' ? 'text-(--fd-accent) border-(--fd-accent)' : 'text-(--fd-text-muted) border-transparent hover:text-(--fd-text)'}`}
               onClick={() => { setTab('register'); setForgotMode(null); }}
             >
               Create Account
@@ -257,15 +260,15 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
 
           {tab === 'login' ? (
             forgotMode === 'form' ? (
-              <div className="settings-auth-form">
+              <div className="settings-auth-form flex flex-col gap-3.5">
                 <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--fd-text-muted)' }}>
                   Enter the email address you used to sign up. We'll email you
                   a link to choose a new password. The link expires in 30 minutes.
                 </p>
-                <div className="settings-field">
+                <div className="settings-field flex flex-col gap-1.5">
                   <label>Email</label>
                   <input
-                    className="dialog-input"
+                    className="dialog-input h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                     type="email"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
@@ -275,14 +278,14 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
-                    className="dialog-btn dialog-btn-primary settings-auth-submit"
+                    className="dialog-btn dialog-btn-primary settings-auth-submit mt-1 self-start min-w-40 h-9 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleForgotPassword}
                     disabled={!forgotEmail || loading}
                   >
                     {loading ? 'Sending...' : 'Send reset link'}
                   </button>
                   <button
-                    className="dialog-btn"
+                    className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded text-sm cursor-pointer hover:bg-(--fd-toolbar-hover)"
                     onClick={() => setForgotMode(null)}
                     disabled={loading}
                   >
@@ -291,7 +294,7 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                 </div>
               </div>
             ) : forgotMode === 'sent' ? (
-              <div className="settings-auth-form">
+              <div className="settings-auth-form flex flex-col gap-3.5">
                 <p style={{ margin: '0 0 12px', fontSize: 13 }}>
                   If an account with <strong>{forgotEmail}</strong> exists, we've
                   emailed it a link to choose a new password. Check your inbox
@@ -301,22 +304,22 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                   The link expires in 30 minutes. You can request a new one at any time.
                 </p>
                 <button
-                  className="dialog-btn dialog-btn-primary settings-auth-submit"
+                  className="dialog-btn dialog-btn-primary settings-auth-submit mt-1 self-start min-w-40 h-9 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setForgotMode(null)}
                 >
                   Back to sign in
                 </button>
               </div>
             ) : pendingChallenge ? (
-              <div className="settings-auth-form">
+              <div className="settings-auth-form flex flex-col gap-3.5">
                 <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--fd-text-muted)' }}>
                   A 6-digit verification code was emailed to <strong>{pendingChallenge.email}</strong>{' '}
                   to confirm this new device. Enter it below to finish signing in.
                 </p>
-                <div className="settings-field">
+                <div className="settings-field flex flex-col gap-1.5">
                   <label>Verification Code</label>
                   <input
-                    className="dialog-input settings-verify-input"
+                    className="dialog-input settings-verify-input w-35 text-center tracking-[4px] text-xl font-bold h-11 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded outline-none focus:border-(--fd-accent)"
                     value={deviceCode}
                     onChange={(e) => setDeviceCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="000000"
@@ -326,21 +329,21 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
-                    className="dialog-btn dialog-btn-primary settings-auth-submit"
+                    className="dialog-btn dialog-btn-primary settings-auth-submit mt-1 self-start min-w-40 h-9 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleVerifyDevice}
                     disabled={deviceCode.length !== 6 || loading}
                   >
                     {loading ? 'Verifying...' : 'Verify Device'}
                   </button>
                   <button
-                    className="dialog-btn"
+                    className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded text-sm cursor-pointer hover:bg-(--fd-toolbar-hover)"
                     onClick={handleResendDeviceCode}
                     disabled={loading}
                   >
                     Resend code
                   </button>
                   <button
-                    className="dialog-btn"
+                    className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded text-sm cursor-pointer hover:bg-(--fd-toolbar-hover)"
                     onClick={() => { setPendingChallenge(null); setDeviceCode(''); }}
                     disabled={loading}
                   >
@@ -349,11 +352,11 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                 </div>
               </div>
             ) : (
-            <div className="settings-auth-form">
-              <div className="settings-field">
+            <div className="settings-auth-form flex flex-col gap-3.5">
+              <div className="settings-field flex flex-col gap-1.5">
                 <label>Email</label>
                 <input
-                  className="dialog-input"
+                  className="dialog-input h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
@@ -361,11 +364,11 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                   autoFocus
                 />
               </div>
-              <div className="settings-field">
+              <div className="settings-field flex flex-col gap-1.5">
                 <label>Password</label>
-                <div className="password-input-wrapper">
+                <div className="password-input-wrapper relative flex items-center">
                   <input
-                    className="dialog-input"
+                    className="dialog-input h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                     type={showLoginPw ? 'text' : 'password'}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
@@ -373,7 +376,7 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                   />
                   <button
                     type="button"
-                    className="password-toggle-btn"
+                    className="password-toggle-btn absolute right-1 flex items-center justify-center w-7.5 h-7.5 bg-transparent border-none cursor-pointer text-(--fd-text-muted) text-sm rounded p-0 hover:text-(--fd-text) hover:bg-(--fd-toolbar-hover)"
                     onClick={() => setShowLoginPw(!showLoginPw)}
                     tabIndex={-1}
                     aria-label={showLoginPw ? 'Hide password' : 'Show password'}
@@ -383,7 +386,7 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                 </div>
                 <button
                   type="button"
-                  className="collab-forgot-link"
+                  className="collab-forgot-link self-end mt-1.5 bg-transparent border-none p-0 text-xs text-(--fd-accent) cursor-pointer underline hover:no-underline"
                   onClick={() => {
                     // Carry whatever they've typed into the email field over,
                     // so the most common case (typo'd password) needs no extra
@@ -396,7 +399,7 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                 </button>
               </div>
               <button
-                className="dialog-btn dialog-btn-primary settings-auth-submit"
+                className="dialog-btn dialog-btn-primary settings-auth-submit mt-1 self-start min-w-40 h-9 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleLogin}
                 disabled={!loginEmail || !loginPassword || loading}
               >
@@ -405,32 +408,32 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
             </div>
             )
           ) : (
-            <div className="settings-auth-form">
-              <div className="settings-field">
+            <div className="settings-auth-form flex flex-col gap-3.5">
+              <div className="settings-field flex flex-col gap-1.5">
                 <label>Display Name</label>
                 <input
-                  className="dialog-input"
+                  className="dialog-input h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   placeholder="Your name"
                   autoFocus
                 />
               </div>
-              <div className="settings-field">
+              <div className="settings-field flex flex-col gap-1.5">
                 <label>Email</label>
                 <input
-                  className="dialog-input"
+                  className="dialog-input h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                   type="email"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="you@example.com"
                 />
               </div>
-              <div className="settings-field">
+              <div className="settings-field flex flex-col gap-1.5">
                 <label>Password</label>
-                <div className="password-input-wrapper">
+                <div className="password-input-wrapper relative flex items-center">
                   <input
-                    className="dialog-input"
+                    className="dialog-input h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                     type={showRegPw ? 'text' : 'password'}
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
@@ -438,7 +441,7 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                   />
                   <button
                     type="button"
-                    className="password-toggle-btn"
+                    className="password-toggle-btn absolute right-1 flex items-center justify-center w-7.5 h-7.5 bg-transparent border-none cursor-pointer text-(--fd-text-muted) text-sm rounded p-0 hover:text-(--fd-text) hover:bg-(--fd-toolbar-hover)"
                     onClick={() => setShowRegPw(!showRegPw)}
                     tabIndex={-1}
                     aria-label={showRegPw ? 'Hide password' : 'Show password'}
@@ -447,11 +450,11 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                   </button>
                 </div>
               </div>
-              <div className="settings-field">
+              <div className="settings-field flex flex-col gap-1.5">
                 <label>Confirm Password</label>
-                <div className="password-input-wrapper">
+                <div className="password-input-wrapper relative flex items-center">
                   <input
-                    className="dialog-input"
+                    className="dialog-input h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                     type={showRegConfirm ? 'text' : 'password'}
                     value={regConfirm}
                     onChange={(e) => setRegConfirm(e.target.value)}
@@ -459,7 +462,7 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                   />
                   <button
                     type="button"
-                    className="password-toggle-btn"
+                    className="password-toggle-btn absolute right-1 flex items-center justify-center w-7.5 h-7.5 bg-transparent border-none cursor-pointer text-(--fd-text-muted) text-sm rounded p-0 hover:text-(--fd-text) hover:bg-(--fd-toolbar-hover)"
                     onClick={() => setShowRegConfirm(!showRegConfirm)}
                     tabIndex={-1}
                     aria-label={showRegConfirm ? 'Hide password' : 'Show password'}
@@ -469,7 +472,7 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
                 </div>
               </div>
               <button
-                className="dialog-btn dialog-btn-primary settings-auth-submit"
+                className="dialog-btn dialog-btn-primary settings-auth-submit mt-1 self-start min-w-40 h-9 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleRegister}
                 disabled={!regEmail || !regPassword || !regName || loading}
               >
@@ -478,10 +481,11 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
             </div>
           )}
 
-          <div className="collab-remember-section">
-            <label className="collab-remember-label">
+          <div className="collab-remember-section mt-3">
+            <label className="collab-remember-label flex items-center gap-2 text-[13px] text-(--fd-text) cursor-pointer">
               <input
                 type="checkbox"
+                className="w-3.75 h-3.75 cursor-pointer"
                 checked={rememberEmail}
                 onChange={(e) => {
                   setRememberEmail(e.target.checked);
@@ -490,17 +494,17 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
               />
               Remember my email address
             </label>
-            <p className="collab-remember-hint">
+            <p className="collab-remember-hint mt-1.5 mb-0 text-xs text-(--fd-text-muted) leading-[1.4]">
               You stay signed in for up to 7 days using a secure refresh token —
               no password is stored on this device.
             </p>
           </div>
 
           {serverConfig?.googleEnabled && (
-            <div className="settings-google-section">
-              <div className="settings-divider"><span>or</span></div>
+            <div className="settings-google-section mt-5">
+              <div className="settings-divider flex items-center gap-3 mb-5 text-(--fd-text-muted) text-[13px] before:content-[''] before:flex-1 before:h-px before:bg-(--fd-border) after:content-[''] after:flex-1 after:h-px after:bg-(--fd-border)"><span>or</span></div>
               <button
-                className="dialog-btn settings-google-btn"
+                className="dialog-btn settings-google-btn w-full flex items-center justify-center h-10 px-4 bg-(--fd-toolbar-bg) border border-(--fd-border) rounded-md text-sm text-(--fd-text) cursor-pointer hover:bg-(--fd-toolbar-hover)"
                 onClick={handleGoogleLogin}
                 disabled={loading}
               >
@@ -516,9 +520,9 @@ const CollabLoginDialog: React.FC<CollabLoginDialogProps> = ({ onClose, onSucces
           )}
         </div>
 
-        <div className="dialog-footer">
-          <div style={{ flex: 1 }} />
-          <button className="dialog-btn" onClick={onClose}>Cancel</button>
+        <div className="dialog-footer flex items-center gap-2 px-5 py-3.5 border-t border-(--fd-border) shrink-0">
+          <div className="flex-1" />
+          <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded text-sm cursor-pointer hover:bg-(--fd-toolbar-hover)" onClick={onClose}>Cancel</button>
         </div>
       </div>
     </div>,

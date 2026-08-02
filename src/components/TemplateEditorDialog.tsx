@@ -94,54 +94,54 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
     .map((r) => ({ id: r.id, label: r.label }));
 
   return (
-    <div className="template-editor-overlay" onClick={onCancel}>
-      <div className="template-editor-dialog" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 z-2000 flex items-center justify-center" onClick={onCancel}>
+      <div className="bg-(--fd-bg) border border-(--fd-border) rounded-lg w-225 max-w-[95vw] max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="template-editor-header">
-          <h2>Edit Template</h2>
-          <div className="template-editor-header-actions">
-            <button className="dialog-btn" onClick={onCancel}>Cancel</button>
-            <button className="dialog-btn dialog-btn-primary" onClick={handleSave}>Save</button>
+        <div className="flex items-center justify-between py-3 px-4 border-b border-(--fd-border)">
+          <h2 className="m-0 text-base text-(--fd-text)">Edit Template</h2>
+          <div className="flex gap-2">
+            <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={onCancel}>Cancel</button>
+            <button className="dialog-btn dialog-btn-primary h-8.5 px-4.5 bg-(--fd-accent) border border-(--fd-accent) rounded cursor-pointer text-sm text-white hover:opacity-90" onClick={handleSave}>Save</button>
           </div>
         </div>
 
         {/* Template meta */}
-        <div className="template-editor-meta">
-          <div className="template-editor-field">
-            <label>Name</label>
+        <div className="py-3 px-4 border-b border-(--fd-border) flex gap-3 flex-wrap">
+          <div className="flex flex-col gap-1 flex-1 min-w-45">
+            <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Name</label>
             <input
-              className="dialog-input"
+              className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Template name"
             />
           </div>
-          <div className="template-editor-field">
-            <label>Description</label>
+          <div className="flex flex-col gap-1 flex-1 min-w-45">
+            <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Description</label>
             <input
-              className="dialog-input"
+              className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description"
             />
           </div>
-          <div className="template-editor-field">
-            <label>Mode</label>
-            <div className="template-editor-mode-toggle">
+          <div className="flex flex-col gap-1 flex-1 min-w-45">
+            <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Mode</label>
+            <div className="flex">
               <button
-                className={`template-mode-btn${mode === 'enforce' ? ' active' : ''}`}
+                className={`py-1.5 px-4 text-[13px] bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) cursor-pointer rounded-l first:rounded-l last:rounded-r last:border-l-0${mode === 'enforce' ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                 onClick={() => setMode('enforce')}
               >
                 Enforce
               </button>
               <button
-                className={`template-mode-btn${mode === 'override' ? ' active' : ''}`}
+                className={`py-1.5 px-4 text-[13px] bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) cursor-pointer rounded-r border-l-0${mode === 'override' ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                 onClick={() => setMode('override')}
               >
                 Override
               </button>
             </div>
-            <span className="template-editor-hint">
+            <span className="text-[11px] text-[#aaa] mt-0.5">
               {mode === 'enforce'
                 ? 'Formatting is locked — users cannot change element-level styling.'
                 : 'Formatting sets defaults — users can override per-instance.'}
@@ -150,24 +150,24 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
         </div>
 
         {/* Main body: element list + detail */}
-        <div className="template-editor-body">
+        <div className="flex flex-1 overflow-hidden">
           {/* Left: element list */}
-          <div className="template-editor-elements">
-            <div className="template-editor-elements-header">
+          <div className="w-60 min-w-50 border-r border-(--fd-border) flex flex-col">
+            <div className="flex items-center justify-between py-2 px-3 text-xs font-bold text-[#aaa] uppercase tracking-[0.5px]">
               <span>Elements</span>
               <button
-                className="template-add-btn"
+                className="bg-transparent border border-(--fd-border) text-(--fd-text) w-6 h-6 rounded cursor-pointer flex items-center justify-center text-[11px] hover:bg-(--fd-toolbar-hover)"
                 onClick={addCustomElement}
                 title="Add custom element"
               >
                 <FaPlus />
               </button>
             </div>
-            <div className="template-editor-elements-list">
+            <div className="flex-1 overflow-y-auto">
               {Object.values(rules).map((rule) => (
                 <div
                   key={rule.id}
-                  className={`template-element-item${selectedId === rule.id ? ' selected' : ''}${!rule.enabled ? ' disabled' : ''}`}
+                  className={`flex items-center gap-2 py-1.5 px-3 cursor-pointer text-[13px] text-(--fd-text) border-l-[3px] border-l-transparent hover:bg-(--fd-toolbar-hover)${selectedId === rule.id ? ' bg-(--fd-toolbar-hover) border-l-(--fd-accent)' : ''}${!rule.enabled ? ' opacity-50' : ''}`}
                   onClick={() => setSelectedId(rule.id)}
                 >
                   <input
@@ -176,13 +176,13 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                     onChange={(e) => updateRule(rule.id, { enabled: e.target.checked })}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="template-element-label">
+                  <span className="flex-1">
                     {rule.label}
-                    {!rule.isBuiltIn && <span className="template-custom-badge">custom</span>}
+                    {!rule.isBuiltIn && <span className="text-[9px] py-0.5 px-1 bg-(--fd-accent) text-white rounded-[3px] ml-1">custom</span>}
                   </span>
                   {!rule.isBuiltIn && (
                     <button
-                      className="template-delete-btn"
+                      className="bg-transparent border-none text-[#aaa] cursor-pointer text-[11px] p-0.5 hover:text-[#ff4444]"
                       onClick={(e) => { e.stopPropagation(); removeElement(rule.id); }}
                       title="Remove element"
                     >
@@ -195,14 +195,14 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
           </div>
 
           {/* Right: element detail */}
-          <div className="template-editor-detail">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
             {selectedRule ? (
               <>
                 {/* Label */}
-                <div className="template-editor-field">
-                  <label>Label</label>
+                <div className="flex flex-col gap-1 flex-1 min-w-45">
+                  <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Label</label>
                   <input
-                    className="dialog-input"
+                    className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                     value={selectedRule.label}
                     onChange={(e) => updateRule(selectedId!, { label: e.target.value })}
                     disabled={selectedRule.isBuiltIn}
@@ -211,11 +211,11 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
 
                 {/* Font family & size */}
-                <div className="template-editor-field-row">
-                  <div className="template-editor-field">
-                    <label>Font Family</label>
+                <div className="flex gap-3">
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Font Family</label>
                     <select
-                      className="dialog-input"
+                      className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                       value={selectedRule.fontFamily || ''}
                       onChange={(e) => updateRule(selectedId!, { fontFamily: e.target.value || null })}
                     >
@@ -233,10 +233,10 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                       })}
                     </select>
                   </div>
-                  <div className="template-editor-field">
-                    <label>Font Size</label>
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Font Size</label>
                     <select
-                      className="dialog-input"
+                      className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                       value={selectedRule.fontSize ?? ''}
                       onChange={(e) => updateRule(selectedId!, { fontSize: e.target.value ? Number(e.target.value) : null })}
                     >
@@ -249,26 +249,26 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
 
                 {/* Text style toggles */}
-                <div className="template-editor-field">
-                  <label>Text Style</label>
-                  <div className="template-style-toggles">
+                <div className="flex flex-col gap-1 flex-1 min-w-45">
+                  <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Text Style</label>
+                  <div className="flex gap-1">
                     <button
-                      className={`template-style-btn${selectedRule.bold ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.bold ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { bold: !selectedRule.bold })}
                       title="Bold"
                     ><FaBold /></button>
                     <button
-                      className={`template-style-btn${selectedRule.italic ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.italic ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { italic: !selectedRule.italic })}
                       title="Italic"
                     ><FaItalic /></button>
                     <button
-                      className={`template-style-btn${selectedRule.underline ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.underline ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { underline: !selectedRule.underline })}
                       title="Underline"
                     ><FaUnderline /></button>
                     <button
-                      className={`template-style-btn${selectedRule.strikethrough ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.strikethrough ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { strikethrough: !selectedRule.strikethrough })}
                       title="Strikethrough"
                     ><FaStrikethrough /></button>
@@ -276,10 +276,10 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
 
                 {/* Text transform */}
-                <div className="template-editor-field">
-                  <label>Text Transform</label>
+                <div className="flex flex-col gap-1 flex-1 min-w-45">
+                  <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Text Transform</label>
                   <select
-                    className="dialog-input"
+                    className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                     value={selectedRule.textTransform}
                     onChange={(e) => updateRule(selectedId!, { textTransform: e.target.value as any })}
                   >
@@ -290,71 +290,73 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
 
                 {/* Alignment */}
-                <div className="template-editor-field">
-                  <label>Alignment</label>
-                  <div className="template-style-toggles">
+                <div className="flex flex-col gap-1 flex-1 min-w-45">
+                  <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Alignment</label>
+                  <div className="flex gap-1">
                     <button
-                      className={`template-style-btn${selectedRule.textAlign === 'left' ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.textAlign === 'left' ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { textAlign: 'left' })}
                     ><FaAlignLeft /></button>
                     <button
-                      className={`template-style-btn${selectedRule.textAlign === 'center' ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.textAlign === 'center' ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { textAlign: 'center' })}
                     ><FaAlignCenter /></button>
                     <button
-                      className={`template-style-btn${selectedRule.textAlign === 'right' ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.textAlign === 'right' ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { textAlign: 'right' })}
                     ><FaAlignRight /></button>
                     <button
-                      className={`template-style-btn${selectedRule.textAlign === 'justify' ? ' active' : ''}`}
+                      className={`w-8 h-8 flex items-center justify-center bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer text-[13px] hover:bg-(--fd-toolbar-hover)${selectedRule.textAlign === 'justify' ? ' bg-(--fd-accent)! text-white! border-(--fd-accent)!' : ''}`}
                       onClick={() => updateRule(selectedId!, { textAlign: 'justify' })}
                     ><FaAlignJustify /></button>
                   </div>
                 </div>
 
                 {/* Colors */}
-                <div className="template-editor-field-row">
-                  <div className="template-editor-field">
-                    <label>Text Color</label>
-                    <div className="template-color-input">
+                <div className="flex gap-3">
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Text Color</label>
+                    <div className="flex gap-1 items-center">
                       <input
                         type="color"
+                        className="w-7 h-7 border border-(--fd-border) rounded bg-transparent cursor-pointer p-0"
                         value={selectedRule.textColor || '#000000'}
                         onChange={(e) => updateRule(selectedId!, { textColor: e.target.value })}
                       />
                       <input
                         type="text"
-                        className="dialog-input"
+                        className="dialog-input flex-1 h-7 text-xs bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 outline-none box-border focus:border-(--fd-accent)"
                         value={selectedRule.textColor || ''}
                         onChange={(e) => updateRule(selectedId!, { textColor: e.target.value || null })}
                         placeholder="inherit"
                       />
                       {selectedRule.textColor && (
                         <button
-                          className="template-color-clear"
+                          className="w-5 h-5 border-none bg-transparent text-[#aaa] cursor-pointer text-xs hover:text-[#ff4444]"
                           onClick={() => updateRule(selectedId!, { textColor: null })}
                         >x</button>
                       )}
                     </div>
                   </div>
-                  <div className="template-editor-field">
-                    <label>Background Color</label>
-                    <div className="template-color-input">
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Background Color</label>
+                    <div className="flex gap-1 items-center">
                       <input
                         type="color"
+                        className="w-7 h-7 border border-(--fd-border) rounded bg-transparent cursor-pointer p-0"
                         value={selectedRule.backgroundColor || '#ffffff'}
                         onChange={(e) => updateRule(selectedId!, { backgroundColor: e.target.value })}
                       />
                       <input
                         type="text"
-                        className="dialog-input"
+                        className="dialog-input flex-1 h-7 text-xs bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 outline-none box-border focus:border-(--fd-accent)"
                         value={selectedRule.backgroundColor || ''}
                         onChange={(e) => updateRule(selectedId!, { backgroundColor: e.target.value || null })}
                         placeholder="transparent"
                       />
                       {selectedRule.backgroundColor && (
                         <button
-                          className="template-color-clear"
+                          className="w-5 h-5 border-none bg-transparent text-[#aaa] cursor-pointer text-xs hover:text-[#ff4444]"
                           onClick={() => updateRule(selectedId!, { backgroundColor: null })}
                         >x</button>
                       )}
@@ -363,34 +365,34 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
 
                 {/* Layout: margin, indents */}
-                <div className="template-editor-field-row">
-                  <div className="template-editor-field">
-                    <label>Margin Top (pt)</label>
+                <div className="flex gap-3">
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Margin Top (pt)</label>
                     <input
                       type="number"
-                      className="dialog-input template-num-input"
+                      className="dialog-input w-20! h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none box-border focus:border-(--fd-accent)"
                       value={selectedRule.marginTop}
                       onChange={(e) => updateRule(selectedId!, { marginTop: Number(e.target.value) || 0 })}
                       min={0}
                       step={1}
                     />
                   </div>
-                  <div className="template-editor-field">
-                    <label>Left Indent (in)</label>
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Left Indent (in)</label>
                     <input
                       type="number"
-                      className="dialog-input template-num-input"
+                      className="dialog-input w-20! h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none box-border focus:border-(--fd-accent)"
                       value={selectedRule.leftIndent}
                       onChange={(e) => updateRule(selectedId!, { leftIndent: Number(e.target.value) || 0 })}
                       min={0}
                       step={0.25}
                     />
                   </div>
-                  <div className="template-editor-field">
-                    <label>Right Indent (in)</label>
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Right Indent (in)</label>
                     <input
                       type="number"
-                      className="dialog-input template-num-input"
+                      className="dialog-input w-20! h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none box-border focus:border-(--fd-accent)"
                       value={selectedRule.rightIndent}
                       onChange={(e) => updateRule(selectedId!, { rightIndent: Number(e.target.value) || 0 })}
                       min={0}
@@ -400,11 +402,11 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
 
                 {/* Element flow */}
-                <div className="template-editor-field-row">
-                  <div className="template-editor-field">
-                    <label>Next on Enter</label>
+                <div className="flex gap-3">
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Next on Enter</label>
                     <select
-                      className="dialog-input"
+                      className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                       value={selectedRule.nextOnEnter}
                       onChange={(e) => updateRule(selectedId!, { nextOnEnter: e.target.value })}
                     >
@@ -413,10 +415,10 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                       ))}
                     </select>
                   </div>
-                  <div className="template-editor-field">
-                    <label>Next on Tab</label>
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Next on Tab</label>
                     <select
-                      className="dialog-input"
+                      className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                       value={selectedRule.nextOnTab || ''}
                       onChange={(e) => updateRule(selectedId!, { nextOnTab: e.target.value || null })}
                     >
@@ -429,10 +431,10 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
 
                 {/* Placeholder */}
-                <div className="template-editor-field">
-                  <label>Placeholder Text</label>
+                <div className="flex flex-col gap-1 flex-1 min-w-45">
+                  <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Placeholder Text</label>
                   <input
-                    className="dialog-input"
+                    className="dialog-input h-8.5 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border focus:border-(--fd-accent)"
                     value={selectedRule.placeholder}
                     onChange={(e) => updateRule(selectedId!, { placeholder: e.target.value })}
                     placeholder="Shown when element is empty"
@@ -441,8 +443,8 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
 
                 {/* Format override */}
                 {mode === 'enforce' && (
-                  <div className="template-editor-field">
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <div className="flex flex-col gap-1 flex-1 min-w-45">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={selectedRule.allowFormatOverride !== false}
@@ -450,7 +452,7 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                       />
                       Allow format override
                     </label>
-                    <span className="template-editor-hint">
+                    <span className="text-[11px] text-[#aaa] mt-0.5">
                       {selectedRule.allowFormatOverride !== false
                         ? 'Users can override formatting for this element type.'
                         : 'All formatting is locked — users cannot change any styling for this element.'}
@@ -459,10 +461,10 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 )}
 
                 {/* Preview */}
-                <div className="template-editor-field">
-                  <label>Preview</label>
+                <div className="flex flex-col gap-1 flex-1 min-w-45">
+                  <label className="text-[11px] text-[#aaa] uppercase tracking-[0.5px]">Preview</label>
                   <div
-                    className="template-editor-preview"
+                    className="border border-(--fd-border) rounded px-4 py-3 min-h-12 text-(--fd-text) bg-(--fd-page-bg)"
                     style={{
                       fontFamily: selectedRule.fontFamily || undefined,
                       fontSize: selectedRule.fontSize ? `${selectedRule.fontSize}pt` : undefined,
@@ -485,7 +487,7 @@ const TemplateEditorDialog: React.FC<TemplateEditorDialogProps> = ({
                 </div>
               </>
             ) : (
-              <div className="template-editor-empty">
+              <div className="flex items-center justify-center h-full text-[#aaa] text-sm">
                 Select an element from the list to edit its formatting.
               </div>
             )}

@@ -61,6 +61,15 @@ const EMPTY_ATTRS: Omit<TitlePageAttrs, 'field'> = {
 // Title font-size choices (pt). Matches the editor's font-size dropdowns.
 const TITLE_FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96];
 
+// Shared Tailwind class strings (formerly .props-field / .props-label / etc. in screenplay.css)
+const FIELD_CLS = 'flex flex-col gap-[3px]';
+const FIELD_WIDE_CLS = `${FIELD_CLS} col-span-full`;
+const LABEL_CLS = 'text-[11px] text-(--fd-text-muted) uppercase tracking-[0.4px]';
+const INPUT_CLS = 'h-[30px] bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] px-2 text-[13px] outline-none focus:border-(--fd-accent)';
+const TEXTAREA_CLS = 'bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded-[3px] px-2 py-[6px] text-[13px] outline-none resize-y focus:border-(--fd-accent)';
+const SYNC_BTN_CLS = 'col-span-full bg-transparent border border-dashed border-(--fd-border) text-(--fd-text-muted) rounded-[3px] py-[5px] px-3 text-xs cursor-pointer mt-1 hover:border-(--fd-accent) hover:text-(--fd-accent)';
+const DIALOG_ACTION_BTN_CLS = 'h-[34px] px-[18px] bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-menu-hover)';
+
 /** Find the first titlePage node with field='title' and return its attributes + position. */
 function findTitlePageNode(editor: Editor): { pos: number; attrs: TitlePageAttrs } | null {
   let found: { pos: number; attrs: TitlePageAttrs } | null = null;
@@ -351,16 +360,16 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
   }, [editor, onClose]);
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
-      <div className="tp-editor-dialog" onClick={(e) => e.stopPropagation()}>
-        <div className="dialog-header">Title Page</div>
-        <div className="tp-editor-body">
-          <div className="tp-editor-form">
+    <div className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center overflow-y-auto h-(--vv-height,100dvh) pt-[5vh] px-4 pb-4" onClick={onClose}>
+      <div className="bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] w-[min(780px,96vw)] max-w-[96vw] max-h-[85vh] flex flex-col max-[720px]:w-[96vw] max-[720px]:max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+        <div className="py-3.5 px-5 border-b border-(--fd-border) font-semibold text-base shrink-0 text-(--fd-text)">Title Page</div>
+        <div className="grid grid-cols-2 gap-5 p-4 overflow-y-auto flex-1 max-[720px]:grid-cols-1 max-[720px]:gap-[14px]">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-[10px] content-start max-[720px]:grid-cols-1">
             {showField('tpTitle') && (
-            <div className="props-field props-field-wide">
-              <label className="props-label">Title</label>
+            <div className={FIELD_WIDE_CLS}>
+              <label className={LABEL_CLS}>Title</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpTitle}
                 onChange={(e) => setField('tpTitle', e.target.value)}
                 placeholder="SCREENPLAY TITLE"
@@ -369,10 +378,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpTitle') && (
-            <div className="props-field">
-              <label className="props-label">Title Size</label>
+            <div className={FIELD_CLS}>
+              <label className={LABEL_CLS}>Title Size</label>
               <select
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpTitleFontSize}
                 onChange={(e) => setData((prev) => ({ ...prev, tpTitleFontSize: Number(e.target.value) }))}
               >
@@ -381,10 +390,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpWrittenBy') && (
-            <div className="props-field">
-              <label className="props-label">Written By</label>
+            <div className={FIELD_CLS}>
+              <label className={LABEL_CLS}>Written By</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpWrittenBy}
                 onChange={(e) => setField('tpWrittenBy', e.target.value)}
                 placeholder="Author Name"
@@ -392,10 +401,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpBasedOn') && (
-            <div className="props-field">
-              <label className="props-label">Based On</label>
+            <div className={FIELD_CLS}>
+              <label className={LABEL_CLS}>Based On</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpBasedOn}
                 onChange={(e) => setField('tpBasedOn', e.target.value)}
                 placeholder="the novel by..."
@@ -403,10 +412,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpDraft') && (
-            <div className="props-field">
-              <label className="props-label">Draft</label>
+            <div className={FIELD_CLS}>
+              <label className={LABEL_CLS}>Draft</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpDraft}
                 onChange={(e) => setField('tpDraft', e.target.value)}
                 placeholder="e.g. Second Draft"
@@ -414,10 +423,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpDraftDate') && (
-            <div className="props-field">
-              <label className="props-label">Draft Date</label>
+            <div className={FIELD_CLS}>
+              <label className={LABEL_CLS}>Draft Date</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 type="date"
                 value={data.tpDraftDate}
                 onChange={(e) => setField('tpDraftDate', e.target.value)}
@@ -425,10 +434,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpContact') && (
-            <div className="props-field props-field-wide">
-              <label className="props-label">Contact</label>
+            <div className={FIELD_WIDE_CLS}>
+              <label className={LABEL_CLS}>Contact</label>
               <textarea
-                className="props-textarea"
+                className={TEXTAREA_CLS}
                 value={data.tpContact}
                 onChange={(e) => setField('tpContact', e.target.value)}
                 placeholder="Name\nAgency\nemail@example.com\n(310) 555-0100"
@@ -437,10 +446,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpCopyright') && (
-            <div className="props-field">
-              <label className="props-label">Copyright</label>
+            <div className={FIELD_CLS}>
+              <label className={LABEL_CLS}>Copyright</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpCopyright}
                 onChange={(e) => setField('tpCopyright', e.target.value)}
                 placeholder="Copyright 2026 Author Name"
@@ -448,10 +457,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpWgaRegistration') && (
-            <div className="props-field">
-              <label className="props-label">WGA Registration #</label>
+            <div className={FIELD_CLS}>
+              <label className={LABEL_CLS}>WGA Registration #</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpWgaRegistration}
                 onChange={(e) => setField('tpWgaRegistration', e.target.value)}
                 placeholder="WGAw #123456"
@@ -459,10 +468,10 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             {showField('tpNotes') && (
-            <div className="props-field props-field-wide">
-              <label className="props-label">Notes</label>
+            <div className={FIELD_WIDE_CLS}>
+              <label className={LABEL_CLS}>Notes</label>
               <input
-                className="props-input"
+                className={INPUT_CLS}
                 value={data.tpNotes}
                 onChange={(e) => setField('tpNotes', e.target.value)}
                 placeholder="e.g. CONFIDENTIAL"
@@ -470,16 +479,16 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
             )}
             <button
-              className="tp-sync-btn"
+              className={SYNC_BTN_CLS}
               onClick={handleSyncFromProject}
               type="button"
             >
               Sync Title from Project
             </button>
-            <div className="props-field props-field-wide" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <label className="props-label" style={{ marginTop: 0 }}>Place image</label>
+            <div className={FIELD_WIDE_CLS} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <label className={LABEL_CLS} style={{ marginTop: 0 }}>Place image</label>
               <select
-                className="props-input"
+                className={INPUT_CLS}
                 value={imagePosition}
                 onChange={(e) => setImagePosition(e.target.value as 'above' | 'below')}
                 style={{ flex: 1 }}
@@ -488,7 +497,7 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
                 <option value="above">Top of page (above title)</option>
                 <option value="below">Bottom of page (below all)</option>
               </select>
-              <button className="tp-sync-btn" onClick={handleAddImage} type="button" style={{ marginTop: 0 }}>
+              <button className={SYNC_BTN_CLS} onClick={handleAddImage} type="button" style={{ marginTop: 0 }}>
                 Add Image…
               </button>
             </div>
@@ -501,8 +510,8 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             />
 
             {(imagesAbove.length + imagesBelow.length) > 0 && (
-              <div className="props-field props-field-wide">
-                <label className="props-label">Title Page Images ({imagesAbove.length + imagesBelow.length})</label>
+              <div className={FIELD_WIDE_CLS}>
+                <label className={LABEL_CLS}>Title Page Images ({imagesAbove.length + imagesBelow.length})</label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {[
                     ...imagesAbove.map((attrs, idx) => ({ attrs, above: true, idx })),
@@ -511,7 +520,7 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--fd-border, #ddd)', borderRadius: 4, padding: 4 }}>
                       <div style={{ width: 48, flex: '0 0 auto' }}><TpImageThumb attrs={row.attrs} /></div>
                       <select
-                        className="props-input"
+                        className={INPUT_CLS}
                         value={row.above ? 'above' : 'below'}
                         onChange={(e) => moveImg(row.above, row.idx, e.target.value as 'above' | 'below')}
                         style={{ flex: 1 }}
@@ -521,7 +530,7 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
                         <option value="below">Bottom</option>
                       </select>
                       <select
-                        className="props-input"
+                        className={INPUT_CLS}
                         value={(row.attrs.align as string) || 'center'}
                         onChange={(e) => alignImg(row.above, row.idx, e.target.value)}
                         style={{ flex: 1 }}
@@ -531,7 +540,7 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
                         <option value="center">Center</option>
                         <option value="right">Right</option>
                       </select>
-                      <button type="button" className="tp-sync-btn" style={{ marginTop: 0 }} onClick={() => removeImg(row.above, row.idx)}>
+                      <button type="button" className={SYNC_BTN_CLS} style={{ marginTop: 0 }} onClick={() => removeImg(row.above, row.idx)}>
                         ✕
                       </button>
                     </div>
@@ -543,8 +552,8 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
 
           {/* Live preview — the classic layout from the live fields + images,
               exactly as Apply / the PDF & DOCX exports produce it. */}
-          <div className="tp-editor-preview">
-            <div className="tp-preview-page" style={{ display: 'flex', flexDirection: 'column', padding: '7% 9%' }}>
+          <div className="flex items-center justify-center bg-(--fd-input-bg) rounded-md p-3">
+            <div className="w-full max-w-[280px] aspect-[8.5/11] bg-white text-[#111] font-[Courier_New,Courier,monospace] text-[9px] rounded-sm shadow-[0_2px_12px_rgba(0,0,0,0.3)] relative max-[720px]:max-w-[240px]" style={{ display: 'flex', flexDirection: 'column', padding: '7% 9%' }}>
               {imagesAbove.map((a, i) => <TpImageThumb key={`a${i}`} attrs={a} align />)}
               <div style={{ marginTop: '20%', textAlign: 'center' }}>
                 <div style={{ fontWeight: 700, textTransform: 'uppercase', fontSize: titlePx }}>{data.tpTitle || 'UNTITLED'}</div>
@@ -558,12 +567,12 @@ const TitlePageEditor: React.FC<Props> = ({ editor, onClose }) => {
             </div>
           </div>
         </div>
-        <div className="dialog-actions">
-          <button onClick={handleDeleteTitlePage} style={{ marginRight: 'auto', color: '#c0392b' }}>
+        <div className="dialog-actions flex justify-end gap-2 py-3.5 px-5 border-t border-(--fd-border) shrink-0">
+          <button className={DIALOG_ACTION_BTN_CLS} onClick={handleDeleteTitlePage} style={{ marginRight: 'auto', color: '#c0392b' }}>
             Delete Title Page
           </button>
-          <button onClick={onClose}>Cancel</button>
-          <button className="dialog-primary" onClick={handleApply}>
+          <button className={DIALOG_ACTION_BTN_CLS} onClick={onClose}>Cancel</button>
+          <button className="h-[34px] px-[18px] rounded text-sm cursor-pointer border bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90" onClick={handleApply}>
             Apply
           </button>
         </div>

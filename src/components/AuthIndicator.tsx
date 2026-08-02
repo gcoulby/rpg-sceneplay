@@ -76,7 +76,7 @@ const AuthIndicator: React.FC = () => {
       <>
         <button
           type="button"
-          className="auth-indicator auth-indicator--local"
+          className="inline-flex items-center gap-1.5 bg-transparent border border-(--fd-border) text-(--fd-text-muted) py-0.75 px-2.5 rounded-xl text-xs cursor-pointer whitespace-nowrap leading-[1.2] max-w-55 italic hover:text-(--fd-text) hover:border-white/25"
           onClick={() => setLoginOpen(true)}
           title="Working offline — click to sign in and save to the server"
         >
@@ -97,35 +97,35 @@ const AuthIndicator: React.FC = () => {
   const initial = (user.displayName || user.email || '?').charAt(0).toUpperCase();
 
   return (
-    <div className="auth-indicator-wrap" style={{ position: 'relative' }}>
+    <div className="inline-flex items-center relative">
       <button
         ref={buttonRef}
         type="button"
-        className={`auth-indicator auth-indicator--signed-in ${user.emailVerified ? '' : 'auth-indicator--unverified'}`}
+        className={`inline-flex items-center gap-1.5 bg-transparent border py-0.75 px-2.5 rounded-xl text-xs cursor-pointer whitespace-nowrap leading-[1.2] max-w-55 text-(--fd-text) hover:border-white/25 ${user.emailVerified ? 'border-(--fd-border)' : 'border-[#c97] text-[#eb8]'}`}
         onClick={() => setMenuOpen((v) => !v)}
         title={user.emailVerified ? `Signed in as ${user.displayName}` : 'Email not verified — saving disabled'}
       >
-        <span className="auth-indicator__avatar" aria-hidden="true">{initial}</span>
-        <span className="auth-indicator__name">{user.displayName || user.email}</span>
-        {!user.emailVerified && <span className="auth-indicator__badge">verify</span>}
+        <span className="w-5 h-5 rounded-full bg-(--fd-accent) text-white text-[11px] font-semibold inline-flex items-center justify-center" aria-hidden="true">{initial}</span>
+        <span className="overflow-hidden text-ellipsis max-w-30">{user.displayName || user.email}</span>
+        {!user.emailVerified && <span className="text-[10px] uppercase bg-[#c97] text-[#111] py-px px-1.25 rounded-lg">verify</span>}
       </button>
       {menuOpen && menuRect && createPortal(
         <div
           ref={menuRef}
-          className="auth-indicator__menu auth-indicator__menu--portal"
+          className="min-w-45 bg-(--fd-dropdown-bg) text-(--fd-text) border border-(--fd-border) rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.35)] py-1 z-1200 max-[768px]:min-w-55"
           role="menu"
           style={{ position: 'fixed', top: menuRect.top, right: menuRect.right }}
         >
           <button
             type="button"
-            className="auth-indicator__menu-item"
+            className="flex items-center gap-2 w-full text-left bg-transparent border-0 text-(--fd-text) py-2 px-3 text-[13px] cursor-pointer hover:bg-[var(--fd-hover,rgba(127,127,127,0.15))] max-[768px]:min-h-11 max-[768px]:py-3 max-[768px]:px-3.5 max-[768px]:text-sm"
             onClick={() => { setMenuOpen(false); navigate('/settings'); }}
           >
             <FaUserCircle /> Account settings
           </button>
           <button
             type="button"
-            className="auth-indicator__menu-item"
+            className="flex items-center gap-2 w-full text-left bg-transparent border-0 text-(--fd-text) py-2 px-3 text-[13px] cursor-pointer hover:bg-[var(--fd-hover,rgba(127,127,127,0.15))] max-[768px]:min-h-11 max-[768px]:py-3 max-[768px]:px-3.5 max-[768px]:text-sm"
             onClick={async () => {
               setMenuOpen(false);
               await performLogout();

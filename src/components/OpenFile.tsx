@@ -158,22 +158,25 @@ const OpenFile: React.FC<OpenFileProps> = ({ onOpen, onClose }) => {
   };
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
+    <div
+      className="fixed left-0 top-0 right-0 bg-black/50 z-[3000] flex items-start justify-center h-[var(--vv-height,100dvh)] pt-[5vh] px-4 pb-4 overflow-y-auto max-[480px]:pt-[env(safe-area-inset-top,0px)] max-[480px]:px-0 max-[480px]:pb-0"
+      onClick={onClose}
+    >
       <div
-        className="dialog-box open-from-project-dialog"
+        className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-[460px] max-w-[560px] max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col max-[768px]:min-w-0 max-[768px]:max-w-none max-[768px]:w-[calc(100vw-32px-env(safe-area-inset-left,0px)-env(safe-area-inset-right,0px))] max-[480px]:w-screen! max-[480px]:max-w-screen! max-[480px]:rounded-t-none max-[480px]:rounded-b-xl max-[480px]:max-h-[60vh] max-[480px]:overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        <div className="dialog-header">Open</div>
+        <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">Open</div>
 
-        <div className="open-file-controls">
+        <div className="px-4 pt-2 pb-1 border-b border-(--fd-border)">
           {!WEB_ONLY_CLOUD && (
-            <div className="open-file-source-tabs" role="tablist">
+            <div className="flex gap-1 mb-2.5" role="tablist">
               <button
                 type="button"
                 role="tab"
                 aria-selected={source === 'local'}
-                className={`open-file-source-tab ${source === 'local' ? 'active' : ''}`}
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border rounded-md text-[13px] font-medium cursor-pointer ${source === 'local' ? 'bg-(--fd-accent) text-white border-(--fd-accent)' : 'bg-transparent border-(--fd-border) text-(--fd-text-muted) hover:text-(--fd-text)'}`}
                 onClick={() => setSource('local')}
               >
                 <FaDesktop /> This device
@@ -182,7 +185,7 @@ const OpenFile: React.FC<OpenFileProps> = ({ onOpen, onClose }) => {
                 type="button"
                 role="tab"
                 aria-selected={source === 'cloud'}
-                className={`open-file-source-tab ${source === 'cloud' ? 'active' : ''}`}
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border rounded-md text-[13px] font-medium cursor-pointer ${source === 'cloud' ? 'bg-(--fd-accent) text-white border-(--fd-accent)' : 'bg-transparent border-(--fd-border) text-(--fd-text-muted) hover:text-(--fd-text)'}`}
                 onClick={() => setSource('cloud')}
               >
                 <FaCloud /> OpenDraft Cloud
@@ -190,10 +193,11 @@ const OpenFile: React.FC<OpenFileProps> = ({ onOpen, onClose }) => {
             </div>
           )}
 
-          <div className="open-file-search-row">
-            <div className="open-file-search">
-              <FaSearch className="open-file-search-icon" aria-hidden="true" />
+          <div className="flex items-center gap-2 mb-2">
+            <div className="relative flex-1">
+              <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-(--fd-text-muted) text-xs" aria-hidden="true" />
               <input
+                className="w-full py-[7px] pr-2.5 pl-7 bg-(--fd-input-bg) border border-(--fd-border) rounded text-(--fd-text) text-[13px] outline-none focus:border-(--fd-accent)"
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -202,7 +206,7 @@ const OpenFile: React.FC<OpenFileProps> = ({ onOpen, onClose }) => {
               />
             </div>
             <select
-              className="open-file-sort"
+              className="py-[7px] px-2 bg-(--fd-input-bg) border border-(--fd-border) rounded text-(--fd-text) text-xs cursor-pointer"
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
               aria-label="Sort"
@@ -215,20 +219,20 @@ const OpenFile: React.FC<OpenFileProps> = ({ onOpen, onClose }) => {
         </div>
 
         <div
-          className="dialog-body"
-          style={{ maxHeight: 440, overflow: 'auto', padding: '8px 16px 16px' }}
+          className="overflow-auto px-4 pt-2 pb-4"
+          style={{ maxHeight: 440 }}
         >
           {source === 'cloud' && !signedIn ? (
-            <div className="open-file-empty">
+            <div className="text-(--fd-text-muted) px-4 py-5 text-center leading-[1.5] text-[13px]">
               Sign in to access your OpenDraft Cloud files. Click the indicator in the
               menu bar to sign in.
             </div>
           ) : loading ? (
-            <div className="open-file-empty">Loading…</div>
+            <div className="text-(--fd-text-muted) px-4 py-5 text-center leading-[1.5] text-[13px]">Loading…</div>
           ) : error ? (
-            <div className="open-file-error">{error}</div>
+            <div className="text-[#d77] px-4 py-5 text-center leading-[1.5] text-[13px]">{error}</div>
           ) : visibleGroups.length === 0 ? (
-            <div className="open-file-empty">
+            <div className="text-(--fd-text-muted) px-4 py-5 text-center leading-[1.5] text-[13px]">
               {query
                 ? `No files match “${query}”.`
                 : source === 'cloud'
@@ -237,16 +241,16 @@ const OpenFile: React.FC<OpenFileProps> = ({ onOpen, onClose }) => {
             </div>
           ) : (
             visibleGroups.map((g) => (
-              <div key={g.project.id} style={{ marginBottom: 12 }}>
-                <div className="open-project-group-header">{g.project.name}</div>
+              <div key={g.project.id} className="mb-3">
+                <div className="text-[11px] uppercase tracking-[0.5px] text-(--fd-text-muted) pt-1.5 px-1 pb-1 font-semibold border-b border-(--fd-border) mb-0.5">{g.project.name}</div>
                 {g.scripts.map((s) => (
                   <div
                     key={s.id}
-                    className="open-project-item"
+                    className="group flex justify-between items-center px-3 py-2 cursor-pointer rounded text-(--fd-text) mb-px hover:bg-(--fd-accent) hover:text-white"
                     onClick={() => onOpen(g.project.id, g.project, s.id, s.title, source)}
                   >
-                    <span className="open-project-name">{s.title}</span>
-                    <span className="open-project-date">
+                    <span className="text-[13px]">{s.title}</span>
+                    <span className="text-[11px] text-(--fd-text-muted) group-hover:text-white/60">
                       {new Date(s.updated_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -256,8 +260,13 @@ const OpenFile: React.FC<OpenFileProps> = ({ onOpen, onClose }) => {
           )}
         </div>
 
-        <div className="dialog-actions">
-          <button onClick={onClose}>Cancel</button>
+        <div className="dialog-actions flex justify-end gap-2 px-5 py-3.5 border-t border-(--fd-border) shrink-0">
+          <button
+            className="h-[34px] px-[18px] bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-menu-hover) max-[768px]:h-10"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>

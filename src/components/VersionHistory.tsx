@@ -198,11 +198,11 @@ const VersionHistory: React.FC = () => {
   if (!versionHistoryOpen) return null;
 
   return (
-    <div className="version-history-panel">
-      <div className="version-history-header">
-        <span className="version-history-title">Version History</span>
+    <div className="version-history-panel fixed top-0 right-0 w-[420px] h-screen bg-(--fd-navigator-bg) border-l border-(--fd-border) flex flex-col z-[3000] shadow-[-4px_0_20px_rgba(0,0,0,.4)]">
+      <div className="flex justify-between items-center px-4 py-3 border-b border-(--fd-border) shrink-0">
+        <span className="font-semibold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">Version History</span>
         <button
-          className="version-history-close"
+          className="version-history-close bg-transparent border-none text-(--fd-text-muted) text-base cursor-pointer px-1.5 py-0.5 rounded-[3px] hover:bg-(--fd-menu-hover) hover:text-(--fd-text)"
           onClick={() => {
             setVersionHistoryOpen(false);
             setSelectedVersion(null);
@@ -214,24 +214,24 @@ const VersionHistory: React.FC = () => {
       </div>
 
       {!currentProject && (
-        <div className="version-history-empty">
+        <div className="px-4 py-5 text-(--fd-text-muted) text-xs italic text-center">
           No project selected. Import or create a screenplay first.
         </div>
       )}
 
-      {error && <div className="version-history-error">{error}</div>}
+      {error && <div className="px-4 py-5 text-[#ff6b6b] text-xs italic text-center">{error}</div>}
 
-      {loading && <div className="version-history-loading">Loading versions...</div>}
+      {loading && <div className="px-4 py-5 text-(--fd-text-muted) text-xs italic text-center">Loading versions...</div>}
 
       {currentScriptId && versions.length >= 2 && (
-        <div className="version-compare-bar">
-          <span className="version-compare-info">
+        <div className="flex items-center gap-[10px] px-3.5 py-2 border-b border-(--fd-border) bg-(--fd-overlay-subtle) shrink-0 flex-wrap">
+          <span className="flex-1 text-[11px] text-(--fd-text-muted)">
             {compareSelection.length === 0 && 'Check two versions to compare'}
             {compareSelection.length === 1 && 'Select one more version to compare'}
             {compareSelection.length === 2 && 'Ready to compare'}
           </span>
           <button
-            className="version-compare-btn"
+            className="bg-(--fd-accent) text-white border-none px-3 py-[5px] rounded-[4px] cursor-pointer text-[11px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
             disabled={compareSelection.length !== 2}
             onClick={runScriptCompare}
           >
@@ -239,7 +239,7 @@ const VersionHistory: React.FC = () => {
           </button>
           {compareSelection.length > 0 && (
             <button
-              className="version-compare-clear"
+              className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) px-2.5 py-1 rounded-[4px] cursor-pointer text-[11px]"
               onClick={() => setCompareSelection([])}
             >
               Clear
@@ -248,75 +248,85 @@ const VersionHistory: React.FC = () => {
         </div>
       )}
 
-      <div className="version-history-content">
-        <div className="version-history-list">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="version-history-list flex-1 overflow-y-auto py-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#444] [&::-webkit-scrollbar-thumb]:rounded-[3px]">
           {versions.length === 0 && !loading && currentProject && (
-            <div className="version-history-empty">
+            <div className="px-4 py-5 text-(--fd-text-muted) text-xs italic text-center">
               No versions yet. Use File &gt; Check In to save a version.
             </div>
           )}
-          {versions.map((v, i) => (
-            <div
-              key={v.hash}
-              className={`version-item ${selectedVersion?.hash === v.hash ? 'selected' : ''}${compareSelection.includes(v.hash) ? ' compare-selected' : ''}`}
-              onClick={() => handleViewDiff(v, i)}
-            >
-              <div className="version-item-top">
-                {currentScriptId && (
-                  <input
-                    type="checkbox"
-                    className="version-compare-checkbox"
-                    checked={compareSelection.includes(v.hash)}
-                    onChange={(e) => { e.stopPropagation(); toggleCompareSelect(v.hash); }}
-                    onClick={(e) => e.stopPropagation()}
-                    title="Select for compare"
-                  />
-                )}
-                <span className="version-hash">{v.short_hash}</span>
-                <span className="version-date">{relativeTime(v.date)}</span>
-              </div>
-              <div className="version-message">{v.message}</div>
-              <div className="version-item-actions">
-                {currentScriptId && (
+          {versions.map((v, i) => {
+            const isSelected = selectedVersion?.hash === v.hash;
+            const isCompareSelected = compareSelection.includes(v.hash);
+            return (
+              <div
+                key={v.hash}
+                className={`version-item px-4 py-2.5 border-b border-(--fd-overlay-subtle) cursor-pointer transition-[background] duration-100 relative ${
+                  isSelected
+                    ? 'bg-[rgba(74,158,255,0.15)] border-l-[3px] border-l-(--fd-accent)'
+                    : isCompareSelected
+                    ? 'bg-(--fd-overlay-light) border-l-[3px] border-l-(--fd-accent)'
+                    : 'hover:bg-[rgba(74,158,255,0.08)]'
+                }`}
+                onClick={() => handleViewDiff(v, i)}
+              >
+                <div className="flex justify-between items-center mb-1">
+                  {currentScriptId && (
+                    <input
+                      type="checkbox"
+                      className="mr-1.5 cursor-pointer"
+                      checked={compareSelection.includes(v.hash)}
+                      onChange={(e) => { e.stopPropagation(); toggleCompareSelect(v.hash); }}
+                      onClick={(e) => e.stopPropagation()}
+                      title="Select for compare"
+                    />
+                  )}
+                  <span className="font-mono text-[11px] text-(--fd-accent) font-semibold">{v.short_hash}</span>
+                  <span className="text-[11px] text-(--fd-text-muted)">{relativeTime(v.date)}</span>
+                </div>
+                <div className="text-xs text-(--fd-text) leading-[1.4] mb-1.5">{v.message}</div>
+                <div className="flex gap-1.5">
+                  {currentScriptId && (
+                    <button
+                      className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) text-[10px] px-2 py-0.5 rounded-[3px] cursor-pointer transition-all duration-150 hover:border-[#e5a50a] hover:text-[#e5a50a] hover:bg-[rgba(229,165,10,0.1)]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (currentProject && currentScriptId) {
+                          setVersionHistoryOpen(false);
+                          setSelectedVersion(null);
+                          setDiffText(null);
+                          navigate(`/project/${currentProject.id}/history/${currentScriptId}/${v.hash}`);
+                        }
+                      }}
+                      title="View this version in the editor (read-only)"
+                    >
+                      View
+                    </button>
+                  )}
                   <button
-                    className="version-view-btn"
+                    className="version-restore-btn bg-transparent border border-(--fd-border) text-(--fd-text-muted) text-[10px] px-2 py-0.5 rounded-[3px] cursor-pointer transition-all duration-150 hover:border-(--fd-accent) hover:text-(--fd-accent) hover:bg-[rgba(74,158,255,0.1)]"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (currentProject && currentScriptId) {
-                        setVersionHistoryOpen(false);
-                        setSelectedVersion(null);
-                        setDiffText(null);
-                        navigate(`/project/${currentProject.id}/history/${currentScriptId}/${v.hash}`);
-                      }
+                      handleRestore(v);
                     }}
-                    title="View this version in the editor (read-only)"
+                    title="Restore this version"
                   >
-                    View
+                    Restore
                   </button>
-                )}
-                <button
-                  className="version-restore-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRestore(v);
-                  }}
-                  title="Restore this version"
-                >
-                  Restore
-                </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {diffText !== null && selectedVersion && (
-          <div className="version-diff-area">
-            <div className="version-diff-header">
+          <div className="border-t border-(--fd-border) max-h-1/2 flex flex-col shrink-0">
+            <div className="flex justify-between items-center px-4 py-2 text-[11px] text-(--fd-text-muted) border-b border-(--fd-border) shrink-0">
               <span>
                 Changes in {selectedVersion.short_hash}: {selectedVersion.message}
               </span>
               <button
-                className="version-diff-close"
+                className="bg-transparent border-none text-(--fd-text-muted) text-sm cursor-pointer px-1.5 py-0.5 rounded-[3px] hover:bg-(--fd-menu-hover) hover:text-(--fd-text)"
                 onClick={() => {
                   setSelectedVersion(null);
                   setDiffText(null);
@@ -330,7 +340,7 @@ const VersionHistory: React.FC = () => {
         )}
       </div>
       {scriptDiff && (
-        <div className="script-diff-overlay">
+        <div className="fixed inset-0 z-[200] bg-(--fd-background)">
           <ScriptDiffView
             docA={scriptDiff.docA as JSONContent}
             docB={scriptDiff.docB as JSONContent}
@@ -341,18 +351,24 @@ const VersionHistory: React.FC = () => {
         </div>
       )}
       {restoreConfirm && (
-        <div className="dialog-overlay" onClick={() => setRestoreConfirm(null)}>
-          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-header">Restore Version</div>
-            <div className="dialog-body">
+        <div
+          className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-[3000] flex items-start justify-center h-[var(--vv-height,100dvh)] px-4 pt-[5vh] pb-4 overflow-y-auto"
+          onClick={() => setRestoreConfirm(null)}
+        >
+          <div
+            className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,.6)] min-w-[320px] max-w-[400px] max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">Restore Version</div>
+            <div className="dialog-body p-5 overflow-y-auto flex-1">
               <p style={{ margin: 0 }}>
                 Restore to version <strong>{restoreConfirm.short_hash}</strong>?
                 This will create a new version with the restored content.
               </p>
             </div>
-            <div className="dialog-actions">
+            <div className="dialog-actions flex justify-end gap-2 px-5 py-3.5 border-t border-(--fd-border) shrink-0 [&_button]:h-[34px] [&_button]:px-[18px] [&_button]:bg-(--fd-toolbar-bg) [&_button]:text-(--fd-text) [&_button]:border [&_button]:border-(--fd-border) [&_button]:rounded [&_button]:cursor-pointer [&_button]:text-sm [&_button]:hover:bg-(--fd-menu-hover)">
               <button onClick={() => setRestoreConfirm(null)}>Cancel</button>
-              <button className="dialog-primary" onClick={handleRestoreConfirm}>
+              <button className="bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90" onClick={handleRestoreConfirm}>
                 Restore
               </button>
             </div>

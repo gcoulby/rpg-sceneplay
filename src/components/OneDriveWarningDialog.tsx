@@ -49,40 +49,29 @@ const OneDriveWarningDialog: React.FC = () => {
   return (
     <div className="dialog-overlay" onClick={dismiss}>
       <div
-        className="dialog-box"
-        style={{ maxWidth: 520 }}
+        className="dialog-box max-w-[520px]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         <div className="dialog-header">OneDrive interference detected</div>
         <div className="dialog-body">
-          <p style={{ margin: '0 0 12px' }}>
+          <p className="mb-3">
             OpenDraft's data folder is inside a OneDrive-synced location. This
             is a known cause of <strong>silent save failures</strong>: OneDrive
             can grab the SQLite write-ahead log file in the middle of a save,
             corrupting the database and losing your latest edits.
           </p>
-          <p style={{ margin: '0 0 6px', fontSize: 13, color: 'var(--fd-text-muted)' }}>
+          <p className="mb-1.5 text-[13px] text-(--fd-text-muted)">
             Affected folder:
           </p>
           <pre
-            style={{
-              margin: '0 0 12px',
-              padding: '8px 10px',
-              fontSize: 12,
-              background: '#f4f4f4',
-              color: '#1a1a1a',
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-            }}
+            className="mb-3 py-2 px-2.5 text-xs bg-[#f4f4f4] text-[#1a1a1a] border border-[#ddd] rounded whitespace-pre-wrap break-words"
           >
             {path}
           </pre>
-          <p style={{ margin: '0 0 6px', fontWeight: 600 }}>How to fix:</p>
-          <ol style={{ margin: '0 0 0 18px', paddingLeft: 0, fontSize: 13, lineHeight: 1.6 }}>
+          <p className="mb-1.5 font-semibold">How to fix:</p>
+          <ol className="m-0 mb-0 ml-[18px] pl-0 text-[13px] leading-[1.6]">
             <li>Open OneDrive settings → Sync and backup → Manage backup.</li>
             <li>
               Turn off backup for the folder that contains the path above
@@ -92,11 +81,11 @@ const OneDriveWarningDialog: React.FC = () => {
             <li>Restart OpenDraft.</li>
           </ol>
         </div>
-        <div className="dialog-footer" style={{ display: 'flex', gap: 8 }}>
+        <div className="dialog-footer flex gap-2">
           <button className="dialog-btn" onClick={dismissForever}>
             Don't show again
           </button>
-          <div style={{ flex: 1 }} />
+          <div className="flex-1" />
           <button className="dialog-btn dialog-btn-primary" onClick={dismiss} autoFocus>
             Continue
           </button>

@@ -54,34 +54,34 @@ const TemplateConflictDialog: React.FC<TemplateConflictDialogProps> = ({
   };
 
   return (
-    <div className="template-conflict-overlay" onClick={onCancel}>
-      <div className="template-conflict-dialog" onClick={(e) => e.stopPropagation()}>
-        <h3>Template Conflicts</h3>
-        <p className="template-conflict-desc">
+    <div className="fixed inset-0 bg-black/60 z-2100 flex items-center justify-center" onClick={onCancel}>
+      <div className="bg-(--fd-bg) border border-(--fd-border) rounded-lg p-5 w-[520px] max-w-[92vw] max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="m-0 mb-1.5 text-base text-(--fd-text)">Template Conflicts</h3>
+        <p className="text-[13px] text-[#aaa] m-0 mb-4">
           Applying <strong>{templateName}</strong> requires resolving the following conflicts
           in your document.
         </p>
 
         {/* Disabled Element Types */}
         {disabledElements.length > 0 && (
-          <div className="template-conflict-section">
-            <h4>Disabled Element Types</h4>
-            <p className="template-conflict-section-desc">
+          <div className="mb-4">
+            <h4 className="m-0 mb-1 text-[13px] font-semibold text-(--fd-accent) uppercase tracking-[0.5px]">Disabled Element Types</h4>
+            <p className="text-xs text-[#aaa] m-0 mb-2.5">
               These element types are disabled in the template but exist in your document.
               Choose a replacement for each.
             </p>
             {disabledElements.map((c, i) => (
-              <div key={c.elementType} className="template-conflict-item">
-                <div className="template-conflict-item-info">
-                  <span className="template-conflict-count">{c.nodeCount}</span>
-                  <span className="template-conflict-item-label">
+              <div key={c.elementType} className="bg-white/3 border border-(--fd-border) rounded-md py-2.5 px-3 mb-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-flex items-center justify-center min-w-6 h-[22px] px-1.5 text-xs font-semibold text-[#f59e0b] bg-[#f59e0b]/15 rounded">{c.nodeCount}</span>
+                  <span className="text-sm font-medium text-(--fd-text)">
                     {c.elementLabel} element{c.nodeCount !== 1 ? 's' : ''}
                   </span>
                 </div>
-                <div className="template-conflict-item-action">
-                  <label>Replace with:</label>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-[#aaa] whitespace-nowrap">Replace with:</label>
                   <select
-                    className="dialog-input template-conflict-select"
+                    className="dialog-input h-[34px] bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none w-full box-border flex-1"
                     value={c.replacementType}
                     onChange={(e) => updateReplacement(i, e.target.value)}
                   >
@@ -97,25 +97,26 @@ const TemplateConflictDialog: React.FC<TemplateConflictDialogProps> = ({
 
         {/* Formatting Violations */}
         {formattingViolations.length > 0 && (
-          <div className="template-conflict-section">
-            <h4>Formatting Conflicts</h4>
-            <p className="template-conflict-section-desc">
+          <div className="mb-4">
+            <h4 className="m-0 mb-1 text-[13px] font-semibold text-(--fd-accent) uppercase tracking-[0.5px]">Formatting Conflicts</h4>
+            <p className="text-xs text-[#aaa] m-0 mb-2.5">
               These elements have inline formatting that conflicts with the template&apos;s
               locked rules. Check to strip conflicting marks.
             </p>
             {formattingViolations.map((v, i) => (
-              <div key={v.elementType} className="template-conflict-item">
-                <label className="template-conflict-checkbox">
+              <div key={v.elementType} className="bg-white/3 border border-(--fd-border) rounded-md py-2.5 px-3 mb-2">
+                <label className="flex items-start gap-2 cursor-pointer text-sm text-(--fd-text)">
                   <input
                     type="checkbox"
+                    className="mt-[3px] shrink-0"
                     checked={v.shouldReformat}
                     onChange={() => toggleReformat(i)}
                   />
                   <div>
-                    <span className="template-conflict-item-label">
+                    <span className="text-sm font-medium text-(--fd-text)">
                       {v.elementLabel}
                     </span>
-                    <span className="template-conflict-detail">
+                    <span className="block text-xs text-[#aaa] mt-0.5">
                       {v.nodeCount} element{v.nodeCount !== 1 ? 's' : ''} with{' '}
                       {v.conflictingMarks.join(', ')}
                     </span>
@@ -127,14 +128,14 @@ const TemplateConflictDialog: React.FC<TemplateConflictDialogProps> = ({
         )}
 
         {/* Actions */}
-        <div className="template-conflict-actions">
-          <button className="dialog-btn" onClick={onCancel}>
+        <div className="flex justify-end gap-2 mt-4">
+          <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={onCancel}>
             Cancel
           </button>
-          <button className="dialog-btn" onClick={onSkip}>
+          <button className="dialog-btn h-8.5 px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-toolbar-hover)" onClick={onSkip}>
             Apply Without Resolving
           </button>
-          <button className="dialog-btn dialog-btn-primary" onClick={handleResolve}>
+          <button className="dialog-btn dialog-btn-primary h-8.5 px-4.5 bg-(--fd-accent) border border-(--fd-accent) rounded cursor-pointer text-sm text-white hover:opacity-90" onClick={handleResolve}>
             Resolve &amp; Apply
           </button>
         </div>

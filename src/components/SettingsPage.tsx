@@ -20,6 +20,12 @@ const EXPIRY_OPTIONS = [
   { label: '30 days', hours: 720 },
 ];
 
+// ── Shared button/input utility strings ──
+const BTN = 'h-[34px] px-4.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded text-sm cursor-pointer hover:bg-(--fd-toolbar-hover)';
+const BTN_PRIMARY = 'h-[34px] px-4.5 bg-(--fd-accent) border border-(--fd-accent) text-white rounded text-sm cursor-pointer hover:opacity-90 disabled:opacity-50 disabled:cursor-default';
+const BTN_DANGER = 'h-[34px] px-4.5 bg-(--fd-toolbar-bg) text-[#ff4444]! border border-(--fd-border) rounded text-sm cursor-pointer hover:bg-[rgba(255,68,68,0.1)]!';
+const FIELD_WRAP = 'flex flex-col gap-1.5 [&>label]:text-[13px] [&>label]:font-medium [&>label]:text-(--fd-text-muted) [&>input]:h-9 [&>input]:text-sm [&>input]:bg-(--fd-input-bg) [&>input]:text-(--fd-text) [&>input]:border [&>input]:border-(--fd-border) [&>input]:rounded [&>input]:px-2.5 [&>input]:outline-none [&>input:focus]:border-(--fd-accent)';
+
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -507,38 +513,42 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="settings-page">
-      <div className="settings-header">
-        <button className="settings-back-btn" onClick={() => navigate(-1)} title="Go back">
+    <div className="h-screen bg-(--fd-bg) text-(--fd-text) p-10 overflow-y-auto box-border">
+      <div className="flex items-center gap-4 max-w-180 mx-auto mb-10">
+        <button
+          className="bg-(--fd-toolbar-bg) border border-(--fd-border) text-(--fd-text) text-lg w-9 h-9 rounded-md cursor-pointer flex items-center justify-center hover:bg-(--fd-toolbar-hover)"
+          onClick={() => navigate(-1)}
+          title="Go back"
+        >
           &larr;
         </button>
-        <h1>System Settings</h1>
+        <h1 className="m-0 text-[28px] font-bold text-(--fd-text) tracking-[-0.5px]">System Settings</h1>
       </div>
 
-      <div className="settings-content">
+      <div className="max-w-180 mx-auto">
         {/* ── Collaboration Server URL ── */}
-        <section className="settings-section">
-          <h2 className="settings-section-title">Collaboration Server</h2>
-          <p className="settings-section-desc">
+        <section className="mb-10">
+          <h2 className="text-lg font-bold mt-0 mb-1.5 text-(--fd-text)">Collaboration Server</h2>
+          <p className="text-sm text-(--fd-text-muted) mt-0 mb-5 leading-normal [&_code]:bg-(--fd-input-bg) [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-[3px] [&_code]:text-[13px]">
             Configure the collaboration server URL. Use <code>wss://</code> for encrypted connections
             or <code>ws://</code> for local networks.
           </p>
 
-          <div className="settings-row">
+          <div className="mb-4 [&>label]:block [&>label]:text-sm [&>label]:font-medium [&>label]:mb-2 [&>label]:text-(--fd-text)">
             <label>Server URL</label>
-            <div className="settings-url-row">
+            <div className="flex gap-2">
               <input
-                className="dialog-input settings-url-input"
+                className="flex-1 h-9 text-sm bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 outline-none box-border w-full focus:border-(--fd-accent)"
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="wss://collab.open-draft.com"
                 onKeyDown={(e) => handleKeyDown(e, handleSaveUrl)}
               />
-              <button className="dialog-btn dialog-btn-primary" onClick={handleSaveUrl}>
+              <button className={BTN_PRIMARY} onClick={handleSaveUrl}>
                 Save
               </button>
               <button
-                className="dialog-btn"
+                className={BTN}
                 onClick={handleTestConnection}
                 disabled={connectionStatus === 'testing'}
               >
@@ -548,24 +558,24 @@ const SettingsPage: React.FC = () => {
               </button>
             </div>
             {connectionStatus === 'ok' && (
-              <div className="settings-status settings-status-ok">Server is reachable</div>
+              <div className="text-[13px] mt-2 py-1 text-[#66bb6a]">Server is reachable</div>
             )}
             {connectionStatus === 'fail' && (
-              <div className="settings-status settings-status-fail">Cannot reach server</div>
+              <div className="text-[13px] mt-2 py-1 text-[#ef5350]">Cannot reach server</div>
             )}
             {urlInput.startsWith('wss://') && (
-              <div className="settings-hint">TLS/SSL encryption is active (wss://)</div>
+              <div className="text-[13px] text-(--fd-text-muted) mt-2 italic">TLS/SSL encryption is active (wss://)</div>
             )}
             {urlInput.startsWith('ws://') && (
-              <div className="settings-hint">No encryption (ws://). Suitable for local networks only.</div>
+              <div className="text-[13px] text-(--fd-text-muted) mt-2 italic">No encryption (ws://). Suitable for local networks only.</div>
             )}
           </div>
         </section>
 
         {/* ── OpenDraft Cloud API URL ── */}
-        <section className="settings-section">
-          <h2 className="settings-section-title">OpenDraft Cloud Server</h2>
-          <p className="settings-section-desc">
+        <section className="mb-10">
+          <h2 className="text-lg font-bold mt-0 mb-1.5 text-(--fd-text)">OpenDraft Cloud Server</h2>
+          <p className="text-sm text-(--fd-text-muted) mt-0 mb-5 leading-normal [&_code]:bg-(--fd-input-bg) [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-[3px] [&_code]:text-[13px]">
             HTTP backend used for sign-in, projects, and cloud saves. Leave blank
             in the browser to use this site's <code>/api</code>. Required on the
             desktop and mobile apps — defaults to <code>https://open-draft.com</code>;
@@ -574,21 +584,21 @@ const SettingsPage: React.FC = () => {
             is added automatically if missing).
           </p>
 
-          <div className="settings-row">
+          <div className="mb-4 [&>label]:block [&>label]:text-sm [&>label]:font-medium [&>label]:mb-2 [&>label]:text-(--fd-text)">
             <label>Cloud API URL</label>
-            <div className="settings-url-row">
+            <div className="flex gap-2">
               <input
-                className="dialog-input settings-url-input"
+                className="flex-1 h-9 text-sm bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 outline-none box-border w-full focus:border-(--fd-accent)"
                 value={cloudApiInput}
                 onChange={(e) => setCloudApiInput(e.target.value)}
                 placeholder="https://open-draft.com"
                 onKeyDown={(e) => handleKeyDown(e, handleSaveCloudApi)}
               />
-              <button className="dialog-btn dialog-btn-primary" onClick={handleSaveCloudApi}>
+              <button className={BTN_PRIMARY} onClick={handleSaveCloudApi}>
                 Save
               </button>
               <button
-                className="dialog-btn"
+                className={BTN}
                 onClick={handleTestCloudApi}
                 disabled={cloudApiStatus === 'testing'}
               >
@@ -598,10 +608,10 @@ const SettingsPage: React.FC = () => {
               </button>
             </div>
             {cloudApiStatus === 'ok' && (
-              <div className="settings-status settings-status-ok">Server is reachable</div>
+              <div className="text-[13px] mt-2 py-1 text-[#66bb6a]">Server is reachable</div>
             )}
             {cloudApiStatus === 'fail' && (
-              <div className="settings-status settings-status-fail">Cannot reach server</div>
+              <div className="text-[13px] mt-2 py-1 text-[#ef5350]">Cannot reach server</div>
             )}
           </div>
         </section>
@@ -609,15 +619,15 @@ const SettingsPage: React.FC = () => {
         <BackupSettingsSection />
 
         {/* ── Collab Account ── */}
-        <section className="settings-section">
-          <h2 className="settings-section-title">Collaboration Account</h2>
-          <p className="settings-section-desc">
+        <section className="mb-10">
+          <h2 className="text-lg font-bold mt-0 mb-1.5 text-(--fd-text)">Collaboration Account</h2>
+          <p className="text-sm text-(--fd-text-muted) mt-0 mb-5 leading-normal">
             Sign in to the collaboration server to use real-time editing features.
             An account is only required for collaboration — all other features work offline.
           </p>
 
           {isDemoServer && (
-            <div className="settings-demo-notice">
+            <div className="bg-[#fef3cd] text-[#856404] border border-[#ffc107] rounded-lg py-3 px-4 mb-4 text-[13px] leading-normal [&_strong]:font-semibold [&_code]:bg-black/8 [&_code]:px-1.25 [&_code]:py-px [&_code]:rounded-[3px] [&_code]:text-xs">
               <strong>Demo Server:</strong> This is a shared demo server. Registered accounts and
               collaboration data are automatically removed every hour. For persistent use,
               deploy your own collab server or upgrade to the paid version.
@@ -625,32 +635,35 @@ const SettingsPage: React.FC = () => {
           )}
 
           {isLoggedIn ? (
-            <div className="settings-auth-card">
-              <div className="settings-user-info">
-                <div className="settings-user-avatar">
+            <div className="bg-(--fd-panel-bg) border border-(--fd-border) rounded-lg p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-(--fd-accent) text-white text-xl font-bold flex items-center justify-center shrink-0">
                   {collabAuth.user!.displayName.charAt(0).toUpperCase()}
                 </div>
-                <div className="settings-user-details">
-                  <div className="settings-user-name">{collabAuth.user!.displayName}</div>
-                  <div className="settings-user-email">{collabAuth.user!.email}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-base font-semibold text-(--fd-text)">{collabAuth.user!.displayName}</div>
+                  <div className="text-sm text-(--fd-text-muted)">{collabAuth.user!.email}</div>
                   {!collabAuth.user!.emailVerified && (
-                    <div className="settings-email-unverified">Email not verified</div>
+                    <div className="text-[13px] text-[#ffb74d] mt-0.5">Email not verified</div>
                   )}
                 </div>
-                <button className="dialog-btn settings-logout-btn" onClick={handleLogout}>
+                <button
+                  className="shrink-0 h-9 px-4 text-sm bg-(--fd-toolbar-bg) text-[#ef5350]! border border-(--fd-border) rounded-md cursor-pointer hover:opacity-85"
+                  onClick={handleLogout}
+                >
                   Sign Out
                 </button>
               </div>
 
               {/* Email verification form */}
               {!collabAuth.user!.emailVerified && (
-                <div className="settings-verify-section">
-                  <p className="settings-verify-text">
+                <div className="mt-5 pt-5 border-t border-(--fd-border)">
+                  <p className="text-sm text-(--fd-text-muted) mt-0 mb-3">
                     Enter the 6-digit code sent to your email to verify your account.
                   </p>
-                  <div className="settings-verify-row">
+                  <div className="flex gap-2">
                     <input
-                      className="dialog-input settings-verify-input"
+                      className="w-35 text-center tracking-[4px] text-xl font-bold h-11 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded outline-none focus:border-(--fd-accent)"
                       value={verifyCode}
                       onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="000000"
@@ -658,13 +671,13 @@ const SettingsPage: React.FC = () => {
                       onKeyDown={(e) => handleKeyDown(e, handleVerifyEmail)}
                     />
                     <button
-                      className="dialog-btn dialog-btn-primary"
+                      className={BTN_PRIMARY}
                       onClick={handleVerifyEmail}
                       disabled={verifyCode.length !== 6 || verifying}
                     >
                       {verifying ? 'Verifying...' : 'Verify'}
                     </button>
-                    <button className="dialog-btn" onClick={handleResendVerification}>
+                    <button className={BTN} onClick={handleResendVerification}>
                       Resend
                     </button>
                   </div>
@@ -672,16 +685,16 @@ const SettingsPage: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="settings-auth-card">
-              <div className="settings-auth-tabs">
+            <div className="bg-(--fd-panel-bg) border border-(--fd-border) rounded-lg p-6">
+              <div className="flex gap-0 mb-5 border-b border-(--fd-border)">
                 <button
-                  className={`settings-auth-tab ${authTab === 'login' ? 'active' : ''}`}
+                  className={`bg-transparent border-none text-sm py-2.5 px-5 cursor-pointer border-b-2 -mb-px ${authTab === 'login' ? 'text-(--fd-accent) border-b-(--fd-accent)' : 'text-(--fd-text-muted) border-b-transparent hover:text-(--fd-text)'}`}
                   onClick={() => setAuthTab('login')}
                 >
                   Sign In
                 </button>
                 <button
-                  className={`settings-auth-tab ${authTab === 'register' ? 'active' : ''}`}
+                  className={`bg-transparent border-none text-sm py-2.5 px-5 cursor-pointer border-b-2 -mb-px ${authTab === 'register' ? 'text-(--fd-accent) border-b-(--fd-accent)' : 'text-(--fd-text-muted) border-b-transparent hover:text-(--fd-text)'}`}
                   onClick={() => setAuthTab('register')}
                 >
                   Create Account
@@ -690,16 +703,16 @@ const SettingsPage: React.FC = () => {
 
               {authTab === 'login' ? (
                 pendingChallenge ? (
-                  <div className="settings-auth-form">
-                    <div className="settings-verify-text">
+                  <div className="flex flex-col gap-3.5">
+                    <div className="text-sm text-(--fd-text-muted) mt-0 mb-3">
                       A 6-digit verification code was emailed to{' '}
                       <strong>{pendingChallenge.email}</strong> to confirm this is a
                       device you trust. Enter it below to finish signing in.
                     </div>
-                    <div className="settings-field">
+                    <div className={FIELD_WRAP}>
                       <label>Verification Code</label>
                       <input
-                        className="dialog-input settings-verify-input"
+                        className="w-35 text-center tracking-[4px] text-xl font-bold h-11 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded outline-none focus:border-(--fd-accent)"
                         value={deviceCode}
                         onChange={(e) => setDeviceCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         placeholder="000000"
@@ -708,23 +721,23 @@ const SettingsPage: React.FC = () => {
                         onKeyDown={(e) => handleKeyDown(e, handleVerifyDevice)}
                       />
                     </div>
-                    <div className="settings-verify-row">
+                    <div className="flex gap-2">
                       <button
-                        className="dialog-btn dialog-btn-primary"
+                        className={BTN_PRIMARY}
                         onClick={handleVerifyDevice}
                         disabled={deviceCode.length !== 6 || verifyingDevice}
                       >
                         {verifyingDevice ? 'Verifying...' : 'Verify Device'}
                       </button>
                       <button
-                        className="dialog-btn"
+                        className={BTN}
                         onClick={handleResendDeviceCode}
                         disabled={verifyingDevice}
                       >
                         Resend code
                       </button>
                       <button
-                        className="dialog-btn"
+                        className={BTN}
                         onClick={() => { setPendingChallenge(null); setDeviceCode(''); }}
                         disabled={verifyingDevice}
                       >
@@ -733,11 +746,10 @@ const SettingsPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                <div className="settings-auth-form">
-                  <div className="settings-field">
+                <div className="flex flex-col gap-3.5">
+                  <div className={FIELD_WRAP}>
                     <label>Email</label>
                     <input
-                      className="dialog-input"
                       type="email"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
@@ -745,10 +757,9 @@ const SettingsPage: React.FC = () => {
                       onKeyDown={(e) => handleKeyDown(e, handleLogin)}
                     />
                   </div>
-                  <div className="settings-field">
+                  <div className={FIELD_WRAP}>
                     <label>Password</label>
                     <input
-                      className="dialog-input"
                       type="password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
@@ -757,7 +768,7 @@ const SettingsPage: React.FC = () => {
                     />
                   </div>
                   <button
-                    className="dialog-btn dialog-btn-primary settings-auth-submit"
+                    className={`mt-1 self-start min-w-40 h-9 px-4.5 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed`}
                     onClick={handleLogin}
                     disabled={!loginEmail || !loginPassword || authLoading}
                   >
@@ -766,40 +777,36 @@ const SettingsPage: React.FC = () => {
                 </div>
                 )
               ) : (
-                <div className="settings-auth-form">
-                  <div className="settings-field">
+                <div className="flex flex-col gap-3.5">
+                  <div className={FIELD_WRAP}>
                     <label>Display Name</label>
                     <input
-                      className="dialog-input"
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
                       placeholder="Your name"
                     />
                   </div>
-                  <div className="settings-field">
+                  <div className={FIELD_WRAP}>
                     <label>Email</label>
                     <input
-                      className="dialog-input"
                       type="email"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
                       placeholder="you@example.com"
                     />
                   </div>
-                  <div className="settings-field">
+                  <div className={FIELD_WRAP}>
                     <label>Password</label>
                     <input
-                      className="dialog-input"
                       type="password"
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
                       placeholder="At least 8 characters"
                     />
                   </div>
-                  <div className="settings-field">
+                  <div className={FIELD_WRAP}>
                     <label>Confirm Password</label>
                     <input
-                      className="dialog-input"
                       type="password"
                       value={regConfirm}
                       onChange={(e) => setRegConfirm(e.target.value)}
@@ -808,7 +815,7 @@ const SettingsPage: React.FC = () => {
                     />
                   </div>
                   <button
-                    className="dialog-btn dialog-btn-primary settings-auth-submit"
+                    className="mt-1 self-start min-w-40 h-9 px-4.5 text-sm bg-(--fd-accent) text-white border-none rounded-md font-semibold cursor-pointer hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleRegister}
                     disabled={!regEmail || !regPassword || !regName || authLoading}
                   >
@@ -817,8 +824,8 @@ const SettingsPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="collab-remember-section">
-                <label className="collab-remember-label">
+              <div className="mt-3">
+                <label className="flex items-center gap-2 text-[13px] text-(--fd-text) cursor-pointer [&_input]:w-3.75 [&_input]:h-3.75 [&_input]:cursor-pointer">
                   <input
                     type="checkbox"
                     checked={rememberEmail}
@@ -831,7 +838,7 @@ const SettingsPage: React.FC = () => {
                   />
                   Remember my email address
                 </label>
-                <p className="collab-remember-hint">
+                <p className="mt-1.5 mb-0 text-xs text-(--fd-text-muted,#999) leading-[1.4]">
                   You stay signed in for up to 7 days using a secure refresh token —
                   no password is stored on this device.
                 </p>
@@ -839,12 +846,12 @@ const SettingsPage: React.FC = () => {
 
               {/* Google sign-in */}
               {serverConfig?.googleEnabled && (
-                <div className="settings-google-section">
-                  <div className="settings-divider">
+                <div className="mt-5">
+                  <div className="flex items-center gap-3 mb-5 text-(--fd-text-muted) text-[13px] before:content-[''] before:flex-1 before:h-px before:bg-(--fd-border) after:content-[''] after:flex-1 after:h-px after:bg-(--fd-border)">
                     <span>or</span>
                   </div>
                   <button
-                    className="dialog-btn settings-google-btn"
+                    className="w-full flex items-center justify-center h-10 px-4 bg-(--fd-toolbar-bg) border border-(--fd-border) rounded-md text-sm text-(--fd-text) cursor-pointer hover:bg-(--fd-toolbar-hover)"
                     onClick={handleGoogleLogin}
                     disabled={googleLoading}
                   >
@@ -864,31 +871,31 @@ const SettingsPage: React.FC = () => {
 
         {/* ── Account & Security (signed-in users only) ── */}
         {isLoggedIn && (
-          <section className="settings-section">
-            <h2 className="settings-section-title">Account &amp; Security</h2>
-            <p className="settings-section-desc">
+          <section className="mb-10">
+            <h2 className="text-lg font-bold mt-0 mb-1.5 text-(--fd-text)">Account &amp; Security</h2>
+            <p className="text-sm text-(--fd-text-muted) mt-0 mb-5 leading-normal">
               Manage your password, devices, two-factor verification, and account deletion.
             </p>
 
             {!showAccount ? (
-              <button className="dialog-btn" onClick={() => setShowAccount(true)}>
+              <button className={BTN} onClick={() => setShowAccount(true)}>
                 Open Account Settings
               </button>
             ) : (
-              <div className="settings-auth-card">
+              <div className="bg-(--fd-panel-bg) border border-(--fd-border) rounded-lg p-6">
                 {/* Two-factor toggle */}
-                <div className="settings-account-block">
-                  <div className="settings-account-row">
+                <div className="border-t border-(--fd-border) py-4 first:border-t-0 first:pt-0">
+                  <div className="flex items-start gap-4 justify-between mb-3">
                     <div>
-                      <div className="settings-account-title">Two-factor verification</div>
-                      <div className="settings-account-hint">
+                      <div className="text-sm font-semibold text-(--fd-text) mb-1">Two-factor verification</div>
+                      <div className="text-xs text-(--fd-text-secondary,#999) leading-normal mb-2">
                         When on, signing in from a new device requires a 6-digit code emailed to
                         you. When off, you'll only get a heads-up email so you can spot
                         unauthorized sign-ins.
                       </div>
                       {serverConfig && serverConfig.smtpConfigured === false && (
                         <div
-                          className="settings-account-hint"
+                          className="text-xs text-(--fd-text-secondary,#999) leading-normal mb-2"
                           style={{ color: 'var(--fd-warning, #b85c00)', marginTop: 4 }}
                         >
                           Email is not configured on this server, so verification codes can't be
@@ -896,7 +903,7 @@ const SettingsPage: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    <label className="settings-switch">
+                    <label className="inline-flex items-center gap-2 text-[13px] text-(--fd-text) [&>input]:w-4 [&>input]:h-4">
                       <input
                         type="checkbox"
                         checked={Boolean(collabAuth.user?.twoFactorEnabled)}
@@ -913,16 +920,15 @@ const SettingsPage: React.FC = () => {
                 </div>
 
                 {/* Change password */}
-                <div className="settings-account-block">
-                  <div className="settings-account-title">Change password</div>
-                  <div className="settings-account-hint">
+                <div className="border-t border-(--fd-border) py-4 first:border-t-0 first:pt-0">
+                  <div className="text-sm font-semibold text-(--fd-text) mb-1">Change password</div>
+                  <div className="text-xs text-(--fd-text-secondary,#999) leading-normal mb-2">
                     Updating your password will sign you out everywhere. You'll need to sign in
                     again with the new password on each device.
                   </div>
-                  <div className="settings-field">
+                  <div className={FIELD_WRAP}>
                     <label>Current Password</label>
                     <input
-                      className="dialog-input"
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
@@ -930,10 +936,9 @@ const SettingsPage: React.FC = () => {
                       autoComplete="current-password"
                     />
                   </div>
-                  <div className="settings-field">
+                  <div className={FIELD_WRAP}>
                     <label>New Password</label>
                     <input
-                      className="dialog-input"
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
@@ -941,10 +946,9 @@ const SettingsPage: React.FC = () => {
                       autoComplete="new-password"
                     />
                   </div>
-                  <div className="settings-field">
+                  <div className={FIELD_WRAP}>
                     <label>Confirm New Password</label>
                     <input
-                      className="dialog-input"
                       type="password"
                       value={newPasswordConfirm}
                       onChange={(e) => setNewPasswordConfirm(e.target.value)}
@@ -953,7 +957,7 @@ const SettingsPage: React.FC = () => {
                     />
                   </div>
                   <button
-                    className="dialog-btn dialog-btn-primary"
+                    className={BTN_PRIMARY}
                     onClick={handleChangePassword}
                     disabled={!currentPassword || !newPassword || !newPasswordConfirm || changingPassword}
                   >
@@ -962,43 +966,43 @@ const SettingsPage: React.FC = () => {
                 </div>
 
                 {/* Devices */}
-                <div className="settings-account-block">
-                  <div className="settings-account-row">
+                <div className="border-t border-(--fd-border) py-4 first:border-t-0 first:pt-0">
+                  <div className="flex items-start gap-4 justify-between mb-3">
                     <div>
-                      <div className="settings-account-title">Active devices</div>
-                      <div className="settings-account-hint">
+                      <div className="text-sm font-semibold text-(--fd-text) mb-1">Active devices</div>
+                      <div className="text-xs text-(--fd-text-secondary,#999) leading-normal mb-2">
                         These are the devices currently signed in to your account. Revoke any
                         you don't recognise — that device will be signed out immediately.
                       </div>
                     </div>
-                    <button className="dialog-btn" onClick={refreshDevices} disabled={devicesLoading}>
+                    <button className={BTN} onClick={refreshDevices} disabled={devicesLoading}>
                       {devicesLoading ? 'Loading...' : 'Refresh'}
                     </button>
                   </div>
                   {devicesLoading && devices === null ? (
-                    <div className="settings-account-hint">Loading devices…</div>
+                    <div className="text-xs text-(--fd-text-secondary,#999) leading-normal mb-2">Loading devices…</div>
                   ) : (devices || []).length === 0 ? (
-                    <div className="settings-account-hint">No registered devices yet.</div>
+                    <div className="text-xs text-(--fd-text-secondary,#999) leading-normal mb-2">No registered devices yet.</div>
                   ) : (
-                    <ul className="settings-device-list">
+                    <ul className="list-none mt-2 mb-0 p-0">
                       {(devices || []).map((d) => (
-                        <li key={d.deviceId} className="settings-device-row">
-                          <div className="settings-device-info">
-                            <div className="settings-device-name">
+                        <li key={d.deviceId} className="flex items-center justify-between gap-3 py-2.5 px-3 border border-(--fd-border) rounded-md mb-2 bg-(--fd-toolbar-bg)">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-[13px] text-(--fd-text) wrap-break-word">
                               {d.deviceName}
-                              {d.current && <span className="settings-device-current"> (this device)</span>}
+                              {d.current && <span className="text-(--fd-accent) font-medium text-xs"> (this device)</span>}
                             </div>
-                            <div className="settings-device-meta">
+                            <div className="text-[11px] text-(--fd-text-secondary,#999) wrap-break-word">
                               {d.platform || 'Unknown platform'}
                               {d.ipAddress ? ` · ${d.ipAddress}` : ''}
                             </div>
-                            <div className="settings-device-meta">
+                            <div className="text-[11px] text-(--fd-text-secondary,#999) wrap-break-word">
                               Last seen {new Date(d.lastSeenAt).toLocaleString()}
                             </div>
                           </div>
                           {!d.current && (
                             <button
-                              className="dialog-btn dialog-btn-danger"
+                              className={BTN_DANGER}
                               onClick={() => handleRevokeDevice(d.deviceId)}
                             >
                               Revoke
@@ -1011,22 +1015,22 @@ const SettingsPage: React.FC = () => {
                 </div>
 
                 {/* Delete account (Apple Guideline 5.1.1(v)) */}
-                <div className="settings-account-block settings-account-danger">
-                  <div className="settings-account-title">Delete account</div>
-                  <div className="settings-account-hint">
+                <div className="border-t border-t-[rgba(255,68,68,0.4)] py-4">
+                  <div className="text-sm font-semibold text-(--fd-text) mb-1">Delete account</div>
+                  <div className="text-xs text-(--fd-text-secondary,#999) leading-normal mb-2">
                     Permanently deletes your account, password, devices, and any cloud
                     screenplays stored under your account. This cannot be undone.
                   </div>
                   {!deleteOpen ? (
                     <button
-                      className="dialog-btn dialog-btn-danger"
+                      className={BTN_DANGER}
                       onClick={handleOpenDelete}
                     >
                       Delete Account…
                     </button>
                   ) : (
-                    <div className="settings-delete-confirm">
-                      <div className="settings-delete-warning">
+                    <div className="mt-3 p-3 border border-[rgba(255,68,68,0.4)] rounded-md bg-[rgba(255,68,68,0.05)]">
+                      <div className="text-xs text-(--fd-text) leading-[1.6] mb-3 [&_a]:text-(--fd-accent) [&_a]:underline [&_a]:break-all">
                         <strong>Before you continue:</strong>{' '}
                         {inventoryLoading ? (
                           <>checking your OpenDraft Cloud account for screenplays…</>
@@ -1062,10 +1066,9 @@ const SettingsPage: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="settings-field">
+                      <div className={FIELD_WRAP}>
                         <label>Current password (leave blank for Google-only accounts)</label>
                         <input
-                          className="dialog-input"
                           type="password"
                           value={deletePassword}
                           onChange={(e) => setDeletePassword(e.target.value)}
@@ -1074,26 +1077,25 @@ const SettingsPage: React.FC = () => {
                         />
                       </div>
 
-                      <div className="settings-field">
+                      <div className={FIELD_WRAP}>
                         <label>Type <strong>DELETE</strong> to confirm</label>
                         <input
-                          className="dialog-input"
                           value={deleteConfirmation}
                           onChange={(e) => setDeleteConfirmation(e.target.value)}
                           placeholder="DELETE"
                         />
                       </div>
 
-                      <div className="settings-verify-row">
+                      <div className="flex gap-2">
                         <button
-                          className="dialog-btn dialog-btn-danger"
+                          className={BTN_DANGER}
                           onClick={handleDeleteAccount}
                           disabled={deleting || deleteConfirmation !== 'DELETE'}
                         >
                           {deleting ? 'Deleting...' : 'Permanently delete my account'}
                         </button>
                         <button
-                          className="dialog-btn"
+                          className={BTN}
                           onClick={() => {
                             setDeleteOpen(false);
                             setDeletePassword('');
@@ -1113,16 +1115,16 @@ const SettingsPage: React.FC = () => {
         )}
 
         {/* ── Invite Defaults ── */}
-        <section className="settings-section">
-          <h2 className="settings-section-title">Invite Defaults</h2>
-          <p className="settings-section-desc">
+        <section className="mb-10">
+          <h2 className="text-lg font-bold mt-0 mb-1.5 text-(--fd-text)">Invite Defaults</h2>
+          <p className="text-sm text-(--fd-text-muted) mt-0 mb-5 leading-normal">
             Default settings for new collaboration invites.
           </p>
 
-          <div className="settings-row">
+          <div className="mb-4 [&>label]:block [&>label]:text-sm [&>label]:font-medium [&>label]:mb-2 [&>label]:text-(--fd-text)">
             <label>Default Token Expiry</label>
             <select
-              className="dialog-input settings-select"
+              className="w-55 h-9 text-sm bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 outline-none focus:border-(--fd-accent)"
               value={defaultInviteExpiry}
               onChange={(e) => setDefaultInviteExpiry(Number(e.target.value))}
             >

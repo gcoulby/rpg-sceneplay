@@ -132,26 +132,34 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
     return (
       <div
         key={t.id}
-        className={`template-select-item${isSelected ? ' selected' : ''}`}
+        className={`p-[10px_12px] cursor-pointer border-b border-(--fd-border) transition-[background] duration-100 last:border-b-0 ${isSelected ? 'bg-(--fd-accent-bg,rgba(59,130,246,.15))' : 'hover:bg-(--fd-hover,rgba(255,255,255,.05))'}`}
         onClick={() => setSelectedId(t.id)}
       >
-        <div className="template-select-item-info">
-          <span className="template-select-item-name">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-(--fd-text) flex-1 flex items-center gap-1.5">
             {t.name}
-            {isCurrent && <span className="template-select-current-badge">current</span>}
+            {isCurrent && (
+              <span className="text-[10px] font-semibold uppercase text-(--fd-accent,#3b82f6) bg-(--fd-accent-bg,rgba(59,130,246,.15)) px-1.5 py-px rounded">current</span>
+            )}
           </span>
-          <span className={`template-select-mode-badge template-select-mode-${t.mode}`}>
+          <span
+            className={`text-[11px] px-2 py-px rounded capitalize ${
+              t.mode === 'enforce'
+                ? 'text-[#f59e0b] bg-[rgba(245,158,11,0.15)]'
+                : 'text-[#10b981] bg-[rgba(16,185,129,0.15)]'
+            }`}
+          >
             {t.mode}
           </span>
         </div>
         {t.description && (
-          <span className="template-select-item-desc">{t.description}</span>
+          <span className="block text-xs text-(--fd-text-dim) mt-1">{t.description}</span>
         )}
         {/* Actions: system = duplicate only; user = edit/duplicate/delete */}
-        <div className="template-select-item-actions" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-1.5 mt-2" onClick={(e) => e.stopPropagation()}>
           {isSystem ? (
             <button
-              className="dialog-btn dialog-btn-sm"
+              className="dialog-btn px-2! py-1! text-xs!"
               onClick={async () => {
                 const dup = await duplicateTemplate(t.id);
                 setEditingTemplate(dup);
@@ -162,13 +170,13 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
           ) : (
             <>
               <button
-                className="dialog-btn dialog-btn-sm"
+                className="dialog-btn px-2! py-1! text-xs!"
                 onClick={() => setEditingTemplate(t)}
               >
                 Edit
               </button>
               <button
-                className="dialog-btn dialog-btn-sm"
+                className="dialog-btn px-2! py-1! text-xs!"
                 onClick={async () => {
                   await duplicateTemplate(t.id);
                   showToast('Template duplicated', 'success');
@@ -177,7 +185,7 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
                 Duplicate
               </button>
               <button
-                className="dialog-btn dialog-btn-sm dialog-btn-danger"
+                className="dialog-btn px-2! py-1! text-xs! text-[#ff4444]! hover:bg-[rgba(255,68,68,0.1)]!"
                 onClick={async () => {
                   if (confirm(`Delete template "${t.name}"?`)) {
                     await deleteTemplate(t.id);
@@ -196,31 +204,34 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
   };
 
   return (
-    <div className="template-select-overlay" onClick={onClose}>
-      <div className="template-select-dialog template-select-dialog-wide" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/50 z-2000 flex items-center justify-center" onClick={onClose}>
+      <div
+        className="bg-(--fd-bg) border border-(--fd-border) rounded-lg p-5 w-130 max-w-[90vw] max-h-[80vh] flex flex-col [&>h3]:m-0 [&>h3]:mb-2 [&>h3]:text-base [&>h3]:text-(--fd-text)"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3>Script Format / Template</h3>
-        <p className="template-select-hint">
+        <p className="text-[13px] text-(--fd-text-dim) mb-3">
           Choose a script format (screenplay, sitcom, drama, stage play, radio) or a custom formatting template.
           The template controls element-level formatting rules; for an empty document, choosing a script type also seeds starter content.
         </p>
 
         {/* Template list */}
-        <div className="template-select-list">
+        <div className="flex-1 overflow-y-auto border border-(--fd-border) rounded-md max-h-85">
           {/* Script formats (system templates) */}
-          <div className="template-select-category">Script Formats</div>
+          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.5px] text-(--fd-text-dim) bg-(--fd-bg-dim,rgba(255,255,255,.03)) border-b border-(--fd-border)">Script Formats</div>
           {systemTemplates.map(renderTemplateItem)}
 
           {/* User Defined section */}
-          <div className="template-select-category">User Defined</div>
+          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.5px] text-(--fd-text-dim) bg-(--fd-bg-dim,rgba(255,255,255,.03)) border-b border-(--fd-border)">User Defined</div>
           {userTemplates.length === 0 ? (
-            <div className="template-select-empty">No custom templates yet.</div>
+            <div className="p-3 text-[13px] text-(--fd-text-dim) text-center">No custom templates yet.</div>
           ) : (
             userTemplates.map(renderTemplateItem)
           )}
         </div>
 
         {/* Template management buttons */}
-        <div className="template-select-management">
+        <div className="flex gap-2 mt-3">
           <button
             className="dialog-btn dialog-btn-primary"
             onClick={async () => {
@@ -233,7 +244,7 @@ const TemplateSelectDialog: React.FC<TemplateSelectDialogProps> = ({ editor, onC
         </div>
 
         {/* Actions */}
-        <div className="template-select-actions">
+        <div className="flex justify-end gap-2 mt-4">
           <button className="dialog-btn" onClick={onClose}>Cancel</button>
           <button className="dialog-btn dialog-btn-primary" onClick={handleApply}>Apply</button>
         </div>

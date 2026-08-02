@@ -132,20 +132,20 @@ const ElementPicker: React.FC<ElementPickerProps> = ({
 
   return (
     <div
-      className="element-picker"
+      className="element-picker fixed z-2500 min-w-45 max-h-80 overflow-y-auto bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_6px_20px_rgba(0,0,0,.5)] py-1 text-[13px]"
       ref={menuRef}
       style={{ top: adjustedPos.top, left: adjustedPos.left }}
     >
-      <div className="element-picker-header">Element Type</div>
+      <div className="pt-1 px-3 pb-1.5 text-[10px] uppercase tracking-[0.5px] text-(--fd-text-muted) border-b border-(--fd-border) mb-0.5">Element Type</div>
       {orderedTypes.map((type, i) => (
         <div
           key={type}
           ref={el => { itemRefs.current[i] = el; }}
-          className={`element-picker-item${i === selectedIndex ? ' selected' : ''}`}
+          className={`flex items-center justify-between py-1.25 px-3 cursor-pointer rounded-[3px] mx-1 ${i === selectedIndex ? 'bg-(--fd-accent) text-white' : 'text-(--fd-text)'}`}
           onMouseDown={(e) => { e.preventDefault(); onSelect(type); }}
           onMouseEnter={() => setSelectedIndex(i)}
         >
-          <span className="element-picker-label">{labelFor(type)}</span>
+          <span className="flex-1">{labelFor(type)}</span>
         </div>
       ))}
     </div>

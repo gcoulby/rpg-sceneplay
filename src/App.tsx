@@ -14,8 +14,6 @@ import OneDriveWarningDialog from './components/OneDriveWarningDialog';
 import VerifyEmailRoute from './components/VerifyEmailRoute';
 import ResetPasswordRoute from './components/ResetPasswordRoute';
 import { pluginRegistry } from './plugins/registry';
-import './styles/screenplay.css';
-import './styles/avScript.css';
 
 function App() {
   const pluginRoutes = pluginRegistry.getRoutes();

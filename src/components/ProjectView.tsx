@@ -50,9 +50,9 @@ const NewDocumentButton: React.FC<{
   }, [open]);
 
   return (
-    <div className="new-document-dropdown" ref={ref}>
+    <div className="relative inline-block" ref={ref}>
       <button
-        className="project-action-btn"
+        className="h-8 px-4 bg-(--fd-dropdown-bg) text-(--fd-text) border border-(--fd-border) rounded text-xs cursor-pointer transition-all duration-150 hover:border-(--fd-accent) hover:text-(--fd-accent)"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -60,7 +60,7 @@ const NewDocumentButton: React.FC<{
         + New Document ▾
       </button>
       {open && (
-        <div className="new-document-menu" role="menu">
+        <div className="absolute top-full left-0 mt-1 z-1000 bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_6px_20px_rgba(0,0,0,0.35)] min-w-70 overflow-hidden [&_button]:flex [&_button]:flex-col [&_button]:items-start [&_button]:w-full [&_button]:px-3.5 [&_button]:py-2.5 [&_button]:bg-transparent [&_button]:border-none [&_button]:text-left [&_button]:cursor-pointer [&_button]:text-(--fd-text) [&_button]:gap-0.5 [&_button]:transition-colors [&_button:hover]:bg-(--fd-overlay-subtle) [&_button+button]:border-t [&_button+button]:border-(--fd-overlay-subtle) [&_strong]:text-[13px] [&_strong]:font-semibold [&_span]:text-[11px] [&_span]:text-(--fd-text-muted)" role="menu">
           <button
             role="menuitem"
             onClick={() => { setOpen(false); onCreateScreenplay(); }}
@@ -171,27 +171,27 @@ const SortableScriptRow: React.FC<SortableScriptRowProps> = ({
     <div
       ref={(node) => { setNodeRef(node); (rowRef as React.MutableRefObject<HTMLDivElement | null>).current = node; }}
       style={style}
-      className={`project-script-item${script.pinned ? ' pinned' : ''}`}
+      className={`flex items-center gap-3 bg-(--fd-navigator-bg) border rounded-md px-5 py-4 transition-colors relative hover:border-(--fd-accent) ${script.pinned ? 'border-[rgba(244,211,94,0.3)]' : 'border-(--fd-border)'}`}
     >
       {/* Color indicator */}
       {script.color && (
         <div
-          className="script-color-indicator"
+          className="w-1 rounded-sm shrink-0 self-stretch"
           style={{ backgroundColor: script.color }}
         />
       )}
 
       {/* Drag handle */}
       {sortKey === 'custom' && (
-        <div className="drag-handle" {...attributes} {...listeners} title="Drag to reorder">
+        <div className="cursor-grab text-(--fd-text-muted) text-sm px-1.5 py-0.5 rounded-sm select-none shrink-0 active:cursor-grabbing hover:text-(--fd-text) hover:bg-(--fd-overlay-subtle)" {...attributes} {...listeners} title="Drag to reorder">
           &#x2630;
         </div>
       )}
 
-      <div className="project-script-info" onClick={() => { if (showActions) { setShowActions(false); return; } if (!editing) onNavigate(script.id); }}>
+      <div className="flex-1 cursor-pointer min-w-0" onClick={() => { if (showActions) { setShowActions(false); return; } if (!editing) onNavigate(script.id); }}>
         {editing ? (
           <input
-            className="inline-rename-input"
+            className="bg-transparent border border-(--fd-accent) rounded-sm text-(--fd-text) text-[length:inherit] [font-weight:inherit] font-[inherit] px-1 py-0.5 w-full outline-none box-border"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={(e) => {
@@ -204,28 +204,28 @@ const SortableScriptRow: React.FC<SortableScriptRowProps> = ({
           />
         ) : (
           <div
-            className="project-script-title"
+            className="text-base font-medium text-(--fd-text) mb-1 leading-[1.4]"
             onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); setEditTitle(script.title); }}
             title="Double-click to rename"
           >
             {script.title}
           </div>
         )}
-        <div className="project-script-meta">
+        <div className="text-[13px] text-(--fd-text-muted)">
           <span>Created {formatDate(script.created_at)}</span>
-          <span className="project-card-dot">&middot;</span>
+          <span className="text-(--fd-text-muted)">&middot;</span>
           <span>Modified {formatDate(script.updated_at)}</span>
           {script.page_count > 0 && (
             <>
-              <span className="project-card-dot">&middot;</span>
+              <span className="text-(--fd-text-muted)">&middot;</span>
               <span>{script.page_count} pg</span>
             </>
           )}
-          <span className="project-card-dot">&middot;</span>
+          <span className="text-(--fd-text-muted)">&middot;</span>
           <span>{formatSize(script.size_bytes)}</span>
-          <span className="project-card-dot">&middot;</span>
+          <span className="text-(--fd-text-muted)">&middot;</span>
           <span
-            className={`source-badge source-badge--${source}`}
+            className={`inline-flex items-center gap-1 py-0.5 px-1.5 rounded-[3px] text-[10px] font-semibold uppercase tracking-[0.4px] border ${source === 'cloud' ? 'text-[#5aa9ff] border-[rgba(90,169,255,0.4)] bg-[rgba(90,169,255,0.08)]' : 'text-(--fd-text-muted) border-(--fd-border) bg-(--fd-bg)'}`}
             title={source === 'cloud' ? 'Stored on OpenDraft Cloud' : 'Stored on this device'}
           >
             {source === 'cloud' ? <FaCloud /> : <FaDesktop />}
@@ -235,26 +235,26 @@ const SortableScriptRow: React.FC<SortableScriptRowProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="script-item-actions">
+      <div className="flex items-center gap-0.5 shrink-0">
         <button
-          className={`card-action-btn pin-btn${script.pinned ? ' active' : ''}`}
+          className={`bg-transparent border-none text-sm px-1.5 py-[3px] rounded-[3px] cursor-pointer transition-all hover:text-(--fd-text) hover:bg-(--fd-overlay-light) ${script.pinned ? 'text-[#f4d35e]' : 'text-(--fd-text-muted)'}`}
           onClick={() => onPin(script.id, !script.pinned)}
           title={script.pinned ? 'Unpin' : 'Pin to top'}
         >
           &#x1F4CC;
         </button>
         <button
-          className="card-action-btn color-btn"
+          className="bg-transparent border-none text-(--fd-text-muted) text-sm px-1.5 py-[3px] rounded-[3px] cursor-pointer transition-all hover:text-(--fd-text) hover:bg-(--fd-overlay-light)"
           onClick={() => setShowColorPicker(!showColorPicker)}
           title="Set color"
         >
           <span
-            className="color-dot"
+            className="inline-block w-3 h-3 rounded-full border border-white/15"
             style={{ backgroundColor: script.color || '#666' }}
           />
         </button>
         <button
-          className="card-action-btn more-btn"
+          className="bg-transparent border-none text-(--fd-text-muted) text-base font-bold leading-none px-1.5 py-[3px] rounded-[3px] cursor-pointer transition-all hover:text-(--fd-text) hover:bg-(--fd-overlay-light)"
           onClick={() => setShowActions(!showActions)}
           title="More actions"
         >
@@ -264,30 +264,30 @@ const SortableScriptRow: React.FC<SortableScriptRowProps> = ({
 
       {/* Actions dropdown */}
       {showActions && (
-        <div className="script-actions-dropdown" onClick={(e) => e.stopPropagation()}>
-          <div className="dropdown-item" onClick={() => { setEditing(true); setEditTitle(script.title); setShowActions(false); }}>Rename</div>
-          <div className="dropdown-item" onClick={() => { onDuplicate(script.id); setShowActions(false); }}>Duplicate</div>
-          <div className="dropdown-separator" />
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'fdx'); setShowActions(false); }}>Export as FDX</div>
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'fountain'); setShowActions(false); }}>Export as Fountain</div>
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'pdf'); setShowActions(false); }}>Export as PDF</div>
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'odraft'); setShowActions(false); }}>Export as .odraft</div>
-          <div className="dropdown-separator" />
-          <div className="dropdown-item dropdown-item-danger" onClick={() => { onDelete(script.id); setShowActions(false); }}>Delete</div>
+        <div className="absolute right-2.5 top-full mt-1 bg-(--fd-toolbar-bg) border border-(--fd-border) rounded-md py-1 z-200 min-w-[180px] shadow-[0_4px_12px_rgba(0,0,0,0.3)]" onClick={(e) => e.stopPropagation()}>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { setEditing(true); setEditTitle(script.title); setShowActions(false); }}>Rename</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onDuplicate(script.id); setShowActions(false); }}>Duplicate</div>
+          <div className="h-px bg-(--fd-border) my-1" />
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'fdx'); setShowActions(false); }}>Export as FDX</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'fountain'); setShowActions(false); }}>Export as Fountain</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'pdf'); setShowActions(false); }}>Export as PDF</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'odraft'); setShowActions(false); }}>Export as .odraft</div>
+          <div className="h-px bg-(--fd-border) my-1" />
+          <div className="px-3.5 py-2 text-[13px] text-[#ff6b6b] cursor-pointer transition-colors hover:bg-[rgba(255,107,107,0.1)]" onClick={() => { onDelete(script.id); setShowActions(false); }}>Delete</div>
         </div>
       )}
 
       {showColorPicker && (
-        <div className="color-picker-dropdown" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute right-2.5 bottom-2.5 flex flex-wrap gap-1 bg-(--fd-toolbar-bg) border border-(--fd-border) rounded-md p-1.5 z-100 w-[140px] shadow-[0_4px_12px_rgba(0,0,0,0.3)]" onClick={(e) => e.stopPropagation()}>
           {ITEM_COLORS.map((c) => (
             <button
               key={c || 'none'}
-              className={`color-picker-swatch${script.color === c ? ' selected' : ''}`}
+              className={`w-6 h-6 rounded-full border-2 cursor-pointer transition-transform relative hover:scale-[1.2] ${script.color === c ? 'border-white shadow-[0_0_0_1px_var(--fd-accent)]' : 'border-transparent'}`}
               style={{ backgroundColor: c || '#555' }}
               onClick={() => { onColor(script.id, c); setShowColorPicker(false); }}
               title={c || 'No color'}
             >
-              {!c && <span className="color-none-x">&#x2715;</span>}
+              {!c && <span className="absolute inset-0 flex items-center justify-center text-[10px] text-[#aaa]">&#x2715;</span>}
             </button>
           ))}
         </div>
@@ -377,17 +377,17 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
     <div
       ref={(node) => { setNodeRef(node); (cardRef as React.MutableRefObject<HTMLDivElement | null>).current = node; }}
       style={style}
-      className={`script-card${script.pinned ? ' pinned' : ''}`}
+      className={`bg-(--fd-navigator-bg) border rounded-lg p-4 cursor-pointer transition-colors relative overflow-visible min-h-[160px] flex flex-col hover:border-(--fd-accent) hover:shadow-[0_4px_12px_rgba(74,158,255,0.1)] ${script.pinned ? 'border-[rgba(244,211,94,0.4)]' : 'border-(--fd-border)'}`}
       onClick={handleCardClick}
     >
       {script.color && (
-        <div className="script-card-color-stripe" style={{ backgroundColor: script.color }} />
+        <div className="absolute top-0 left-0 right-0 h-1 rounded-t-lg" style={{ backgroundColor: script.color }} />
       )}
-      <div className="script-card-header">
+      <div className="flex justify-between items-start mb-2 gap-1">
         {/* Drag handle — only in custom sort */}
         {sortKey === 'custom' && (
           <div
-            className="card-drag-handle"
+            className="cursor-grab text-sm text-(--fd-text-muted) px-1 py-0.5 rounded-sm select-none shrink-0 opacity-50 transition-opacity active:cursor-grabbing hover:opacity-100 hover:bg-(--fd-overlay-light)"
             {...attributes}
             {...listeners}
             title="Drag to reorder"
@@ -398,7 +398,7 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
         )}
         {editing ? (
           <input
-            className="inline-rename-input"
+            className="bg-transparent border border-(--fd-accent) rounded-sm text-(--fd-text) text-[length:inherit] [font-weight:inherit] font-[inherit] px-1 py-0.5 w-full outline-none box-border"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={(e) => {
@@ -411,23 +411,23 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
           />
         ) : (
           <div
-            className="script-card-title"
+            className="text-[15px] font-semibold text-(--fd-text) flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
             onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); setEditTitle(script.title); }}
             title="Double-click to rename"
           >
             {script.title}
           </div>
         )}
-        <div className="script-card-actions">
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
-            className={`card-action-btn pin-btn${script.pinned ? ' active' : ''}`}
+            className={`bg-transparent border-none text-sm px-1.5 py-[3px] rounded-[3px] cursor-pointer transition-all hover:text-(--fd-text) hover:bg-(--fd-overlay-light) ${script.pinned ? 'text-[#f4d35e]' : 'text-(--fd-text-muted)'}`}
             onClick={(e) => { e.stopPropagation(); onPin(script.id, !script.pinned); }}
             title={script.pinned ? 'Unpin' : 'Pin to top'}
           >
             &#x1F4CC;
           </button>
           <button
-            className="card-action-btn more-btn"
+            className="bg-transparent border-none text-(--fd-text-muted) text-base font-bold leading-none px-1.5 py-[3px] rounded-[3px] cursor-pointer transition-all hover:text-(--fd-text) hover:bg-(--fd-overlay-light)"
             onClick={(e) => { e.stopPropagation(); setShowActions(!showActions); }}
             title="More actions"
           >
@@ -435,14 +435,14 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
           </button>
         </div>
       </div>
-      <div className="script-card-preview">
+      <div className="text-[11px] text-(--fd-text-muted) leading-[1.5] flex-1 overflow-hidden line-clamp-5 font-[family-name:'Courier_Prime','Courier_New',monospace] whitespace-pre-line">
         {script.preview || 'Empty screenplay'}
       </div>
-      <div className="script-card-meta">
+      <div className="text-[10px] text-(--fd-text-muted) mt-2 flex gap-2">
         {script.page_count > 0 && <span>{script.page_count} pg</span>}
         <span>{formatDate(script.updated_at)}</span>
         <span
-          className={`source-badge source-badge--${source}`}
+          className={`inline-flex items-center gap-1 py-0.5 px-1.5 rounded-[3px] text-[10px] font-semibold uppercase tracking-[0.4px] border ${source === 'cloud' ? 'text-[#5aa9ff] border-[rgba(90,169,255,0.4)] bg-[rgba(90,169,255,0.08)]' : 'text-(--fd-text-muted) border-(--fd-border) bg-(--fd-bg)'}`}
           title={source === 'cloud' ? 'Stored on OpenDraft Cloud' : 'Stored on this device'}
         >
           {source === 'cloud' ? <FaCloud /> : <FaDesktop />}
@@ -452,16 +452,16 @@ const ScriptCard: React.FC<ScriptCardProps> = ({
 
       {/* Actions dropdown */}
       {showActions && (
-        <div className="script-actions-dropdown script-card-dropdown" onClick={(e) => e.stopPropagation()}>
-          <div className="dropdown-item" onClick={() => { setEditing(true); setEditTitle(script.title); setShowActions(false); }}>Rename</div>
-          <div className="dropdown-item" onClick={() => { onDuplicate(script.id); setShowActions(false); }}>Duplicate</div>
-          <div className="dropdown-separator" />
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'fdx'); setShowActions(false); }}>Export as FDX</div>
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'fountain'); setShowActions(false); }}>Export as Fountain</div>
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'pdf'); setShowActions(false); }}>Export as PDF</div>
-          <div className="dropdown-item" onClick={() => { onExport(script.id, 'odraft'); setShowActions(false); }}>Export as .odraft</div>
-          <div className="dropdown-separator" />
-          <div className="dropdown-item dropdown-item-danger" onClick={() => { onDelete(script.id); setShowActions(false); }}>Delete</div>
+        <div className="absolute right-2 top-full mt-0 bottom-auto bg-(--fd-toolbar-bg) border border-(--fd-border) rounded-md py-1 z-200 min-w-[180px] shadow-[0_4px_12px_rgba(0,0,0,0.3)]" onClick={(e) => e.stopPropagation()}>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { setEditing(true); setEditTitle(script.title); setShowActions(false); }}>Rename</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onDuplicate(script.id); setShowActions(false); }}>Duplicate</div>
+          <div className="h-px bg-(--fd-border) my-1" />
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'fdx'); setShowActions(false); }}>Export as FDX</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'fountain'); setShowActions(false); }}>Export as Fountain</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'pdf'); setShowActions(false); }}>Export as PDF</div>
+          <div className="px-3.5 py-2 text-[13px] text-(--fd-text) cursor-pointer transition-colors hover:bg-(--fd-overlay-light)" onClick={() => { onExport(script.id, 'odraft'); setShowActions(false); }}>Export as .odraft</div>
+          <div className="h-px bg-(--fd-border) my-1" />
+          <div className="px-3.5 py-2 text-[13px] text-[#ff6b6b] cursor-pointer transition-colors hover:bg-[rgba(255,107,107,0.1)]" onClick={() => { onDelete(script.id); setShowActions(false); }}>Delete</div>
         </div>
       )}
     </div>
@@ -882,17 +882,17 @@ const ProjectView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="project-view">
-        <div className="project-view-loading">Loading project...</div>
+      <div className="h-full bg-(--fd-bg) text-(--fd-text) flex flex-col overflow-y-auto">
+        <div className="px-10 py-20 text-center text-(--fd-text-muted) text-sm">Loading project...</div>
       </div>
     );
   }
 
   return (
-    <div className="project-view">
-      <div className="project-view-header">
+    <div className="h-full bg-(--fd-bg) text-(--fd-text) flex flex-col overflow-y-auto">
+      <div className="flex items-center gap-4 px-10 py-5 border-b border-(--fd-border) bg-(--fd-navigator-bg) shrink-0">
         <button
-          className="project-back-btn"
+          className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) px-3 py-1.5 rounded text-[13px] cursor-pointer transition-all whitespace-nowrap hover:border-(--fd-accent) hover:text-(--fd-accent)"
           onClick={() => navigate('/projects')}
         >
           &#x2190; Projects
@@ -900,7 +900,7 @@ const ProjectView: React.FC = () => {
         <div>
           {editingProjectName ? (
             <input
-              className="inline-rename-input project-view-title-input"
+              className="bg-transparent border border-(--fd-accent) rounded-sm text-(--fd-text) w-full outline-none box-border text-xl font-bold py-1 px-2"
               value={editProjectName}
               onChange={(e) => setEditProjectName(e.target.value)}
               onKeyDown={(e) => {
@@ -924,7 +924,7 @@ const ProjectView: React.FC = () => {
             />
           ) : (
             <h1
-              className="project-view-title"
+              className="text-xl font-semibold m-0"
               onDoubleClick={() => { setEditProjectName(project?.name || ''); setEditingProjectName(true); }}
               title="Double-click to rename"
             >
@@ -932,20 +932,20 @@ const ProjectView: React.FC = () => {
             </h1>
           )}
           {project && (
-            <div className="project-view-meta">
+            <div className="text-xs text-(--fd-text-muted) mt-1 flex items-center gap-1.5">
               <span>
                 {scripts.length} script{scripts.length !== 1 ? 's' : ''}
               </span>
-              <span className="project-card-dot">&middot;</span>
+              <span className="text-(--fd-text-muted)">&middot;</span>
               <span>Created {formatDate(project.created_at)}</span>
-              <span className="project-card-dot">&middot;</span>
+              <span className="text-(--fd-text-muted)">&middot;</span>
               <span>Modified {formatDate(project.updated_at)}</span>
             </div>
           )}
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
-            className="project-action-btn"
+            className="h-8 px-4 bg-(--fd-dropdown-bg) text-(--fd-text) border border-(--fd-border) rounded text-xs cursor-pointer transition-all hover:border-(--fd-accent) hover:text-(--fd-accent)"
             onClick={() => {
               if (!projectId) return;
               exportProjectAsZip(projectId)
@@ -956,7 +956,7 @@ const ProjectView: React.FC = () => {
             Export Project
           </button>
           <button
-            className="project-action-btn"
+            className="h-8 px-4 bg-(--fd-dropdown-bg) text-(--fd-text) border border-(--fd-border) rounded text-xs cursor-pointer transition-all hover:border-(--fd-accent) hover:text-(--fd-accent)"
             onClick={() => setShowProperties(true)}
           >
             Properties
@@ -965,11 +965,11 @@ const ProjectView: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="project-view-tabs">
+      <div className="flex gap-0 px-10 border-b border-(--fd-border) bg-(--fd-navigator-bg) shrink-0">
         {(['scripts', 'assets', 'versions'] as TabKey[]).map((tab) => (
           <button
             key={tab}
-            className={`project-tab ${activeTab === tab ? 'active' : ''}`}
+            className={`px-5 py-2.5 bg-transparent border-none border-b-2 text-[13px] font-medium cursor-pointer transition-all ${activeTab === tab ? 'text-(--fd-accent) border-b-(--fd-accent)' : 'text-(--fd-text-muted) border-b-transparent hover:text-(--fd-text)'}`}
             onClick={() => setActiveTab(tab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -978,22 +978,22 @@ const ProjectView: React.FC = () => {
       </div>
 
       {/* Tab content */}
-      <div className="project-view-body">
+      <div className="flex-1 px-10 py-6 max-w-300 w-full mx-auto">
         {activeTab === 'scripts' && (
-          <div className="project-scripts-tab">
-            <div className="project-scripts-actions">
+          <div>
+            <div className="flex gap-2 mb-5">
               <NewDocumentButton
                 onCreateScreenplay={handleCreateScript}
                 onCreateTreatment={handleCreateTreatment}
               />
               <button
-                className="project-action-btn"
+                className="h-8 px-4 bg-(--fd-dropdown-bg) text-(--fd-text) border border-(--fd-border) rounded text-xs cursor-pointer transition-all hover:border-(--fd-accent) hover:text-(--fd-accent)"
                 onClick={handleImportScript}
               >
                 Import
               </button>
               <select
-                className="sort-select"
+                className="h-8 px-2.5 bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded text-xs cursor-pointer"
                 value={scriptSortKey}
                 onChange={(e) =>
                   setScriptSortKey(e.target.value as ScriptSortKey)
@@ -1007,16 +1007,16 @@ const ProjectView: React.FC = () => {
                 <option value="size">Size</option>
                 <option value="pages">Pages</option>
               </select>
-              <div className="view-toggle-group">
+              <div className="flex gap-0.5 ml-1">
                 <button
-                  className={`view-toggle-btn${viewMode === 'list' ? ' active' : ''}`}
+                  className={`bg-(--fd-dropdown-bg) border border-(--fd-border) px-2 py-1 rounded text-sm leading-none transition-all cursor-pointer ${viewMode === 'list' ? 'text-(--fd-accent) border-(--fd-accent)' : 'text-(--fd-text-muted) hover:text-(--fd-text)'}`}
                   onClick={() => setViewMode('list')}
                   title="List view"
                 >
                   &#x2630;
                 </button>
                 <button
-                  className={`view-toggle-btn${viewMode === 'card' ? ' active' : ''}`}
+                  className={`bg-(--fd-dropdown-bg) border border-(--fd-border) px-2 py-1 rounded text-sm leading-none transition-all cursor-pointer ${viewMode === 'card' ? 'text-(--fd-accent) border-(--fd-accent)' : 'text-(--fd-text-muted) hover:text-(--fd-text)'}`}
                   onClick={() => setViewMode('card')}
                   title="Card view"
                 >
@@ -1025,7 +1025,7 @@ const ProjectView: React.FC = () => {
               </div>
             </div>
             {scripts.length === 0 ? (
-              <div className="project-tab-empty">
+              <div className="py-10 px-5 text-center text-(--fd-text-muted) text-[13px] italic">
                 No scripts yet. Create or import one to get started.
               </div>
             ) : viewMode === 'card' ? (
@@ -1037,12 +1037,12 @@ const ProjectView: React.FC = () => {
               >
                 {pinnedScripts.length > 0 && (
                   <>
-                    <div className="pinned-section-header">Pinned</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.8px] py-2 mt-4 mb-1 first:mt-0 text-[#f4d35e]">Pinned</div>
                     <SortableContext
                       items={pinnedScripts.map((s) => s.id)}
                       strategy={rectSortingStrategy}
                     >
-                      <div className="script-cards-grid">
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                         {pinnedScripts.map((script) => (
                           <ScriptCard
                             key={script.id}
@@ -1064,12 +1064,12 @@ const ProjectView: React.FC = () => {
                 )}
                 {unpinnedScripts.length > 0 && (
                   <>
-                    <div className="section-header">All Screenplays</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.8px] py-2 mt-4 mb-1 first:mt-0 text-(--fd-text-muted)">All Screenplays</div>
                     <SortableContext
                       items={unpinnedScripts.map((s) => s.id)}
                       strategy={rectSortingStrategy}
                     >
-                      <div className="script-cards-grid">
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                         {unpinnedScripts.map((script) => (
                           <ScriptCard
                             key={script.id}
@@ -1099,12 +1099,12 @@ const ProjectView: React.FC = () => {
               >
                 {pinnedScripts.length > 0 && (
                   <>
-                    <div className="pinned-section-header">Pinned</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.8px] py-2 mt-4 mb-1 first:mt-0 text-[#f4d35e]">Pinned</div>
                     <SortableContext
                       items={pinnedScripts.map((s) => s.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="project-scripts-list">
+                      <div className="flex flex-col gap-2.5">
                         {pinnedScripts.map((script) => (
                           <SortableScriptRow
                             key={script.id}
@@ -1129,12 +1129,12 @@ const ProjectView: React.FC = () => {
                 )}
                 {unpinnedScripts.length > 0 && (
                   <>
-                    <div className="section-header">All Screenplays</div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.8px] py-2 mt-4 mb-1 first:mt-0 text-(--fd-text-muted)">All Screenplays</div>
                     <SortableContext
                       items={unpinnedScripts.map((s) => s.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="project-scripts-list">
+                      <div className="flex flex-col gap-2.5">
                         {unpinnedScripts.map((script) => (
                           <SortableScriptRow
                             key={script.id}
@@ -1167,17 +1167,17 @@ const ProjectView: React.FC = () => {
         )}
 
         {activeTab === 'versions' && (
-          <div className="project-versions-tab">
+          <div>
             {versions.length === 0 ? (
-              <div className="project-tab-empty">
+              <div className="py-10 px-5 text-center text-(--fd-text-muted) text-[13px] italic">
                 No version history available.
               </div>
             ) : (
-              <div className="project-versions-list">
+              <div className="flex flex-col gap-2">
                 {versions.map((v) => (
-                  <div key={v.hash} className="project-version-item">
-                    <div className="project-version-message">{v.message}</div>
-                    <div className="project-version-time">
+                  <div key={v.hash} className="flex justify-between items-center bg-(--fd-navigator-bg) border border-(--fd-border) rounded-md px-4 py-3">
+                    <div className="text-[13px] text-(--fd-text)">{v.message}</div>
+                    <div className="text-[11px] text-(--fd-text-muted) whitespace-nowrap ml-4">
                       {formatDate(v.date)}
                     </div>
                   </div>
@@ -1191,17 +1191,17 @@ const ProjectView: React.FC = () => {
       {/* New Treatment — name prompt */}
       {treatmentNamePrompt !== null && (
         <div
-          className="dialog-overlay"
+          className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center h-(--vv-height,100dvh) px-4 pt-[5vh] pb-4 overflow-y-auto"
           onClick={() => setTreatmentNamePrompt(null)}
         >
-          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-header">New Treatment</div>
-            <div className="dialog-body">
-              <p style={{ margin: '0 0 10px 0' }}>Name this treatment:</p>
+          <div className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-[320px] max-w-100 max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">New Treatment</div>
+            <div className="dialog-body p-5 overflow-y-auto flex-1">
+              <p className="m-0 mb-2.5">Name this treatment:</p>
               <input
                 autoFocus
                 type="text"
-                className="dialog-input"
+                className="w-full py-2 px-2.5 text-sm bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) box-border"
                 value={treatmentNamePrompt}
                 onChange={(e) => setTreatmentNamePrompt(e.target.value)}
                 onKeyDown={(e) => {
@@ -1209,22 +1209,12 @@ const ProjectView: React.FC = () => {
                   if (e.key === 'Escape') setTreatmentNamePrompt(null);
                 }}
                 placeholder="e.g. First Treatment, Producer Draft…"
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  fontSize: '14px',
-                  background: 'var(--fd-overlay-subtle)',
-                  border: '1px solid var(--fd-border)',
-                  borderRadius: 4,
-                  color: 'var(--fd-text)',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
-            <div className="dialog-actions">
+            <div className="dialog-actions flex justify-end gap-2 px-5 py-3.5 border-t border-(--fd-border) shrink-0 [&_button]:h-8.5 [&_button]:px-4.5 [&_button]:bg-(--fd-toolbar-bg) [&_button]:text-(--fd-text) [&_button]:border [&_button]:border-(--fd-border) [&_button]:rounded [&_button]:cursor-pointer [&_button]:text-sm [&_button:hover]:bg-(--fd-menu-hover)">
               <button onClick={() => setTreatmentNamePrompt(null)}>Cancel</button>
               <button
-                className="dialog-primary"
+                className="dialog-primary bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90"
                 onClick={() => confirmCreateTreatment(treatmentNamePrompt)}
               >
                 Create
@@ -1237,11 +1227,11 @@ const ProjectView: React.FC = () => {
       {/* Delete Confirmation Dialog */}
       {pendingDeleteId && (
         <div
-          className="dialog-overlay"
+          className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center h-(--vv-height,100dvh) px-4 pt-[5vh] pb-4 overflow-y-auto"
           onClick={() => setPendingDeleteId(null)}
         >
-          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-header">Delete Script</div>
+          <div className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-[320px] max-w-100 max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">Delete Script</div>
             <div className="dialog-body">
               <p>
                 Are you sure you want to delete this script? This cannot be

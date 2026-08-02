@@ -22,7 +22,7 @@ const FontPicker: React.FC<FontPickerProps> = ({ value, onChange, extraFonts = [
 
   return (
     <select
-      className="font-selector"
+      className="font-selector h-5.5 min-w-30 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-overlay-medium) rounded-[5px] px-2 text-[11.5px] cursor-pointer outline-none focus:border-(--fd-accent)"
       value={value}
       onChange={handleChange}
       title="Font Family"

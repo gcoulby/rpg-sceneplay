@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 // Vite 8 uses Rolldown which does NOT transpile JS syntax via build.target.
 // For legacy macOS builds (Catalina / older WKWebView) we run each output
@@ -33,7 +34,7 @@ function legacyTranspile(): Plugin | null {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), legacyTranspile()].filter(Boolean),
+  plugins: [react(), tailwindcss(), legacyTranspile()].filter(Boolean),
 
   // Allow Tauri dev server to connect
   server: {

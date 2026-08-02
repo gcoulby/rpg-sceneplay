@@ -57,6 +57,8 @@ const toEmbedUrl = (url: string): string | null => {
  * - URLs that look like videos render as <video> or iframe embed
  * - @AssetName references render as clickable asset links
  */
+const MEDIA_EMBED_CLASS = 'my-1 rounded overflow-hidden max-w-full [&_img]:max-w-full [&_img]:h-auto [&_img]:block [&_img]:rounded [&_video]:max-w-full [&_video]:h-auto [&_video]:block [&_video]:rounded [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:border-none [&_iframe]:rounded';
+
 const NoteContentDisplay: React.FC<{
   content: string;
   assets: Asset[];
@@ -73,7 +75,7 @@ const NoteContentDisplay: React.FC<{
     // Image URL on its own line
     if (isImageUrl(line) && /^https?:\/\//.test(line)) {
       elements.push(
-        <div key={i} className="note-media-embed">
+        <div key={i} className={MEDIA_EMBED_CLASS}>
           <img src={line} alt="" loading="lazy" />
         </div>,
       );
@@ -88,12 +90,12 @@ const NoteContentDisplay: React.FC<{
           // In Tauri, YouTube/Vimeo iframes don't work (origin restriction).
           // Show as a clickable link that opens in the default browser.
           elements.push(
-            <div key={i} className="note-media-embed note-media-video">
+            <div key={i} className={MEDIA_EMBED_CLASS}>
               <a
                 href={line}
                 target="_blank"
                 rel="noreferrer"
-                className="note-video-link"
+                className="text-(--fd-accent,#6ea0f7) underline cursor-pointer break-all hover:opacity-80"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); openInBrowser(line); }}
               >
                 {line}
@@ -102,14 +104,14 @@ const NoteContentDisplay: React.FC<{
           );
         } else {
           elements.push(
-            <div key={i} className="note-media-embed note-media-video">
+            <div key={i} className={MEDIA_EMBED_CLASS}>
               <iframe src={embedUrl} allowFullScreen title="video" />
             </div>,
           );
         }
       } else {
         elements.push(
-          <div key={i} className="note-media-embed">
+          <div key={i} className={MEDIA_EMBED_CLASS}>
             <video src={line} controls preload="metadata" />
           </div>,
         );
@@ -135,21 +137,21 @@ const NoteContentDisplay: React.FC<{
             : '#';
           if (isImg) {
             lineElements.push(
-              <span key={j} className="note-asset-ref">
-                <img src={url} alt={asset.original_name} className="note-asset-thumb" loading="lazy" />
-                <span className="note-asset-name">{part}</span>
+              <span key={j} className="inline text-(--fd-accent) font-medium cursor-pointer hover:underline">
+                <img src={url} alt={asset.original_name} className="inline-block h-4.5 w-auto rounded-sm align-middle mr-0.75" loading="lazy" />
+                <span className="align-middle">{part}</span>
               </span>,
             );
           } else {
             lineElements.push(
-              <a key={j} className="note-asset-ref note-asset-link" href={url} target="_blank" rel="noreferrer">
+              <a key={j} className="inline text-(--fd-accent) font-medium cursor-pointer no-underline hover:underline" href={url} target="_blank" rel="noreferrer">
                 {part}
               </a>,
             );
           }
         } else {
           lineElements.push(
-            <span key={j} className="note-asset-ref note-asset-unresolved">{part}</span>,
+            <span key={j} className="inline text-(--fd-text-muted) font-medium italic cursor-pointer">{part}</span>,
           );
         }
       } else {
@@ -165,7 +167,7 @@ const NoteContentDisplay: React.FC<{
               openInBrowser(tp);
             };
             lineElements.push(
-              <a key={`${j}-${k}`} href={tp} target="_blank" rel="noreferrer" className="note-inline-link" onClick={handleClick}>
+              <a key={`${j}-${k}`} href={tp} target="_blank" rel="noreferrer" className="text-(--fd-accent,#6ea0f7) underline cursor-pointer break-all hover:opacity-80" onClick={handleClick}>
                 {tp}
               </a>,
             );
@@ -179,13 +181,13 @@ const NoteContentDisplay: React.FC<{
     }
 
     elements.push(
-      <div key={i} className="note-content-line">
+      <div key={i} className="mb-0.5">
         {lineElements}
       </div>,
     );
   }
 
-  return <div className="note-content-rendered">{elements}</div>;
+  return <div className="text-xs text-(--fd-text) leading-[1.45]">{elements}</div>;
 };
 
 const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
@@ -524,25 +526,28 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
   const panelClass = animationState === 'entered'
     ? 'panel-open' : animationState === 'exiting' ? 'panel-closing' : '';
 
+  const snTabClass = (active: boolean) =>
+    `flex-1 bg-none border-none border-b-2 text-xs font-medium py-2 px-3 cursor-pointer transition-colors hover:text-(--fd-text) ${active ? 'text-(--fd-accent) border-b-(--fd-accent)' : 'text-(--fd-text-muted) border-b-transparent'}`;
+
   return (
-    <div ref={panelRef} className={`script-notes-panel ${panelClass}`} style={style}>
-      <div className="script-notes-header">
-        <span className="script-notes-title">Notes</span>
-        <button className="script-notes-close" onClick={toggleScriptNotes} title="Close">
+    <div ref={panelRef} className={`script-notes-panel w-75 min-w-50 bg-(--fd-navigator-bg) border-l border-(--fd-border) flex flex-col overflow-hidden ${panelClass}`} style={style}>
+      <div className="flex items-center px-3 py-2.5 border-b border-(--fd-border) shrink-0 gap-2">
+        <span className="font-semibold text-xs uppercase tracking-[0.5px] text-(--fd-text-muted)">Notes</span>
+        <button className="bg-none border-none text-(--fd-text-muted) text-lg cursor-pointer py-0 px-1 leading-none hover:text-(--fd-text)" onClick={toggleScriptNotes} title="Close">
           &times;
         </button>
       </div>
 
       {/* ── Tab switcher ── */}
-      <div className="sn-tabs">
+      <div className="flex border-b border-(--fd-border) shrink-0">
         <button
-          className={`sn-tab${activeTab === 'general' ? ' active' : ''}`}
+          className={snTabClass(activeTab === 'general')}
           onClick={() => setActiveTab('general')}
         >
           General{generalNotes.length > 0 ? ` (${generalNotes.length})` : ''}
         </button>
         <button
-          className={`sn-tab${activeTab === 'script' ? ' active' : ''}`}
+          className={snTabClass(activeTab === 'script')}
           onClick={() => setActiveTab('script')}
         >
           Script{notes.length > 0 ? ` (${isFiltered ? `${filteredNotes.length}/` : ''}${notes.length})` : ''}
@@ -551,45 +556,45 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
 
       {activeTab === 'script' && <>
       {/* ── Multi-dimensional filter bar ── */}
-      <div className="script-notes-filters">
+      <div className="border-b border-(--fd-border) shrink-0 pt-1.5 px-2.5 pb-1">
         {/* Active filter summary + clear */}
         {isFiltered && (
-          <div className="sn-filter-active">
+          <div className="flex items-center gap-1 flex-wrap mb-1.5">
             {localFilter.noteId && (
-              <span className="sn-filter-chip" onClick={handleClearFilter}>
+              <span className="inline-flex items-center gap-0.75 py-0.5 px-2 bg-[rgba(74,158,255,.12)] border border-(--fd-accent) rounded-[10px] text-(--fd-accent) text-[10px] cursor-pointer whitespace-nowrap max-w-37.5 overflow-hidden text-ellipsis hover:bg-[rgba(74,158,255,.22)]" onClick={handleClearFilter}>
                 Selected note
-                <span className="sn-chip-x">&times;</span>
+                <span className="text-xs ml-0.5 opacity-60">&times;</span>
               </span>
             )}
             {localFilter.elementType && (
               <span
-                className="sn-filter-chip"
+                className="inline-flex items-center gap-0.75 py-0.5 px-2 bg-[rgba(74,158,255,.12)] border border-(--fd-accent) rounded-[10px] text-(--fd-accent) text-[10px] cursor-pointer whitespace-nowrap max-w-37.5 overflow-hidden text-ellipsis hover:bg-[rgba(74,158,255,.22)]"
                 onClick={() => toggleTypeFilter(localFilter.elementType!)}
               >
                 {ELEMENT_LABELS[localFilter.elementType as ElementType] || localFilter.elementType}
-                <span className="sn-chip-x">&times;</span>
+                <span className="text-xs ml-0.5 opacity-60">&times;</span>
               </span>
             )}
             {localFilter.contextLabel && (
               <span
-                className="sn-filter-chip sn-chip-context"
+                className="inline-flex items-center gap-0.75 py-0.5 px-2 rounded-[10px] text-[10px] cursor-pointer whitespace-nowrap max-w-37.5 overflow-hidden text-ellipsis border border-[#e89b4f] text-[#e89b4f] bg-[rgba(232,155,79,.12)] hover:bg-[rgba(232,155,79,.22)]"
                 onClick={() => toggleContextFilter(localFilter.contextLabel!)}
               >
                 {localFilter.contextLabel}
-                <span className="sn-chip-x">&times;</span>
+                <span className="text-xs ml-0.5 opacity-60">&times;</span>
               </span>
             )}
             {localFilter.color && (
               <span
-                className="sn-filter-chip"
+                className="inline-flex items-center gap-0.75 py-0.5 px-2 bg-[rgba(74,158,255,.12)] border border-(--fd-accent) rounded-[10px] text-(--fd-accent) text-[10px] cursor-pointer whitespace-nowrap max-w-37.5 overflow-hidden text-ellipsis hover:bg-[rgba(74,158,255,.22)]"
                 onClick={() => toggleColorFilter(localFilter.color!)}
                 style={{ borderColor: getNoteColorHex(localFilter.color) }}
               >
                 {localFilter.color}
-                <span className="sn-chip-x">&times;</span>
+                <span className="text-xs ml-0.5 opacity-60">&times;</span>
               </span>
             )}
-            <button className="sn-filter-clear" onClick={handleClearFilter}>
+            <button className="ml-auto bg-none border-none text-(--fd-text-muted) text-[10px] cursor-pointer underline p-0 hover:text-(--fd-text)" onClick={handleClearFilter}>
               Show All
             </button>
           </div>
@@ -597,13 +602,13 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
 
         {/* Type filter row */}
         {filterOptions.types.length > 1 && (
-          <div className="sn-filter-row">
-            <span className="sn-filter-label">Type</span>
-            <div className="sn-filter-chips">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[9px] text-(--fd-text-muted) uppercase tracking-[0.4px] w-10.5 shrink-0">Type</span>
+            <div className="flex gap-0.75 flex-wrap flex-1 min-w-0">
               {filterOptions.types.map((t) => (
                 <button
                   key={t}
-                  className={`sn-chip${localFilter.elementType === t ? ' active' : ''}`}
+                  className={`py-0.5 px-1.75 rounded-[3px] text-[10px] cursor-pointer whitespace-nowrap max-w-30 overflow-hidden text-ellipsis border ${localFilter.elementType === t ? 'bg-(--fd-accent) border-(--fd-accent) text-white' : 'bg-transparent border-(--fd-border) text-(--fd-text-muted) hover:border-[#555] hover:text-(--fd-text)'}`}
                   onClick={() => toggleTypeFilter(t)}
                 >
                   {ELEMENT_LABELS[t as ElementType] || t}
@@ -615,13 +620,13 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
 
         {/* Context filter row */}
         {filterOptions.contexts.length > 0 && (
-          <div className="sn-filter-row">
-            <span className="sn-filter-label">Context</span>
-            <div className="sn-filter-chips">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[9px] text-(--fd-text-muted) uppercase tracking-[0.4px] w-10.5 shrink-0">Context</span>
+            <div className="flex gap-0.75 flex-wrap flex-1 min-w-0">
               {filterOptions.contexts.map((c) => (
                 <button
                   key={c}
-                  className={`sn-chip sn-chip-ctx${localFilter.contextLabel === c ? ' active' : ''}`}
+                  className={`py-0.5 px-1.75 rounded-[3px] text-[10px] cursor-pointer whitespace-nowrap max-w-30 overflow-hidden text-ellipsis border ${localFilter.contextLabel === c ? 'bg-[#e89b4f] border-[#e89b4f] text-white' : 'bg-transparent border-(--fd-border) text-(--fd-text-muted) hover:border-[#555] hover:text-(--fd-text)'}`}
                   onClick={() => toggleContextFilter(c)}
                 >
                   {c.length > 25 ? c.slice(0, 25) + '...' : c}
@@ -632,19 +637,19 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
         )}
 
         {/* Color filter */}
-        <div className="sn-filter-row sn-filter-colors">
+        <div className="flex items-center gap-1 mb-0.5 pl-12">
           {NOTE_COLORS.map((c) => {
             const count = notes.filter((n) => n.color === c.name).length;
             if (count === 0) return null;
             return (
               <button
                 key={c.name}
-                className={`sn-color-btn${localFilter.color === c.name ? ' active' : ''}`}
+                className={`w-4 h-4 p-0 border-2 rounded-full cursor-pointer bg-transparent flex items-center justify-center hover:border-white/30 ${localFilter.color === c.name ? 'border-white' : 'border-transparent'}`}
                 onClick={() => toggleColorFilter(c.name)}
                 title={`${c.name} (${count})`}
                 style={{ '--swatch-color': c.hex } as React.CSSProperties}
               >
-                <span className="swatch" />
+                <span className="block w-2.5 h-2.5 rounded-full bg-(--swatch-color)" />
               </button>
             );
           })}
@@ -652,9 +657,9 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
       </div>
 
       {/* ── Notes list ── */}
-      <div className="script-notes-list">
+      <div className="flex-1 overflow-y-auto p-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#444] [&::-webkit-scrollbar-thumb]:rounded-[3px]">
         {filteredNotes.length === 0 ? (
-          <div className="script-notes-empty">
+          <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-[1.5]">
             {notes.length === 0
               ? 'No notes yet. Select text in the editor, right-click, and choose "Add Script Note".'
               : 'No notes match this filter.'}
@@ -669,15 +674,15 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
             return (
               <div
                 key={note.id}
-                className="note-item"
+                className="note-item bg-(--fd-dropdown-bg) border border-(--fd-border) border-l-3 border-l-(--fd-accent) rounded-md p-2.5 mb-2 flex flex-col gap-1.5 transition-colors hover:border-[#555]"
                 style={{ borderLeftColor: hex }}
               >
-                <div className="note-item-header">
-                  <div className="note-item-context">
-                    <span className="note-item-element">{elemLabel}</span>
+                <div className="flex justify-between items-start gap-1.5">
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-[10px] text-(--fd-accent) font-semibold uppercase tracking-[0.3px]">{elemLabel}</span>
                     {note.contextLabel && (
                       <span
-                        className="note-item-ctx-label"
+                        className="text-[10px] text-[#e89b4f] font-medium cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis max-w-42.5 hover:underline"
                         onClick={() => toggleContextFilter(note.contextLabel)}
                         title={`Filter by "${note.contextLabel}"`}
                       >
@@ -685,15 +690,15 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                       </span>
                     )}
                     {sceneName && (
-                      <span className="note-item-scene">{sceneName}</span>
+                      <span className="text-[10px] text-(--fd-text-muted) whitespace-nowrap overflow-hidden text-ellipsis max-w-42.5">{sceneName}</span>
                     )}
                   </div>
-                  <span className="note-item-date">{formatDate(note.createdAt)}</span>
+                  <span className="text-[10px] text-(--fd-text-muted) whitespace-nowrap shrink-0">{formatDate(note.createdAt)}</span>
                 </div>
 
                 {note.anchorText && (
                   <div
-                    className="note-item-anchor"
+                    className="text-[11px] text-(--fd-text-muted) italic py-1 px-2 bg-black/15 rounded-[3px] cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis transition-colors hover:text-(--fd-accent)"
                     onClick={() => handleNavigateToNote(note.id)}
                     title="Click to navigate to this text"
                   >
@@ -703,12 +708,12 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
 
                 {/* Note content: edit mode or rendered preview */}
                 {isEditing ? (
-                  <div className="note-edit-area">
+                  <div className="relative">
                     <textarea
                       ref={(el) => {
                         if (el) textareaRefs.current.set(note.id, el);
                       }}
-                      className="note-item-content"
+                      className="w-full bg-black/20 text-(--fd-text) border border-transparent rounded-[3px] py-1.5 px-2 text-xs font-sans leading-[1.4] resize-y outline-none placeholder:text-(--fd-text-muted) placeholder:text-[11px] focus:border-(--fd-accent) focus:bg-black/30"
                       value={note.content}
                       onChange={(e) => handleTextareaChange(note.id, e.target.value)}
                       onKeyDown={(e) => handleTextareaKeyDown(e, note.id)}
@@ -725,21 +730,21 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                       autoFocus
                     />
                     {assetSuggestions.length > 0 && assetQuery !== null && (
-                      <div className="note-asset-dropdown">
+                      <div className="absolute bottom-[calc(100%+2px)] left-0 right-0 max-h-50 overflow-y-auto bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_4px_12px_rgba(0,0,0,.4)] z-2600 py-1">
                         {assetSuggestions.map((a, idx) => (
                           <div
                             key={a.id}
-                            className={`note-asset-option${idx === assetSugIdx ? ' selected' : ''}`}
+                            className={`flex items-center gap-1.5 py-1.25 px-2.5 cursor-pointer text-xs ${idx === assetSugIdx ? 'bg-(--fd-accent) text-white' : 'text-(--fd-text)'}`}
                             onMouseDown={(e) => {
                               e.preventDefault();
                               insertAssetRef(note.id, a);
                             }}
                           >
-                            <span className="note-asset-option-icon">
+                            <span className="text-sm shrink-0">
                               {a.mime_type.startsWith('image/') ? '🖼' : a.mime_type.startsWith('video/') ? '🎬' : '📎'}
                             </span>
-                            <span className="note-asset-option-name">{a.original_name}</span>
-                            <span className="note-asset-option-tags">
+                            <span className="flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">{a.original_name}</span>
+                            <span className={`text-[10px] shrink-0 ${idx === assetSugIdx ? 'text-white/60' : 'text-(--fd-text-muted)'}`}>
                               {a.tags.slice(0, 2).join(', ')}
                             </span>
                           </div>
@@ -749,7 +754,7 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                   </div>
                 ) : (
                   <div
-                    className="note-item-preview"
+                    className="py-1 px-2 bg-black/12 border border-transparent rounded-[3px] cursor-pointer min-h-7 transition-colors hover:border-(--fd-border)"
                     onClick={() => setEditingNoteId(note.id)}
                     title="Click to edit"
                   >
@@ -760,17 +765,17 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                         projectId={projectId}
                       />
                     ) : (
-                      <span className="note-item-placeholder">Click to add note...</span>
+                      <span className="text-(--fd-text-muted) text-[11px] italic">Click to add note...</span>
                     )}
                   </div>
                 )}
 
-                <div className="note-item-actions">
-                  <div className="note-item-colors">
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-1">
                     {NOTE_COLORS.map((c) => (
                       <button
                         key={c.name}
-                        className={`note-color-dot${note.color === c.name ? ' active' : ''}`}
+                        className={`w-3.5 h-3.5 rounded-full border-2 cursor-pointer p-0 transition-[border-color,transform] duration-150 hover:scale-120 ${note.color === c.name ? 'border-white' : 'border-transparent'}`}
                         style={{ background: c.hex }}
                         onClick={() => handleColorChange(note.id, c.name)}
                         title={c.name}
@@ -778,7 +783,7 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                     ))}
                   </div>
                   <button
-                    className="note-item-delete"
+                    className="bg-none border-none text-(--fd-text-muted) text-[11px] cursor-pointer py-0.5 px-1.5 hover:text-[#ff6b6b]"
                     onClick={() => handleDeleteRequest(note.id)}
                     title="Delete note"
                   >
@@ -791,15 +796,15 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
         )}
       </div>
       {pendingDeleteNoteId && (
-        <div className="dialog-overlay" onClick={() => setPendingDeleteNoteId(null)}>
-          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-header">Delete Note</div>
-            <div className="dialog-body">
+        <div className="dialog-overlay fixed inset-x-0 top-0 z-3000 flex items-start justify-center h-[var(--vv-height,100dvh)] pt-[5vh] px-4 pb-4 overflow-y-auto bg-black/50 max-[480px]:pt-[env(safe-area-inset-top,0px)] max-[480px]:px-0 max-[480px]:pb-0" onClick={() => setPendingDeleteNoteId(null)}>
+          <div className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-80 max-w-100 max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col max-[768px]:min-w-0 max-[768px]:max-w-none max-[768px]:w-[calc(100vw-32px-env(safe-area-inset-left,0px)-env(safe-area-inset-right,0px))] max-[480px]:w-screen! max-[480px]:max-w-screen! max-[480px]:rounded-t-none max-[480px]:rounded-b-xl max-[480px]:max-h-[60vh] max-[480px]:overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="py-3.5 px-5 border-b border-(--fd-border) font-semibold text-base shrink-0 text-(--fd-text)">Delete Note</div>
+            <div className="p-5 overflow-y-auto flex-auto">
               <p style={{ margin: 0 }}>Delete this note? The highlight will also be removed from the script.</p>
             </div>
-            <div className="dialog-actions">
+            <div className="flex justify-end gap-2 py-3.5 px-5 border-t border-(--fd-border) shrink-0 [&_button]:h-8.5 [&_button]:px-4.5 [&_button]:bg-(--fd-toolbar-bg) [&_button]:text-(--fd-text) [&_button]:border [&_button]:border-(--fd-border) [&_button]:rounded [&_button]:cursor-pointer [&_button]:text-sm [&_button]:hover:bg-(--fd-menu-hover) max-[768px]:[&_button]:h-10">
               <button onClick={() => setPendingDeleteNoteId(null)}>Cancel</button>
-              <button className="dialog-primary" style={{ background: '#c0392b' }} onClick={handleDeleteConfirm}>
+              <button className="bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90" style={{ background: '#c0392b' }} onClick={handleDeleteConfirm}>
                 Delete
               </button>
             </div>
@@ -811,12 +816,12 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
       {/* ── General Notes tab ── */}
       {activeTab === 'general' && (
         <>
-          <div className="general-notes-toolbar">
-            <button className="general-notes-add-btn" onClick={handleAddGeneralNote}>+ Add Note</button>
+          <div className="flex items-center py-2 px-3 border-b border-(--fd-border) shrink-0">
+            <button className="bg-transparent border border-(--fd-border) rounded text-(--fd-text-muted) text-xs py-1 px-3 cursor-pointer transition-colors hover:border-(--fd-accent) hover:text-(--fd-accent)" onClick={handleAddGeneralNote}>+ Add Note</button>
           </div>
-          <div className="script-notes-list">
+          <div className="flex-1 overflow-y-auto p-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#444] [&::-webkit-scrollbar-thumb]:rounded-[3px]">
             {generalNotes.length === 0 ? (
-              <div className="script-notes-empty">
+              <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-[1.5]">
                 No general notes yet. Click &ldquo;+ Add Note&rdquo; to create one.
               </div>
             ) : (
@@ -824,21 +829,21 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                 const hex = getNoteColorHex(gn.color);
                 const isEditing = editingGeneralNoteId === gn.id;
                 return (
-                  <div key={gn.id} className="note-item" style={{ borderLeftColor: hex }}>
-                    <div className="note-item-header">
-                      <span className="note-item-date">{formatDate(gn.createdAt)}</span>
+                  <div key={gn.id} className="note-item bg-(--fd-dropdown-bg) border border-(--fd-border) border-l-3 border-l-(--fd-accent) rounded-md p-2.5 mb-2 flex flex-col gap-1.5 transition-colors hover:border-[#555]" style={{ borderLeftColor: hex }}>
+                    <div className="flex justify-between items-start gap-1.5">
+                      <span className="text-[10px] text-(--fd-text-muted) whitespace-nowrap shrink-0">{formatDate(gn.createdAt)}</span>
                     </div>
                     {isEditing ? (
                       <>
                         <input
-                          className="general-note-title-input"
+                          className="w-full bg-transparent border-none border-b border-(--fd-border) text-(--fd-text) font-semibold text-[13px] outline-none py-1 mb-1.5 focus:border-b-(--fd-accent) placeholder:text-(--fd-text-muted)"
                           value={gn.title}
                           onChange={(e) => updateGeneralNote(gn.id, { title: e.target.value })}
                           placeholder="Note title..."
                           autoFocus
                         />
                         <textarea
-                          className="note-item-content"
+                          className="w-full bg-black/20 text-(--fd-text) border border-transparent rounded-[3px] py-1.5 px-2 text-xs font-sans leading-[1.4] resize-y outline-none placeholder:text-(--fd-text-muted) placeholder:text-[11px] focus:border-(--fd-accent) focus:bg-black/30"
                           value={gn.content}
                           onChange={(e) => updateGeneralNote(gn.id, { content: e.target.value })}
                           onBlur={() => setTimeout(() => setEditingGeneralNoteId(null), 200)}
@@ -848,26 +853,26 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                       </>
                     ) : (
                       <div
-                        className="note-item-preview"
+                        className="py-1 px-2 bg-black/12 border border-transparent rounded-[3px] cursor-pointer min-h-7 transition-colors hover:border-(--fd-border)"
                         onClick={() => setEditingGeneralNoteId(gn.id)}
                         title="Click to edit"
                       >
-                        {gn.title && <div className="general-note-title">{gn.title}</div>}
+                        {gn.title && <div className="font-semibold text-[13px] text-(--fd-text) mb-1">{gn.title}</div>}
                         {gn.content ? (
                           <NoteContentDisplay content={gn.content} assets={assets} projectId={projectId} />
                         ) : (
-                          <span className="note-item-placeholder">
+                          <span className="text-(--fd-text-muted) text-[11px] italic">
                             {gn.title ? '' : 'Click to add note...'}
                           </span>
                         )}
                       </div>
                     )}
-                    <div className="note-item-actions">
-                      <div className="note-item-colors">
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-1">
                         {NOTE_COLORS.map((c) => (
                           <button
                             key={c.name}
-                            className={`note-color-dot${gn.color === c.name ? ' active' : ''}`}
+                            className={`w-3.5 h-3.5 rounded-full border-2 cursor-pointer p-0 transition-[border-color,transform] duration-150 hover:scale-120 ${gn.color === c.name ? 'border-white' : 'border-transparent'}`}
                             style={{ background: c.hex }}
                             onClick={() => updateGeneralNote(gn.id, { color: c.name })}
                             title={c.name}
@@ -875,7 +880,7 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
                         ))}
                       </div>
                       <button
-                        className="note-item-delete"
+                        className="bg-none border-none text-(--fd-text-muted) text-[11px] cursor-pointer py-0.5 px-1.5 hover:text-[#ff6b6b]"
                         onClick={() => setPendingDeleteGeneralNoteId(gn.id)}
                         title="Delete note"
                       >
@@ -888,15 +893,15 @@ const ScriptNotes: React.FC<ScriptNotesProps> = ({ editor, style }) => {
             )}
           </div>
           {pendingDeleteGeneralNoteId && (
-            <div className="dialog-overlay" onClick={() => setPendingDeleteGeneralNoteId(null)}>
-              <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-                <div className="dialog-header">Delete Note</div>
-                <div className="dialog-body">
+            <div className="dialog-overlay fixed inset-x-0 top-0 z-3000 flex items-start justify-center h-[var(--vv-height,100dvh)] pt-[5vh] px-4 pb-4 overflow-y-auto bg-black/50 max-[480px]:pt-[env(safe-area-inset-top,0px)] max-[480px]:px-0 max-[480px]:pb-0" onClick={() => setPendingDeleteGeneralNoteId(null)}>
+              <div className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-80 max-w-100 max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col max-[768px]:min-w-0 max-[768px]:max-w-none max-[768px]:w-[calc(100vw-32px-env(safe-area-inset-left,0px)-env(safe-area-inset-right,0px))] max-[480px]:w-screen! max-[480px]:max-w-screen! max-[480px]:rounded-t-none max-[480px]:rounded-b-xl max-[480px]:max-h-[60vh] max-[480px]:overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="py-3.5 px-5 border-b border-(--fd-border) font-semibold text-base shrink-0 text-(--fd-text)">Delete Note</div>
+                <div className="p-5 overflow-y-auto flex-auto">
                   <p style={{ margin: 0 }}>Delete this general note?</p>
                 </div>
-                <div className="dialog-actions">
+                <div className="flex justify-end gap-2 py-3.5 px-5 border-t border-(--fd-border) shrink-0 [&_button]:h-8.5 [&_button]:px-4.5 [&_button]:bg-(--fd-toolbar-bg) [&_button]:text-(--fd-text) [&_button]:border [&_button]:border-(--fd-border) [&_button]:rounded [&_button]:cursor-pointer [&_button]:text-sm [&_button]:hover:bg-(--fd-menu-hover) max-[768px]:[&_button]:h-10">
                   <button onClick={() => setPendingDeleteGeneralNoteId(null)}>Cancel</button>
-                  <button className="dialog-primary" style={{ background: '#c0392b' }} onClick={handleDeleteGeneralNoteConfirm}>
+                  <button className="bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90" style={{ background: '#c0392b' }} onClick={handleDeleteGeneralNoteConfirm}>
                     Delete
                   </button>
                 </div>

@@ -74,7 +74,7 @@ const VerifyEmailRoute: React.FC = () => {
             <h2 style={{ marginTop: 0 }}>Activation failed</h2>
             <p style={{ color: 'var(--fd-text-muted, #aaa)' }}>{error}</p>
             <button
-              className="dialog-btn dialog-btn-primary"
+              className="dialog-btn dialog-btn-primary h-8.5 px-4.5 bg-(--fd-accent) border border-(--fd-accent) text-white rounded cursor-pointer text-sm hover:opacity-90"
               onClick={() => navigate('/', { replace: true })}
               style={{ marginTop: 12 }}
             >

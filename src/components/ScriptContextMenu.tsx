@@ -39,6 +39,28 @@ const REVISION_COLORS = [
   '2nd Blue', '2nd Pink', '2nd Yellow', '2nd Green',
 ];
 
+// Swatch hex values for the revision-color submenu (was `.ctx-color-swatch[data-color=...]`)
+const REVISION_SWATCH_HEX: Record<string, string> = {
+  'white': '#ffffff', 'blue': '#6fa8dc', 'pink': '#e06c9f', 'yellow': '#f4d35e',
+  'green': '#6abf69', 'goldenrod': '#daa520', 'buff': '#d2b48c', 'salmon': '#fa8072',
+  'cherry': '#cc3333', '2nd-blue': '#4682b4', '2nd-pink': '#c76193',
+  '2nd-yellow': '#e0c84e', '2nd-green': '#4ea64e',
+};
+
+// ── Tailwind class constants (converted from screenplay.css .script-context-menu rules) ──
+const CTX_ITEM =
+  'group flex items-center justify-between px-3 py-[5px] cursor-pointer rounded-[3px] mx-1 relative whitespace-nowrap hover:bg-(--fd-accent) hover:text-white';
+const CTX_ITEM_DISABLED = ' text-(--fd-text-muted) cursor-default pointer-events-none';
+const CTX_ITEM_ACTIVE = " before:content-['\\2713'] before:absolute before:left-[2px] before:text-[11px]";
+const CTX_SEPARATOR = 'h-px bg-(--fd-border) my-1';
+const CTX_HAS_SUB_WRAP = 'relative';
+const CTX_SUBMENU =
+  "absolute left-full -top-1 min-w-[200px] max-h-[400px] overflow-y-auto bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_6px_20px_rgba(0,0,0,.5)] py-1 z-[3001] before:content-[''] before:absolute before:-left-3 before:top-0 before:w-3 before:h-full [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#444] [&::-webkit-scrollbar-thumb]:rounded-[3px]";
+const CTX_SHORTCUT = 'text-[11px] text-(--fd-text-muted) ml-6 shrink-0 group-hover:text-white/60';
+const CTX_ARROW = 'text-[10px] text-(--fd-text-muted) ml-3 group-hover:text-white';
+const CTX_SPELL_SUGGESTION = 'font-semibold text-(--fd-accent) group-hover:text-white';
+const CTX_COLOR_SWATCH = 'inline-block w-3 h-3 rounded-[2px] mr-2 border border-white/15 shrink-0';
+
 interface SpellInfo {
   word: string;
   from: number;
@@ -553,7 +575,7 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className="script-context-menu"
+      className="fixed z-[3000] min-w-60 max-h-[calc(100vh-16px)] overflow-visible bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_8px_30px_rgba(0,0,0,.55)] py-1 text-[13px] text-(--fd-text) select-none"
       style={{ top: adjustedPos.y, left: adjustedPos.x }}
     >
       {/* Spelling suggestions at top (if misspelled word) */}
@@ -563,97 +585,97 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
             spellInfo.suggestions.slice(0, 5).map((s) => (
               <div
                 key={s}
-                className="ctx-item ctx-spell-suggestion"
+                className={`${CTX_ITEM} ${CTX_SPELL_SUGGESTION}`}
                 onClick={() => handleSpellSuggestion(s)}
               >
                 {s}
               </div>
             ))
           ) : (
-            <div className="ctx-item ctx-disabled">No suggestions</div>
+            <div className={`${CTX_ITEM}${CTX_ITEM_DISABLED}`}>No suggestions</div>
           )}
-          <div className="ctx-separator" />
+          <div className={CTX_SEPARATOR} />
         </>
       )}
 
       {/* Grammar / writing suggestions */}
       {grammarInfo && (
         <>
-          <div className="ctx-item ctx-disabled" style={{ fontSize: 11, opacity: 0.7 }}>
+          <div className={`${CTX_ITEM}${CTX_ITEM_DISABLED}`} style={{ fontSize: 11, opacity: 0.7 }}>
             {RETEXT_CATEGORY_META[grammarInfo.ruleId as keyof typeof RETEXT_CATEGORY_META]?.label ?? grammarInfo.ruleId}: {grammarInfo.message}
           </div>
           {grammarInfo.suggestions.length > 0 ? (
             grammarInfo.suggestions.slice(0, 5).map((s) => (
               <div
                 key={s}
-                className="ctx-item ctx-spell-suggestion"
+                className={`${CTX_ITEM} ${CTX_SPELL_SUGGESTION}`}
                 onClick={() => handleGrammarSuggestion(s)}
               >
                 {s}
               </div>
             ))
           ) : (
-            <div className="ctx-item ctx-disabled">No automatic replacement</div>
+            <div className={`${CTX_ITEM}${CTX_ITEM_DISABLED}`}>No automatic replacement</div>
           )}
-          <div className="ctx-item" onClick={handleGrammarIgnoreOnce}>Ignore Once</div>
-          <div className="ctx-item" onClick={handleGrammarIgnoreRuleForDoc}>Ignore in Document</div>
-          <div className="ctx-item" onClick={handleGrammarDisableRule}>Disable Rule</div>
-          <div className="ctx-separator" />
+          <div className={CTX_ITEM} onClick={handleGrammarIgnoreOnce}>Ignore Once</div>
+          <div className={CTX_ITEM} onClick={handleGrammarIgnoreRuleForDoc}>Ignore in Document</div>
+          <div className={CTX_ITEM} onClick={handleGrammarDisableRule}>Disable Rule</div>
+          <div className={CTX_SEPARATOR} />
         </>
       )}
 
       {/* Undo / Redo */}
-      <div className="ctx-item" onClick={handleUndo}>
+      <div className={CTX_ITEM} onClick={handleUndo}>
         <span>Undo</span>
-        <span className="ctx-shortcut">{mod}Z</span>
+        <span className={CTX_SHORTCUT}>{mod}Z</span>
       </div>
-      <div className="ctx-item" onClick={handleRedo}>
+      <div className={CTX_ITEM} onClick={handleRedo}>
         <span>Redo</span>
-        <span className="ctx-shortcut">{shift}{mod}Z</span>
+        <span className={CTX_SHORTCUT}>{shift}{mod}Z</span>
       </div>
-      <div className="ctx-separator" />
+      <div className={CTX_SEPARATOR} />
 
       {/* Clipboard */}
-      <div className={`ctx-item${!hasSelection ? ' ctx-disabled' : ''}`} onClick={handleCut}>
+      <div className={`${CTX_ITEM}${!hasSelection ? CTX_ITEM_DISABLED : ''}`} onClick={handleCut}>
         <span>Cut</span>
-        <span className="ctx-shortcut">{mod}X</span>
+        <span className={CTX_SHORTCUT}>{mod}X</span>
       </div>
-      <div className={`ctx-item${!hasSelection ? ' ctx-disabled' : ''}`} onClick={handleCopy}>
+      <div className={`${CTX_ITEM}${!hasSelection ? CTX_ITEM_DISABLED : ''}`} onClick={handleCopy}>
         <span>Copy</span>
-        <span className="ctx-shortcut">{mod}C</span>
+        <span className={CTX_SHORTCUT}>{mod}C</span>
       </div>
-      <div className="ctx-item" onClick={handlePaste}>
+      <div className={CTX_ITEM} onClick={handlePaste}>
         <span>Paste</span>
-        <span className="ctx-shortcut">{mod}V</span>
+        <span className={CTX_SHORTCUT}>{mod}V</span>
       </div>
-      <div className="ctx-item" onClick={handlePasteWithoutFormatting}>
+      <div className={CTX_ITEM} onClick={handlePasteWithoutFormatting}>
         <span>Paste Without Formatting</span>
-        <span className="ctx-shortcut">{shift}{mod}V</span>
+        <span className={CTX_SHORTCUT}>{shift}{mod}V</span>
       </div>
-      <div className="ctx-separator" />
+      <div className={CTX_SEPARATOR} />
 
       {/* Selection */}
-      <div className="ctx-item" onClick={handleSelectAll}>
+      <div className={CTX_ITEM} onClick={handleSelectAll}>
         <span>Select All</span>
-        <span className="ctx-shortcut">{mod}A</span>
+        <span className={CTX_SHORTCUT}>{mod}A</span>
       </div>
-      <div className={`ctx-item${!hasSelection ? ' ctx-disabled' : ''}`} onClick={handleDelete}>
+      <div className={`${CTX_ITEM}${!hasSelection ? CTX_ITEM_DISABLED : ''}`} onClick={handleDelete}>
         <span>Delete</span>
       </div>
-      <div className="ctx-separator" />
+      <div className={CTX_SEPARATOR} />
 
       {/* Element submenu */}
       <div
-        className="ctx-has-sub-wrap"
+        className={CTX_HAS_SUB_WRAP}
         onPointerEnter={(e) => { if (e.pointerType === 'mouse') { setElementSubOpen(true); setStyleSubOpen(false); setRevisionSubOpen(false); } }}
         onPointerLeave={(e) => { if (e.pointerType === 'mouse') setElementSubOpen(false); }}
       >
-        <div className="ctx-item ctx-has-sub" onClick={() => { setElementSubOpen(true); setStyleSubOpen(false); setRevisionSubOpen(false); }}>
+        <div className={CTX_ITEM} onClick={() => { setElementSubOpen(true); setStyleSubOpen(false); setRevisionSubOpen(false); }}>
           <span>Element</span>
-          <span className="ctx-arrow">&#9656;</span>
+          <span className={CTX_ARROW}>&#9656;</span>
         </div>
         {elementSubOpen && (
-          <div className="ctx-submenu">
+          <div className={CTX_SUBMENU}>
             {ELEMENT_MENU_ITEMS
               .filter(({ type }) => {
                 const rule = activeTemplate.rules[type];
@@ -662,11 +684,11 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
               .map(({ type, shortcut }) => (
               <div
                 key={type}
-                className={`ctx-item${currentNodeType === type ? ' ctx-active' : ''}`}
+                className={`${CTX_ITEM}${currentNodeType === type ? CTX_ITEM_ACTIVE : ''}`}
                 onClick={() => handleSetElement(type)}
               >
                 <span>{ELEMENT_LABELS[type]}</span>
-                {shortcut && <span className="ctx-shortcut">{shortcut}</span>}
+                {shortcut && <span className={CTX_SHORTCUT}>{shortcut}</span>}
               </div>
             ))}
           </div>
@@ -675,40 +697,40 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
 
       {/* Style submenu */}
       <div
-        className="ctx-has-sub-wrap"
+        className={CTX_HAS_SUB_WRAP}
         onPointerEnter={(e) => { if (e.pointerType === 'mouse') { setStyleSubOpen(true); setElementSubOpen(false); setRevisionSubOpen(false); } }}
         onPointerLeave={(e) => { if (e.pointerType === 'mouse') setStyleSubOpen(false); }}
       >
-        <div className="ctx-item ctx-has-sub" onClick={() => { setStyleSubOpen(true); setElementSubOpen(false); setRevisionSubOpen(false); }}>
+        <div className={CTX_ITEM} onClick={() => { setStyleSubOpen(true); setElementSubOpen(false); setRevisionSubOpen(false); }}>
           <span>Style</span>
-          <span className="ctx-arrow">&#9656;</span>
+          <span className={CTX_ARROW}>&#9656;</span>
         </div>
         {styleSubOpen && (
-          <div className="ctx-submenu">
-            <div className={`ctx-item${locked.bold ? ' ctx-disabled' : ''}${editor.isActive('bold') ? ' ctx-active' : ''}`} onClick={() => { if (!locked.bold) handleBold(); }}>
+          <div className={CTX_SUBMENU}>
+            <div className={`${CTX_ITEM}${locked.bold ? CTX_ITEM_DISABLED : ''}${editor.isActive('bold') ? CTX_ITEM_ACTIVE : ''}`} onClick={() => { if (!locked.bold) handleBold(); }}>
               <span>Bold</span>
-              <span className="ctx-shortcut">{mod}B</span>
+              <span className={CTX_SHORTCUT}>{mod}B</span>
             </div>
-            <div className={`ctx-item${locked.italic ? ' ctx-disabled' : ''}${editor.isActive('italic') ? ' ctx-active' : ''}`} onClick={() => { if (!locked.italic) handleItalic(); }}>
+            <div className={`${CTX_ITEM}${locked.italic ? CTX_ITEM_DISABLED : ''}${editor.isActive('italic') ? CTX_ITEM_ACTIVE : ''}`} onClick={() => { if (!locked.italic) handleItalic(); }}>
               <span>Italic</span>
-              <span className="ctx-shortcut">{mod}I</span>
+              <span className={CTX_SHORTCUT}>{mod}I</span>
             </div>
-            <div className={`ctx-item${locked.underline ? ' ctx-disabled' : ''}${editor.isActive('underline') ? ' ctx-active' : ''}`} onClick={() => { if (!locked.underline) handleUnderline(); }}>
+            <div className={`${CTX_ITEM}${locked.underline ? CTX_ITEM_DISABLED : ''}${editor.isActive('underline') ? CTX_ITEM_ACTIVE : ''}`} onClick={() => { if (!locked.underline) handleUnderline(); }}>
               <span>Underline</span>
-              <span className="ctx-shortcut">{mod}U</span>
+              <span className={CTX_SHORTCUT}>{mod}U</span>
             </div>
-            <div className={`ctx-item${locked.strikethrough ? ' ctx-disabled' : ''}${editor.isActive('strike') ? ' ctx-active' : ''}`} onClick={() => { if (!locked.strikethrough) handleStrike(); }}>
+            <div className={`${CTX_ITEM}${locked.strikethrough ? CTX_ITEM_DISABLED : ''}${editor.isActive('strike') ? CTX_ITEM_ACTIVE : ''}`} onClick={() => { if (!locked.strikethrough) handleStrike(); }}>
               <span>Strikethrough</span>
             </div>
-            <div className="ctx-separator" />
-            <div className={`ctx-item${locked.subscript ? ' ctx-disabled' : ''}${editor.isActive('subscript') ? ' ctx-active' : ''}`} onClick={() => { if (!locked.subscript) handleSubscript(); }}>
+            <div className={CTX_SEPARATOR} />
+            <div className={`${CTX_ITEM}${locked.subscript ? CTX_ITEM_DISABLED : ''}${editor.isActive('subscript') ? CTX_ITEM_ACTIVE : ''}`} onClick={() => { if (!locked.subscript) handleSubscript(); }}>
               <span>Subscript</span>
             </div>
-            <div className={`ctx-item${locked.superscript ? ' ctx-disabled' : ''}${editor.isActive('superscript') ? ' ctx-active' : ''}`} onClick={() => { if (!locked.superscript) handleSuperscript(); }}>
+            <div className={`${CTX_ITEM}${locked.superscript ? CTX_ITEM_DISABLED : ''}${editor.isActive('superscript') ? CTX_ITEM_ACTIVE : ''}`} onClick={() => { if (!locked.superscript) handleSuperscript(); }}>
               <span>Superscript</span>
             </div>
-            <div className="ctx-separator" />
-            <div className={`ctx-item${locked.textTransform ? ' ctx-disabled' : ''}`} onClick={() => { if (!locked.textTransform) handleAllCaps(); }}>
+            <div className={CTX_SEPARATOR} />
+            <div className={`${CTX_ITEM}${locked.textTransform ? CTX_ITEM_DISABLED : ''}`} onClick={() => { if (!locked.textTransform) handleAllCaps(); }}>
               <span>ALL CAPS</span>
             </div>
           </div>
@@ -716,19 +738,19 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
       </div>
 
       {/* Font & Formatting */}
-      <div className={`ctx-item${locked.fontFamily ? ' ctx-disabled' : ''}`} onClick={() => { if (!locked.fontFamily) { onOpenFormatPanel(); onClose(); } }}>
+      <div className={`${CTX_ITEM}${locked.fontFamily ? CTX_ITEM_DISABLED : ''}`} onClick={() => { if (!locked.fontFamily) { onOpenFormatPanel(); onClose(); } }}>
         <span>Font...</span>
       </div>
-      <div className="ctx-separator" />
+      <div className={CTX_SEPARATOR} />
 
       {/* Context-sensitive items */}
       {showSceneProps && (
-        <div className="ctx-item ctx-disabled">
+        <div className={`${CTX_ITEM}${CTX_ITEM_DISABLED}`}>
           <span>Scene Properties...</span>
         </div>
       )}
       {showCharProfile && (
-        <div className="ctx-item" onClick={() => {
+        <div className={CTX_ITEM} onClick={() => {
           if (!characterProfilesOpen) toggleCharacterProfiles();
           onClose();
         }}>
@@ -736,65 +758,65 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
         </div>
       )}
       {showDualDialogue && (
-        <div className="ctx-item" onClick={() => { console.log('[CtxMenu] Dual Dialogue clicked, commands:', Object.keys(editor.commands).filter(k => k.includes('dual') || k.includes('Dual'))); const result = (editor as any).commands.toggleDualDialogue(); console.log('[CtxMenu] result:', result); onClose(); }}>
+        <div className={CTX_ITEM} onClick={() => { console.log('[CtxMenu] Dual Dialogue clicked, commands:', Object.keys(editor.commands).filter(k => k.includes('dual') || k.includes('Dual'))); const result = (editor as any).commands.toggleDualDialogue(); console.log('[CtxMenu] result:', result); onClose(); }}>
           <span>Dual Dialogue</span>
-          <span className="ctx-shortcut">{mod}D</span>
+          <span className={CTX_SHORTCUT}>{mod}D</span>
         </div>
       )}
-      {(showSceneProps || showDualDialogue || showCharProfile) && <div className="ctx-separator" />}
+      {(showSceneProps || showDualDialogue || showCharProfile) && <div className={CTX_SEPARATOR} />}
 
       {/* Revision */}
-      <div className="ctx-item" onClick={() => { setRevisionMode(!revisionMode); onClose(); }}>
+      <div className={CTX_ITEM} onClick={() => { setRevisionMode(!revisionMode); onClose(); }}>
         <span>{revisionMode ? '\u2713 ' : ''}Revision Mode</span>
       </div>
       <div
-        className="ctx-has-sub-wrap"
+        className={CTX_HAS_SUB_WRAP}
         onPointerEnter={(e) => { if (e.pointerType === 'mouse') { setRevisionSubOpen(true); setElementSubOpen(false); setStyleSubOpen(false); } }}
         onPointerLeave={(e) => { if (e.pointerType === 'mouse') setRevisionSubOpen(false); }}
       >
-        <div className="ctx-item ctx-has-sub" onClick={() => { setRevisionSubOpen(true); setElementSubOpen(false); setStyleSubOpen(false); }}>
+        <div className={CTX_ITEM} onClick={() => { setRevisionSubOpen(true); setElementSubOpen(false); setStyleSubOpen(false); }}>
           <span>Revision Color</span>
-          <span className="ctx-arrow">&#9656;</span>
+          <span className={CTX_ARROW}>&#9656;</span>
         </div>
         {revisionSubOpen && (
-          <div className="ctx-submenu ctx-submenu-colors">
+          <div className={CTX_SUBMENU}>
             {REVISION_COLORS.map((color) => (
               <div
                 key={color}
-                className={`ctx-item${revisionColor === color ? ' ctx-active' : ''}`}
+                className={`${CTX_ITEM}${revisionColor === color ? CTX_ITEM_ACTIVE : ''}`}
                 onClick={() => handleRevisionColor(color)}
               >
-                <span className="ctx-color-swatch" data-color={color.toLowerCase().replace(/\s/g, '-')} />
+                <span className={CTX_COLOR_SWATCH} style={{ background: REVISION_SWATCH_HEX[color.toLowerCase().replace(/\s/g, '-')] }} />
                 <span>{color}</span>
               </div>
             ))}
           </div>
         )}
       </div>
-      <div className="ctx-separator" />
+      <div className={CTX_SEPARATOR} />
 
       {/* Script Notes — context-sensitive */}
       {existingNoteId ? (
         <>
-          <div className="ctx-item" onClick={handleEditScriptNote}>
+          <div className={CTX_ITEM} onClick={handleEditScriptNote}>
             <span>Edit Script Note</span>
           </div>
-          <div className="ctx-item" onClick={handleDeleteScriptNote}>
+          <div className={CTX_ITEM} onClick={handleDeleteScriptNote}>
             <span>Delete Script Note</span>
           </div>
         </>
       ) : (
-        <div className="ctx-item" onClick={handleAddScriptNote}>
+        <div className={CTX_ITEM} onClick={handleAddScriptNote}>
           <span>Add Script Note</span>
-          <span className="ctx-shortcut">{shift}{mod}N</span>
+          <span className={CTX_SHORTCUT}>{shift}{mod}N</span>
         </div>
       )}
-      <div className="ctx-separator" />
+      <div className={CTX_SEPARATOR} />
 
       {/* Production Tags */}
       {existingTagInfo ? (
         <>
-          <div className="ctx-item" onClick={() => {
+          <div className={CTX_ITEM} onClick={() => {
             if (existingTagInfo) {
               setEditingTagId(existingTagInfo.tagId);
             }
@@ -803,16 +825,16 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
           }}>
             <span>Edit Tag...</span>
           </div>
-          <div className="ctx-item" onClick={handleRemoveTag}>
+          <div className={CTX_ITEM} onClick={handleRemoveTag}>
             <span>Remove Tag</span>
           </div>
         </>
       ) : (
-        <div className="ctx-item" onClick={handleTagAs}>
+        <div className={CTX_ITEM} onClick={handleTagAs}>
           <span>Tag as...</span>
         </div>
       )}
-      <div className="ctx-separator" />
+      <div className={CTX_SEPARATOR} />
 
       {/* Spelling tools */}
       {spellInfo && (() => {
@@ -820,11 +842,11 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
         const multipleTargets = activeAddTargets.length > 1;
         return (
           <>
-            <div className="ctx-item" onClick={handleSpellIgnore}>
+            <div className={CTX_ITEM} onClick={handleSpellIgnore}>
               <span>Ignore Spelling</span>
             </div>
             <div
-              className="ctx-item"
+              className={CTX_ITEM}
               onMouseEnter={() => multipleTargets && setAddDictSubOpen(true)}
               onMouseLeave={() => multipleTargets && setAddDictSubOpen(false)}
               onClick={handleSpellAddDict}
@@ -835,13 +857,13 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--fd-text-muted)' }}>▸</span>
               )}
               {multipleTargets && addDictSubOpen && (
-                <div className="ctx-submenu" style={{ left: '100%', top: 0 }}>
+                <div className={CTX_SUBMENU} style={{ left: '100%', top: 0 }}>
                   {activeAddTargets.map((t) => {
                     const label = t === PROJECT_DICT_TARGET ? 'Project dictionary' : t;
                     return (
                       <div
                         key={t}
-                        className="ctx-item"
+                        className={CTX_ITEM}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSpellAddDictTo(t);

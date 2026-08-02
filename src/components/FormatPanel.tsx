@@ -220,15 +220,15 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
     const setImgAttr = (patch: Record<string, unknown>) =>
       editor.chain().updateAttributes('screenplayImage', patch).run();
     return (
-      <div className="format-panel-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-        <div className="format-panel" ref={panelRef} style={panelPos ? { position: 'fixed', left: panelPos.x, top: panelPos.y, margin: 0 } : undefined}>
-          <div className="format-panel-header" style={{ cursor: 'move' }} onPointerDown={onHeaderPointerDown} onPointerMove={onHeaderPointerMove} onPointerUp={onHeaderPointerUp}>
+      <div className="format-panel-overlay fixed inset-0 z-3500 bg-black/40 flex items-center justify-center" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+        <div className="format-panel bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_12px_40px_rgba(0,0,0,.6)] w-[340px] flex flex-col overflow-hidden" ref={panelRef} style={panelPos ? { position: 'fixed', left: panelPos.x, top: panelPos.y, margin: 0 } : undefined}>
+          <div className="flex items-center justify-between py-3 px-4 border-b border-(--fd-border) font-semibold text-[13px] text-(--fd-text)" style={{ cursor: 'move' }} onPointerDown={onHeaderPointerDown} onPointerMove={onHeaderPointerMove} onPointerUp={onHeaderPointerUp}>
             <span>Image</span>
-            <button className="format-panel-close" onClick={onClose} aria-label="Close image properties">&times;</button>
+            <button className="bg-transparent border-none text-(--fd-text-muted) text-[18px] cursor-pointer leading-none hover:text-(--fd-text)" onClick={onClose} aria-label="Close image properties">&times;</button>
           </div>
-          <div className="format-panel-body">
-            <div className="format-row">
-              <label className="format-label">Width (px)</label>
+          <div className="p-4 flex flex-col gap-3.5">
+            <div className="flex items-center gap-3">
+              <label className="text-xs text-(--fd-text-muted) w-10 shrink-0">Width (px)</label>
               <input
                 type="number"
                 min={40}
@@ -238,8 +238,8 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
                 onChange={(e) => setImgAttr({ width: Math.max(40, Number(e.target.value) || 40) })}
               />
             </div>
-            <div className="format-row">
-              <label className="format-label">Align</label>
+            <div className="flex items-center gap-3">
+              <label className="text-xs text-(--fd-text-muted) w-10 shrink-0">Align</label>
               <div style={{ display: 'flex', gap: 4 }}>
                 {(['left', 'center', 'right'] as const).map((al) => (
                   <button
@@ -253,8 +253,8 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
               </div>
             </div>
           </div>
-          <div className="format-panel-actions">
-            <button className="format-primary" onClick={onClose}>Done</button>
+          <div className="flex justify-end gap-2 py-3 px-4 border-t border-(--fd-border)">
+            <button className="h-[30px] px-5 rounded text-[13px] cursor-pointer border border-(--fd-accent) bg-(--fd-accent) text-white hover:opacity-90" onClick={onClose}>Done</button>
           </div>
         </div>
       </div>
@@ -262,14 +262,14 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
   }
 
   return (
-    <div className="format-panel-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) handleCancel(); }}>
+    <div className="format-panel-overlay fixed inset-0 z-3500 bg-black/40 flex items-center justify-center" onMouseDown={(e) => { if (e.target === e.currentTarget) handleCancel(); }}>
       <div
-        className="format-panel"
+        className="format-panel bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_12px_40px_rgba(0,0,0,.6)] w-[340px] flex flex-col overflow-hidden"
         ref={panelRef}
         style={panelPos ? { position: 'fixed', left: panelPos.x, top: panelPos.y, margin: 0 } : undefined}
       >
         <div
-          className="format-panel-header"
+          className="flex items-center justify-between py-3 px-4 border-b border-(--fd-border) font-semibold text-[13px] text-(--fd-text)"
           style={{ cursor: 'move' }}
           onPointerDown={onHeaderPointerDown}
           onPointerMove={onHeaderPointerMove}
@@ -277,7 +277,7 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
         >
           <span>Font & Formatting</span>
           <button
-            className="format-panel-close"
+            className="bg-transparent border-none text-(--fd-text-muted) text-[18px] cursor-pointer leading-none hover:text-(--fd-text)"
             onClick={handleCancel}
             aria-label="Close formatting panel"
           >
@@ -285,18 +285,18 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
           </button>
         </div>
 
-        <div className="format-panel-body">
+        <div className="p-4 flex flex-col gap-3.5">
           {/* Font family */}
-          <div className="format-row" style={locked.fontFamily ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
-            <label className="format-label">Font</label>
+          <div className="flex items-center gap-3" style={locked.fontFamily ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
+            <label className="text-xs text-(--fd-text-muted) w-10 shrink-0">Font</label>
             <FontPicker value={font} extraFonts={extraFonts} onChange={handleFontChange} />
           </div>
 
           {/* Font size */}
-          <div className="format-row">
-            <label className="format-label">Size</label>
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-(--fd-text-muted) w-10 shrink-0">Size</label>
             <select
-              className="format-size-select"
+              className="flex-1 h-[30px] bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2 text-xs outline-none focus:border-(--fd-accent)"
               value={size}
               disabled={locked.fontSize}
               onChange={(e) => handleSizeChange(Number(e.target.value))}
@@ -309,54 +309,54 @@ const FormatPanel: React.FC<FormatPanelProps> = ({ editor, onClose }) => {
           </div>
 
           {/* Style toggles */}
-          <div className="format-row">
-            <label className="format-label">Style</label>
-            <div className="format-style-btns">
-              <button className={`format-style-btn${bold ? ' active' : ''}`} onClick={handleBoldToggle} disabled={locked.bold} title="Bold"><strong>B</strong></button>
-              <button className={`format-style-btn${italic ? ' active' : ''}`} onClick={handleItalicToggle} disabled={locked.italic} title="Italic"><em>I</em></button>
-              <button className={`format-style-btn${underline ? ' active' : ''}`} onClick={handleUnderlineToggle} disabled={locked.underline} title="Underline"><u>U</u></button>
-              <button className={`format-style-btn${strike ? ' active' : ''}`} onClick={handleStrikeToggle} disabled={locked.strikethrough} title="Strikethrough"><s>S</s></button>
-              <button className={`format-style-btn${subscript ? ' active' : ''}`} onClick={handleSubscriptToggle} disabled={locked.subscript} title="Subscript" style={{ fontSize: '0.75em' }}>X<sub>2</sub></button>
-              <button className={`format-style-btn${superscript ? ' active' : ''}`} onClick={handleSuperscriptToggle} disabled={locked.superscript} title="Superscript" style={{ fontSize: '0.75em' }}>X<sup>2</sup></button>
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-(--fd-text-muted) w-10 shrink-0">Style</label>
+            <div className="flex gap-1 flex-wrap">
+              <button className={`format-style-btn w-8 h-[30px] max-[768px]:w-10 max-[768px]:h-[38px] border border-(--fd-border) rounded text-(--fd-text) text-sm cursor-pointer flex items-center justify-center hover:border-[#555] ${bold ? 'bg-(--fd-accent) border-(--fd-accent) text-white' : 'bg-(--fd-input-bg)'}`} onClick={handleBoldToggle} disabled={locked.bold} title="Bold"><strong>B</strong></button>
+              <button className={`format-style-btn w-8 h-[30px] max-[768px]:w-10 max-[768px]:h-[38px] border border-(--fd-border) rounded text-(--fd-text) text-sm cursor-pointer flex items-center justify-center hover:border-[#555] ${italic ? 'bg-(--fd-accent) border-(--fd-accent) text-white' : 'bg-(--fd-input-bg)'}`} onClick={handleItalicToggle} disabled={locked.italic} title="Italic"><em>I</em></button>
+              <button className={`format-style-btn w-8 h-[30px] max-[768px]:w-10 max-[768px]:h-[38px] border border-(--fd-border) rounded text-(--fd-text) text-sm cursor-pointer flex items-center justify-center hover:border-[#555] ${underline ? 'bg-(--fd-accent) border-(--fd-accent) text-white' : 'bg-(--fd-input-bg)'}`} onClick={handleUnderlineToggle} disabled={locked.underline} title="Underline"><u>U</u></button>
+              <button className={`format-style-btn w-8 h-[30px] max-[768px]:w-10 max-[768px]:h-[38px] border border-(--fd-border) rounded text-(--fd-text) text-sm cursor-pointer flex items-center justify-center hover:border-[#555] ${strike ? 'bg-(--fd-accent) border-(--fd-accent) text-white' : 'bg-(--fd-input-bg)'}`} onClick={handleStrikeToggle} disabled={locked.strikethrough} title="Strikethrough"><s>S</s></button>
+              <button className={`format-style-btn w-8 h-[30px] max-[768px]:w-10 max-[768px]:h-[38px] border border-(--fd-border) rounded text-(--fd-text) text-sm cursor-pointer flex items-center justify-center hover:border-[#555] ${subscript ? 'bg-(--fd-accent) border-(--fd-accent) text-white' : 'bg-(--fd-input-bg)'}`} onClick={handleSubscriptToggle} disabled={locked.subscript} title="Subscript" style={{ fontSize: '0.75em' }}>X<sub>2</sub></button>
+              <button className={`format-style-btn w-8 h-[30px] max-[768px]:w-10 max-[768px]:h-[38px] border border-(--fd-border) rounded text-(--fd-text) text-sm cursor-pointer flex items-center justify-center hover:border-[#555] ${superscript ? 'bg-(--fd-accent) border-(--fd-accent) text-white' : 'bg-(--fd-input-bg)'}`} onClick={handleSuperscriptToggle} disabled={locked.superscript} title="Superscript" style={{ fontSize: '0.75em' }}>X<sup>2</sup></button>
             </div>
           </div>
 
           {/* Text color */}
-          <div className="format-row" style={locked.textColor ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
-            <label className="format-label">Color</label>
-            <div className="format-color-row">
+          <div className="flex items-center gap-3" style={locked.textColor ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
+            <label className="text-xs text-(--fd-text-muted) w-10 shrink-0">Color</label>
+            <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={textColor || '#000000'}
                 onChange={(e) => handleTextColorChange(e.target.value)}
-                className="format-color-input"
+                className="w-7 h-7 border border-(--fd-border) rounded p-0 cursor-pointer bg-transparent"
                 title="Text color"
               />
-              <span className="format-color-hex">{textColor || 'Default'}</span>
-              {textColor && <button className="format-color-reset" onClick={() => handleTextColorChange('')}>Reset</button>}
+              <span className="text-xs text-(--fd-text-muted) min-w-[60px]">{textColor || 'Default'}</span>
+              {textColor && <button className="text-[11px] py-0.5 px-2 bg-(--fd-input-bg) border border-(--fd-border) rounded-[3px] text-(--fd-text) cursor-pointer hover:bg-(--fd-menu-hover)" onClick={() => handleTextColorChange('')}>Reset</button>}
             </div>
           </div>
 
           {/* Highlight color */}
-          <div className="format-row" style={locked.backgroundColor ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
-            <label className="format-label">Highlight</label>
-            <div className="format-color-row">
+          <div className="flex items-center gap-3" style={locked.backgroundColor ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
+            <label className="text-xs text-(--fd-text-muted) w-10 shrink-0">Highlight</label>
+            <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={highlightColor || '#ffff00'}
                 onChange={(e) => handleHighlightChange(e.target.value)}
-                className="format-color-input"
+                className="w-7 h-7 border border-(--fd-border) rounded p-0 cursor-pointer bg-transparent"
                 title="Highlight color"
               />
-              <span className="format-color-hex">{highlightColor || 'None'}</span>
-              {highlightColor && <button className="format-color-reset" onClick={() => handleHighlightChange('')}>Reset</button>}
+              <span className="text-xs text-(--fd-text-muted) min-w-[60px]">{highlightColor || 'None'}</span>
+              {highlightColor && <button className="text-[11px] py-0.5 px-2 bg-(--fd-input-bg) border border-(--fd-border) rounded-[3px] text-(--fd-text) cursor-pointer hover:bg-(--fd-menu-hover)" onClick={() => handleHighlightChange('')}>Reset</button>}
             </div>
           </div>
         </div>
 
-        <div className="format-panel-actions">
-          <button className="format-btn format-btn-cancel" onClick={handleCancel}>Cancel</button>
-          <button className="format-btn format-btn-ok" onClick={handleOk}>OK</button>
+        <div className="flex justify-end gap-2 py-3 px-4 border-t border-(--fd-border)">
+          <button className="h-[30px] px-5 rounded text-[13px] cursor-pointer border border-(--fd-border) bg-transparent text-(--fd-text-muted) hover:bg-white/5 hover:text-(--fd-text)" onClick={handleCancel}>Cancel</button>
+          <button className="h-[30px] px-5 rounded text-[13px] cursor-pointer border border-(--fd-accent) bg-(--fd-accent) text-white hover:opacity-90" onClick={handleOk}>OK</button>
         </div>
       </div>
     </div>

@@ -125,12 +125,12 @@ const JoinCollabDialog: React.FC<JoinCollabDialogProps> = ({ onJoin, onClose }) 
         </div>
 
         <div className="dialog-body">
-          <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--fd-text-muted)' }}>
+          <p className="mb-4 text-sm text-(--fd-text-muted)">
             Paste the collaboration link or token you received from the session host.
           </p>
 
-          <div className="settings-field">
-            <label>Collaboration Link or Token</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-medium text-(--fd-text-muted)">Collaboration Link or Token</label>
             <input
               ref={inputRef}
               className="dialog-input"
@@ -144,11 +144,10 @@ const JoinCollabDialog: React.FC<JoinCollabDialogProps> = ({ onJoin, onClose }) 
         </div>
 
         <div className="dialog-footer">
-          <div style={{ flex: 1 }} />
+          <div className="flex-1" />
           <button className="dialog-btn" onClick={onClose}>Cancel</button>
           <button
-            className="dialog-btn dialog-btn-primary"
-            style={{ background: 'var(--fd-accent)', color: '#fff', border: 'none', fontWeight: 600 }}
+            className="dialog-btn dialog-btn-primary bg-(--fd-accent) text-white border-none font-semibold"
             onClick={handleJoin}
             disabled={!linkInput.trim() || joining}
           >

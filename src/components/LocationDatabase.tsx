@@ -212,22 +212,23 @@ const LocationDatabase: React.FC<Props> = ({ editor, style }) => {
     : animationState === 'exiting' ? 'panel-closing' : '';
 
   return (
-    <div ref={panelRef} className={`location-database ${panelClass}`} style={style}>
-      <div className="location-db-header">
-        <span className="location-db-title">Locations</span>
+    <div ref={panelRef} className={`location-database w-105 min-w-80 max-w-[50vw] bg-(--fd-navigator-bg) border-l border-(--fd-border) flex flex-col overflow-hidden ${panelClass}`} style={style}>
+      <div className="flex items-center gap-[10px] py-[10px] px-[14px] border-b border-(--fd-border) shrink-0">
+        <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text) flex-1">Locations</span>
         <button
-          className="location-db-discover"
+          className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) py-1 px-2.5 rounded text-[11px] cursor-pointer transition-all duration-150 enabled:hover:bg-(--fd-overlay-subtle) enabled:hover:text-(--fd-text)"
           onClick={discovered}
           disabled={loading}
           title="Scan scripts and auto-create location entries"
         >
           {loading ? 'Scanning…' : '⟳ Discover'}
         </button>
-        <button className="location-db-close" onClick={toggleLocationDatabase} title="Close">×</button>
+        <button className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) px-2 rounded text-lg leading-normal cursor-pointer transition-all duration-150 hover:bg-(--fd-overlay-subtle) hover:text-(--fd-text)" onClick={toggleLocationDatabase} title="Close">×</button>
       </div>
 
-      <div className="location-db-search">
+      <div className="py-2 px-[14px] border-b border-(--fd-border)">
         <input
+          className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs"
           type="text"
           placeholder="Search locations…"
           value={search}
@@ -235,12 +236,12 @@ const LocationDatabase: React.FC<Props> = ({ editor, style }) => {
         />
       </div>
 
-      <div className="location-db-body">
-        <div className="location-db-list">
+      <div className="flex-1 flex overflow-hidden">
+        <div className="w-[180px] border-r border-(--fd-border) overflow-y-auto py-1">
           {loading && locations.length === 0 ? (
-            <div className="location-db-empty">Loading…</div>
+            <div className="py-6 px-4 text-(--fd-text-muted) text-xs italic text-center">Loading…</div>
           ) : filteredLocations.length === 0 ? (
-            <div className="location-db-empty">
+            <div className="py-6 px-4 text-(--fd-text-muted) text-xs italic text-center">
               {locations.length === 0
                 ? 'No locations yet. Click Discover to auto-create from scene headings.'
                 : 'No locations match your search.'}
@@ -249,23 +250,23 @@ const LocationDatabase: React.FC<Props> = ({ editor, style }) => {
             filteredLocations.map((loc) => (
               <div
                 key={loc.id}
-                className={`location-db-card${selectedId === loc.id ? ' selected' : ''}`}
+                className={`py-2.5 pr-3 border-b border-(--fd-overlay-subtle) cursor-pointer transition-[background] duration-100 hover:bg-(--fd-overlay-subtle) ${selectedId === loc.id ? 'bg-(--fd-overlay-light) border-l-[3px] border-(--fd-accent) pl-2.25' : 'pl-3'}`}
                 onClick={() => setSelectedId(loc.id)}
               >
-                <div className="location-db-card-header">
-                  <span className="location-db-card-name">{loc.name}</span>
-                  <span className="location-db-card-count">{getSceneCount(loc)}</span>
+                <div className="flex items-center gap-[6px]">
+                  <span className="flex-1 text-xs font-semibold text-(--fd-text) whitespace-nowrap overflow-hidden text-ellipsis">{loc.name}</span>
+                  <span className="text-[10px] text-(--fd-text-muted) bg-(--fd-overlay-light) py-[1px] px-[6px] rounded-full shrink-0">{getSceneCount(loc)}</span>
                 </div>
-                <div className="location-db-card-meta">
-                  <span className={`location-db-type location-db-type-${loc.type}`}>
+                <div className="flex items-center gap-[6px] mt-1 text-[10px] text-(--fd-text-muted)">
+                  <span className={`py-px px-1.5 rounded-[3px] bg-(--fd-overlay-subtle) uppercase tracking-[0.03em] ${loc.type === 'interior' ? 'text-[#3b82f6]' : loc.type === 'exterior' ? 'text-[#f59e0b]' : 'text-[#8b5cf6]'}`}>
                     {TYPE_LABEL[loc.type] || loc.type}
                   </span>
-                  {loc.address && <span className="location-db-card-address">{loc.address}</span>}
+                  {loc.address && <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{loc.address}</span>}
                 </div>
                 {loc.tags.length > 0 && (
-                  <div className="location-db-card-tags">
+                  <div className="flex flex-wrap gap-[3px] mt-1">
                     {loc.tags.map((t) => (
-                      <span key={t} className="location-db-tag">{t}</span>
+                      <span key={t} className="text-[9px] py-px px-1.25 bg-(--fd-overlay-light) text-(--fd-text-muted) rounded-[3px]">{t}</span>
                     ))}
                   </div>
                 )}
@@ -275,7 +276,7 @@ const LocationDatabase: React.FC<Props> = ({ editor, style }) => {
         </div>
 
         {selected && (
-          <div className="location-db-detail">
+          <div className="flex-1 overflow-y-auto py-[14px] px-[18px]">
             {editingId === selected.id ? (
               <LocationEditor
                 draft={draft}
@@ -321,31 +322,31 @@ interface DetailViewProps {
 
 const LocationDetailView: React.FC<DetailViewProps> = ({ loc, sceneIndices, scenes, onEdit, onDelete, onGoToScene }) => (
   <>
-    <div className="location-db-detail-header">
-      <h3>{loc.name}</h3>
-      <div className="location-db-detail-actions">
-        <button onClick={onEdit}>Edit</button>
-        <button onClick={onDelete} className="location-db-danger">Delete</button>
+    <div className="flex items-center gap-[10px] mb-3 pb-[10px] border-b border-(--fd-border)">
+      <h3 className="m-0 flex-1 text-base text-(--fd-text)">{loc.name}</h3>
+      <div className="flex gap-[6px]">
+        <button onClick={onEdit} className="py-1 px-2.5 text-[11px] bg-(--fd-overlay-subtle) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer hover:bg-(--fd-overlay-light)">Edit</button>
+        <button onClick={onDelete} className="py-1 px-2.5 text-[11px] bg-(--fd-overlay-subtle) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer hover:bg-(--fd-overlay-light) text-[#ef4444]!">Delete</button>
       </div>
     </div>
-    {loc.fullName && <div className="location-db-field"><label>Full Name</label><div>{loc.fullName}</div></div>}
-    <div className="location-db-field"><label>Type</label><div>{TYPE_LABEL[loc.type]}</div></div>
-    {loc.address && <div className="location-db-field"><label>Address</label><div>{loc.address}</div></div>}
-    {loc.contact && <div className="location-db-field"><label>Contact</label><div>{loc.contact}</div></div>}
-    {loc.availability && <div className="location-db-field"><label>Availability</label><div>{loc.availability}</div></div>}
-    {loc.notes && <div className="location-db-field"><label>Notes</label><div style={{ whiteSpace: 'pre-wrap' }}>{loc.notes}</div></div>}
-    {loc.aliases.length > 0 && <div className="location-db-field"><label>Aliases</label><div>{loc.aliases.join(', ')}</div></div>}
+    {loc.fullName && <div className="mb-3"><label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Full Name</label><div className="text-[13px] text-(--fd-text)">{loc.fullName}</div></div>}
+    <div className="mb-3"><label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Type</label><div className="text-[13px] text-(--fd-text)">{TYPE_LABEL[loc.type]}</div></div>
+    {loc.address && <div className="mb-3"><label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Address</label><div className="text-[13px] text-(--fd-text)">{loc.address}</div></div>}
+    {loc.contact && <div className="mb-3"><label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Contact</label><div className="text-[13px] text-(--fd-text)">{loc.contact}</div></div>}
+    {loc.availability && <div className="mb-3"><label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Availability</label><div className="text-[13px] text-(--fd-text)">{loc.availability}</div></div>}
+    {loc.notes && <div className="mb-3"><label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Notes</label><div className="text-[13px] text-(--fd-text)" style={{ whiteSpace: 'pre-wrap' }}>{loc.notes}</div></div>}
+    {loc.aliases.length > 0 && <div className="mb-3"><label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Aliases</label><div className="text-[13px] text-(--fd-text)">{loc.aliases.join(', ')}</div></div>}
     {loc.tags.length > 0 && (
-      <div className="location-db-field">
-        <label>Tags</label>
-        <div className="location-db-card-tags">
-          {loc.tags.map((t) => <span key={t} className="location-db-tag">{t}</span>)}
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Tags</label>
+        <div className="flex flex-wrap gap-[3px] mt-1">
+          {loc.tags.map((t) => <span key={t} className="text-[9px] py-px px-1.25 bg-(--fd-overlay-light) text-(--fd-text-muted) rounded-[3px]">{t}</span>)}
         </div>
       </div>
     )}
-    <div className="location-db-field">
-      <label>Scenes ({sceneIndices.length})</label>
-      <div className="location-db-scenes">
+    <div className="mb-3">
+      <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Scenes ({sceneIndices.length})</label>
+      <div className="max-h-[300px] overflow-y-auto">
         {sceneIndices.length === 0 ? (
           <em>No scenes reference this location.</em>
         ) : (
@@ -353,9 +354,9 @@ const LocationDetailView: React.FC<DetailViewProps> = ({ loc, sceneIndices, scen
             const scene = scenes[sceneIdx];
             if (!scene) return null;
             return (
-              <div key={sceneIdx} className="location-db-scene-row" onClick={() => onGoToScene(sceneIdx)}>
-                <span className="location-db-scene-num">{sceneIdx + 1}</span>
-                <span className="location-db-scene-heading">{scene.heading}</span>
+              <div key={sceneIdx} className="flex items-center gap-2 py-[5px] px-2 cursor-pointer rounded-[3px] hover:bg-(--fd-overlay-subtle)" onClick={() => onGoToScene(sceneIdx)}>
+                <span className="text-[10px] text-(--fd-text-muted) min-w-[22px]">{sceneIdx + 1}</span>
+                <span className="text-xs text-(--fd-text) whitespace-nowrap overflow-hidden text-ellipsis flex-1">{scene.heading}</span>
               </div>
             );
           })
@@ -381,19 +382,19 @@ const LocationEditor: React.FC<EditorProps> = ({ draft, setDraft, onSave, onCanc
 
   return (
     <>
-      <div className="location-db-detail-header">
-        <h3>Edit Location</h3>
-        <div className="location-db-detail-actions">
-          <button onClick={onCancel}>Cancel</button>
-          <button onClick={onSave} className="location-db-primary">Save</button>
+      <div className="flex items-center gap-[10px] mb-3 pb-[10px] border-b border-(--fd-border)">
+        <h3 className="m-0 flex-1 text-base text-(--fd-text)">Edit Location</h3>
+        <div className="flex gap-[6px]">
+          <button onClick={onCancel} className="py-1 px-2.5 text-[11px] bg-(--fd-overlay-subtle) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer hover:bg-(--fd-overlay-light)">Cancel</button>
+          <button onClick={onSave} className="py-1 px-2.5 text-[11px] bg-(--fd-overlay-subtle) border border-(--fd-border) text-(--fd-text) rounded cursor-pointer hover:bg-(--fd-overlay-light) bg-(--fd-accent)! text-white! border-(--fd-accent)!">Save</button>
         </div>
       </div>
-      <div className="location-db-field">
-        <label>Name</label>
-        <input value={draft.name || ''} onChange={(e) => set({ name: e.target.value.toUpperCase() })} />
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Name</label>
+        <input className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]" value={draft.name || ''} onChange={(e) => set({ name: e.target.value.toUpperCase() })} />
         {nameChanged && (
           <button
-            className="location-db-secondary"
+            className="bg-(--fd-overlay-subtle) border border-(--fd-border) text-(--fd-text-muted) rounded-[3px] py-0.75 px-2 text-[10px] cursor-pointer"
             style={{ marginTop: 4 }}
             onClick={() => onRenameHeadings(currentName)}
           >
@@ -401,48 +402,51 @@ const LocationEditor: React.FC<EditorProps> = ({ draft, setDraft, onSave, onCanc
           </button>
         )}
       </div>
-      <div className="location-db-field">
-        <label>Full Name</label>
-        <input value={draft.fullName || ''} onChange={(e) => set({ fullName: e.target.value })} />
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Full Name</label>
+        <input className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]" value={draft.fullName || ''} onChange={(e) => set({ fullName: e.target.value })} />
       </div>
-      <div className="location-db-field">
-        <label>Type</label>
-        <select value={draft.type || 'interior'} onChange={(e) => set({ type: e.target.value as LocationEntry['type'] })}>
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Type</label>
+        <select className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]" value={draft.type || 'interior'} onChange={(e) => set({ type: e.target.value as LocationEntry['type'] })}>
           <option value="interior">Interior</option>
           <option value="exterior">Exterior</option>
           <option value="both">Both</option>
         </select>
       </div>
-      <div className="location-db-field">
-        <label>Address</label>
-        <input value={draft.address || ''} onChange={(e) => set({ address: e.target.value })} />
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Address</label>
+        <input className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]" value={draft.address || ''} onChange={(e) => set({ address: e.target.value })} />
       </div>
-      <div className="location-db-field">
-        <label>Contact</label>
-        <input value={draft.contact || ''} onChange={(e) => set({ contact: e.target.value })} />
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Contact</label>
+        <input className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]" value={draft.contact || ''} onChange={(e) => set({ contact: e.target.value })} />
       </div>
-      <div className="location-db-field">
-        <label>Availability</label>
-        <input value={draft.availability || ''} onChange={(e) => set({ availability: e.target.value })} />
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Availability</label>
+        <input className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]" value={draft.availability || ''} onChange={(e) => set({ availability: e.target.value })} />
       </div>
-      <div className="location-db-field">
-        <label>Notes</label>
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Notes</label>
         <textarea
+          className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit] resize-y"
           value={draft.notes || ''}
           onChange={(e) => set({ notes: e.target.value })}
           rows={4}
         />
       </div>
-      <div className="location-db-field">
-        <label>Aliases (comma-separated)</label>
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Aliases (comma-separated)</label>
         <input
+          className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]"
           value={(draft.aliases || []).join(', ')}
           onChange={(e) => set({ aliases: e.target.value.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean) })}
         />
       </div>
-      <div className="location-db-field">
-        <label>Tags (comma-separated)</label>
+      <div className="mb-3">
+        <label className="block text-[10px] uppercase tracking-[0.05em] text-(--fd-text-muted) mb-1 font-semibold">Tags (comma-separated)</label>
         <input
+          className="w-full py-1.5 px-2.5 bg-(--fd-overlay-subtle) border border-(--fd-border) rounded text-(--fd-text) text-xs font-[inherit]"
           value={(draft.tags || []).join(', ')}
           onChange={(e) => set({ tags: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) })}
         />

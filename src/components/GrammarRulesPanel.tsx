@@ -97,13 +97,16 @@ const GrammarRulesPanel: React.FC<GrammarRulesPanelProps> = ({ onClose }) => {
 
   return (
     <>
-      <div className="dialog-overlay" onClick={onClose}>
+      <div
+        className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center h-(--vv-height,100dvh) pt-[5vh] px-4 pb-4 overflow-y-auto"
+        onClick={onClose}
+      >
         <div
-          className="dialog-box"
+          className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-[320px] max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col"
           onClick={(e) => e.stopPropagation()}
           style={{ maxWidth: 640, width: '100%', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
         >
-          <div className="dialog-header">Grammar &amp; Spelling Settings</div>
+          <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">Grammar &amp; Spelling Settings</div>
           <div
             style={{
               display: 'flex',
@@ -136,15 +139,15 @@ const GrammarRulesPanel: React.FC<GrammarRulesPanelProps> = ({ onClose }) => {
               );
             })}
           </div>
-          <div className="dialog-body" style={{ overflowY: 'auto' }}>
+          <div className="dialog-body p-5 flex-1 overflow-y-auto" style={{ overflowY: 'auto' }}>
             {activeTab === 'grammar' && <RuleList section={GRAMMAR_SECTION} />}
             {activeTab === 'style' && <RuleList section={STYLE_SECTION} />}
             {activeTab === 'dictionaries' && (
               <DictionaryConfigPanel onOpenLibrary={() => setDictionaryLibraryOpen(true)} />
             )}
           </div>
-          <div className="dialog-footer">
-            <button className="dialog-primary" onClick={onClose}>Done</button>
+          <div className="dialog-footer flex items-center gap-2 px-5 py-3.5 border-t border-(--fd-border) shrink-0">
+            <button className="bg-(--fd-accent)! border-(--fd-accent)! text-white! h-[34px] px-[18px] rounded text-sm cursor-pointer hover:opacity-90" onClick={onClose}>Done</button>
           </div>
         </div>
       </div>

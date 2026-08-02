@@ -44,8 +44,8 @@ const InlineRelForm: React.FC<{
   const others = allCharacters.filter((c) => c !== characterName);
 
   return (
-    <div className="char-profile-rel-form">
-      <div className="char-profile-rel-form-row">
+    <div className="border border-(--fd-border) rounded-sm p-2 mt-1">
+      <div className="flex gap-1 mb-1 [&_select]:flex-1 [&_select]:min-w-0 [&_select]:px-1.5 [&_select]:py-1 [&_select]:border [&_select]:border-(--fd-border) [&_select]:rounded-[3px] [&_select]:bg-(--fd-input-bg) [&_select]:text-(--fd-text) [&_select]:text-[11px]">
         <select value={otherChar} onChange={(e) => setOtherChar(e.target.value)}>
           <option value="">Select character...</option>
           {others.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -62,12 +62,12 @@ const InlineRelForm: React.FC<{
         onChange={(e) => setDesc(e.target.value)}
         placeholder="Describe the relationship..."
         rows={2}
-        className="char-profile-rel-form-desc"
+        className="w-full px-1.5 py-1 border border-(--fd-border) rounded-[3px] bg-(--fd-input-bg) text-(--fd-text) font-[inherit] text-[11px] resize-y min-h-9"
       />
-      <div className="char-profile-rel-form-actions">
-        <button className="char-profile-rel-form-btn" onClick={onCancel}>Cancel</button>
+      <div className="flex justify-end gap-1 mt-1.5">
+        <button className="px-2.5 py-0.75 border border-(--fd-border) rounded-[3px] bg-transparent text-(--fd-text) text-[11px] cursor-pointer hover:bg-(--fd-overlay-light)" onClick={onCancel}>Cancel</button>
         <button
-          className="char-profile-rel-form-btn char-profile-rel-form-btn-primary"
+          className="px-2.5 py-0.75 border rounded-[3px] text-[11px] cursor-pointer bg-(--fd-accent) border-(--fd-accent) text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-default"
           disabled={!otherChar}
           onClick={() => onSave({
             id: crypto.randomUUID(),
@@ -586,7 +586,7 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
     return (
       <>
         {/* Description */}
-        <label className="char-profile-label">Description</label>
+        <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Description</label>
         <MiniRichText
           value={prof.description}
           onChange={(html) => upsertCharacterProfile(charName, { description: html })}
@@ -595,11 +595,11 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
         />
 
         {/* Role / Gender / Age */}
-        <div className="char-profile-meta-row char-profile-meta-row-3">
-          <div className="char-profile-meta-field">
-            <label className="char-profile-label">Role</label>
+        <div className="flex gap-1.5">
+          <div className="flex-1 min-w-0 flex flex-col">
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Role</label>
             <select
-              className="char-profile-select"
+              className="char-profile-select h-6.5 bg-(--fd-input-bg) text-(--fd-text) border border-transparent rounded-[3px] px-1 text-[11px] outline-none cursor-pointer focus:border-(--fd-accent)"
               value={prof.role}
               onChange={(e) => upsertCharacterProfile(charName, { role: e.target.value })}
             >
@@ -608,21 +608,21 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
               ))}
             </select>
           </div>
-          <div className="char-profile-meta-field">
-            <label className="char-profile-label">Gender</label>
+          <div className="flex-1 min-w-0 flex flex-col">
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Gender</label>
             <input
               type="text"
-              className="char-profile-input"
+              className="char-profile-input h-6.5 bg-(--fd-input-bg) text-(--fd-text) border border-transparent rounded-[3px] px-2 text-[11px] outline-none focus:border-(--fd-accent) placeholder:text-(--fd-text-muted)"
               value={prof.gender}
               onChange={(e) => upsertCharacterProfile(charName, { gender: e.target.value })}
               placeholder="e.g. Male"
             />
           </div>
-          <div className="char-profile-meta-field">
-            <label className="char-profile-label">Age</label>
+          <div className="flex-1 min-w-0 flex flex-col">
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Age</label>
             <input
               type="text"
-              className="char-profile-input"
+              className="char-profile-input h-6.5 bg-(--fd-input-bg) text-(--fd-text) border border-transparent rounded-[3px] px-2 text-[11px] outline-none focus:border-(--fd-accent) placeholder:text-(--fd-text-muted)"
               value={prof.age}
               onChange={(e) => upsertCharacterProfile(charName, { age: e.target.value })}
               placeholder="e.g. 30s"
@@ -632,28 +632,28 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
 
         {/* Images */}
         {prof.images && prof.images.length > 0 && projectId && (
-          <div className="char-profile-images">
-            <div className="char-profile-images-primary">
+          <div className="flex flex-col gap-1.5">
+            <div className="w-full rounded-sm overflow-hidden bg-(--fd-input-bg) border border-(--fd-border)">
               <img
                 src={getAssetUrl(prof.images[0])}
                 alt={charName}
-                className="char-profile-image-main"
+                className="char-profile-image-main w-full max-h-50 object-cover block cursor-pointer transition-opacity duration-150 hover:opacity-85"
                 onClick={() => setLightboxImage({ url: getAssetUrl(prof.images[0]), name: charName })}
               />
             </div>
             {prof.images.length > 1 && (
-              <div className="char-profile-images-strip">
+              <div className="flex gap-1 overflow-x-auto pb-0.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#444] [&::-webkit-scrollbar-thumb]:rounded-xs">
                 {prof.images.map((imgId, idx) => (
-                  <div key={imgId} className={`char-profile-thumb-wrap${idx === 0 ? ' active' : ''}`}>
+                  <div key={imgId} className={`group relative shrink-0 w-11 h-11 rounded-sm overflow-hidden border-2 cursor-pointer hover:border-(--fd-accent) ${idx === 0 ? 'border-(--fd-accent)' : 'border-transparent'}`}>
                     <img
                       src={getAssetUrl(imgId)}
                       alt={`${charName} ${idx + 1}`}
-                      className="char-profile-thumb"
+                      className="w-full h-full object-cover block"
                       onClick={() => setLightboxImage({ url: getAssetUrl(imgId), name: charName })}
                     />
                     {idx > 0 && (
                       <button
-                        className="char-profile-thumb-primary"
+                        className="absolute bottom-0 left-0 w-4 h-4 bg-black/70 text-[#f4d35e] border-none rounded-tr-sm text-[10px] leading-4 text-center cursor-pointer p-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                         onClick={() => handleSetPrimaryImage(charName, imgId)}
                         title="Set as primary image"
                       >
@@ -661,7 +661,7 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
                       </button>
                     )}
                     <button
-                      className="char-profile-thumb-remove"
+                      className="absolute top-0 right-0 w-4 h-4 bg-black/70 text-white border-none rounded-bl-sm text-[10px] leading-4 text-center cursor-pointer p-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                       onClick={() => handleRemoveImage(charName, imgId)}
                       title="Remove image"
                     >
@@ -675,9 +675,9 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
         )}
 
         {projectId && (
-          <div className="char-profile-image-actions">
+          <div className="flex gap-1.5">
             <button
-              className="char-profile-img-btn"
+              className="flex-1 px-2 py-1 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[10px] cursor-pointer text-center transition-colors duration-150 hover:border-(--fd-accent) hover:text-(--fd-accent)"
               onClick={() => triggerUpload(charName)}
               disabled={uploading}
               title="Upload a new image for this character"
@@ -685,7 +685,7 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
               {uploading ? 'Uploading...' : 'Upload Image'}
             </button>
             <button
-              className="char-profile-img-btn"
+              className="flex-1 px-2 py-1 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[10px] cursor-pointer text-center transition-colors duration-150 hover:border-(--fd-accent) hover:text-(--fd-accent)"
               onClick={() => { setImagePickerFor(charName); setImagePickerFilter(''); }}
               title="Associate an existing project asset"
             >
@@ -695,7 +695,7 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
         )}
 
         {/* Backstory */}
-        <label className="char-profile-label">Backstory</label>
+        <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Backstory</label>
         <MiniRichText
           value={prof.backstory}
           onChange={(html) => upsertCharacterProfile(charName, { backstory: html })}
@@ -704,7 +704,7 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
         />
 
         {/* Character Arc */}
-        <label className="char-profile-label">Character Arc</label>
+        <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Character Arc</label>
         <MiniRichText
           value={prof.arc || ''}
           onChange={(html) => upsertCharacterProfile(charName, { arc: html })}
@@ -713,31 +713,31 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
         />
 
         {/* Voice Profile (collapsible) */}
-        <details className="char-profile-voice-section">
-          <summary className="char-profile-label char-profile-voice-toggle">Voice Profile</summary>
-          <div className="char-profile-voice-fields">
-            <label className="char-profile-label">Speech Pattern</label>
+        <details className="my-1">
+          <summary className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block cursor-pointer select-none hover:text-(--fd-text)">Voice Profile</summary>
+          <div className="pt-1">
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Speech Pattern</label>
             <MiniRichText
               value={prof.speechPattern || ''}
               onChange={(html) => upsertCharacterProfile(charName, { speechPattern: html })}
               placeholder="Short sentences, formal tone, uses contractions..."
               minHeight={40}
             />
-            <label className="char-profile-label">Vocabulary</label>
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Vocabulary</label>
             <MiniRichText
               value={prof.vocabulary || ''}
               onChange={(html) => upsertCharacterProfile(charName, { vocabulary: html })}
               placeholder="Educated, uses legal terms, street slang..."
               minHeight={40}
             />
-            <label className="char-profile-label">Verbal Tics</label>
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Verbal Tics</label>
             <MiniRichText
               value={prof.verbalTics || ''}
               onChange={(html) => upsertCharacterProfile(charName, { verbalTics: html })}
               placeholder="Says 'you see' often, clears throat before lying..."
               minHeight={40}
             />
-            <label className="char-profile-label">Sample Dialogue</label>
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Sample Dialogue</label>
             <MiniRichText
               value={prof.sampleDialogue || ''}
               onChange={(html) => upsertCharacterProfile(charName, { sampleDialogue: html })}
@@ -748,21 +748,21 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
         </details>
 
         {/* Color + Highlight */}
-        <div className="char-profile-color-highlight">
-          <label className="char-profile-label">Color</label>
-          <div className="char-color-swatches">
+        <div className="flex flex-col gap-1">
+          <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block">Color</label>
+          <div className="flex gap-1.5 flex-wrap items-center">
             {['#8b5cf6','#4f46e5','#2563eb','#059669','#eab308','#f97316','#ef4444','#000000','#ffffff'].map(c => (
-              <button key={c} className={`synopsis-color-swatch${(prof.color || '') === c ? ' active' : ''}`} style={{ background: c }} onClick={() => upsertCharacterProfile(charName, { color: c })} />
+              <button key={c} className={`w-7 h-7 rounded-full border-2 cursor-pointer shrink-0 shadow-[inset_0_0_0_1px_rgba(128,128,128,0.3)] opacity-100 ${(prof.color || '') === c ? 'border-(--fd-text)' : 'border-transparent'}`} style={{ background: c }} onClick={() => upsertCharacterProfile(charName, { color: c })} />
             ))}
-            <label className="synopsis-color-custom" title="Custom color">
-              <input type="color" value={prof.color || '#999999'} onChange={(e) => upsertCharacterProfile(charName, { color: e.target.value })} />
-              <span>+</span>
+            <label className="w-7 h-7 rounded-full border-2 border-dashed border-(--fd-border) flex items-center justify-center cursor-pointer shrink-0 relative overflow-hidden" title="Custom color">
+              <input type="color" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" value={prof.color || '#999999'} onChange={(e) => upsertCharacterProfile(charName, { color: e.target.value })} />
+              <span className="text-sm font-bold text-(--fd-text-muted) pointer-events-none">+</span>
             </label>
           </div>
-          <div className="char-profile-highlight-inline">
-            <label className="char-profile-label" style={{ marginBottom: 0 }}>Highlight</label>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] block" style={{ marginBottom: 0 }}>Highlight</label>
             <button
-              className={`char-profile-highlight-btn${prof.highlighted ? ' active' : ''}`}
+              className={`char-profile-highlight-btn px-3 py-0.75 bg-transparent border rounded-[3px] text-[11px] cursor-pointer hover:border-[#555] ${prof.highlighted ? 'text-white border-transparent' : 'border-(--fd-border) text-(--fd-text-muted)'}`}
               onClick={() => upsertCharacterProfile(charName, { highlighted: !prof.highlighted })}
               style={prof.highlighted ? { background: prof.color || '#999', borderColor: prof.color || '#999' } : undefined}
             >
@@ -779,33 +779,33 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
           );
           const isAdding = addRelFor === nameUpper;
           return (
-            <div className="char-profile-relationships">
-              <div className="char-profile-rel-header-row">
-                <label className="char-profile-label" style={{ marginBottom: 0 }}>Relationships</label>
+            <div className="mt-1.5">
+              <div className="flex items-center justify-between mb-1">
+                <label className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] block" style={{ marginBottom: 0 }}>Relationships</label>
                 {!isAdding && (
-                  <button className="char-profile-rel-add-btn" onClick={() => setAddRelFor(nameUpper)}>+ Add</button>
+                  <button className="bg-none border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[10px] px-2 py-0.5 cursor-pointer hover:text-(--fd-text) hover:border-(--fd-text-muted)" onClick={() => setAddRelFor(nameUpper)}>+ Add</button>
                 )}
               </div>
               {rels.map((r) => {
                 const other = r.characterA === nameUpper ? r.characterB : r.characterA;
                 return (
-                  <div key={r.id} className="char-profile-rel-item">
-                    <div className="char-profile-rel-header">
-                      <span className="char-profile-rel-other">{other}</span>
-                      <span className="char-profile-rel-type">{r.type}</span>
-                      {r.dynamic && <span className="char-profile-rel-dynamic">{r.dynamic}</span>}
+                  <div key={r.id} className="px-2 py-1.5 border border-(--fd-border) rounded-sm mt-1 text-xs">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-semibold text-xs">{other}</span>
+                      <span className="text-[10px] px-1.5 py-px rounded-[3px] bg-(--fd-overlay-light) text-(--fd-text-muted) capitalize">{r.type}</span>
+                      {r.dynamic && <span className="text-[10px] text-(--fd-text-muted) italic">{r.dynamic}</span>}
                       <button
-                        className="char-profile-rel-remove"
+                        className="ml-auto bg-none border-none text-(--fd-text-muted) cursor-pointer text-sm px-0.5 leading-none hover:text-[#ef5350]"
                         onClick={() => deleteCharacterRelationship(r.id)}
                         title="Remove relationship"
                       >&times;</button>
                     </div>
-                    {r.description && <div className="char-profile-rel-desc">{r.description}</div>}
+                    {r.description && <div className="mt-0.75 text-[11px] text-(--fd-text-muted) leading-[1.4]">{r.description}</div>}
                   </div>
                 );
               })}
               {rels.length === 0 && !isAdding && (
-                <div className="char-profile-rel-empty">No relationships defined yet</div>
+                <div className="text-[11px] text-(--fd-text-muted) py-1.5 italic">No relationships defined yet</div>
               )}
               {isAdding && (
                 <InlineRelForm
@@ -824,13 +824,13 @@ const CharacterProfiles: React.FC<CharacterProfilesProps> = ({ editor, projectId
 
         {/* Scene appearances (collapsed by default) */}
         {st && st.scenes.length > 0 && (
-          <details className="char-profile-scenes-collapsible">
-            <summary className="char-profile-label char-profile-scenes-toggle">
+          <details className="my-1">
+            <summary className="char-profile-label text-[10px] text-(--fd-text-muted) uppercase tracking-[0.3px] mb-0.5 block cursor-pointer select-none hover:text-(--fd-text)">
               Appears in ({st.scenes.length} scenes)
             </summary>
-            <div className="char-profile-scene-chips">
+            <div className="flex flex-wrap gap-0.75">
               {st.scenes.map((s, i) => (
-                <span key={i} className="char-profile-scene-chip" onClick={() => handleNavigateToScene(s)} title={`Go to: ${s}`}>{s}</span>
+                <span key={i} className="char-profile-scene-chip py-0.5 px-1.5 bg-(--fd-input-bg) border border-(--fd-border) rounded-[3px] text-[9px] text-(--fd-text-muted) whitespace-nowrap overflow-hidden text-ellipsis max-w-32.5 cursor-pointer hover:border-(--fd-accent) hover:text-(--fd-text)" onClick={() => handleNavigateToScene(s)} title={`Go to: ${s}`}>{s}</span>
               ))}
             </div>
           </details>

@@ -62,7 +62,7 @@ const TreatmentEditor: React.FC = () => {
     content: { type: 'doc', content: [{ type: 'paragraph' }] },
     editorProps: {
       attributes: {
-        class: 'treatment-content',
+        class: 'treatment-content min-h-[200px] outline-none focus:outline-none [&_.ProseMirror-focused]:outline-none',
       },
     },
   });
@@ -152,11 +152,14 @@ const TreatmentEditor: React.FC = () => {
   const isActive = (type: string, opts?: Record<string, unknown>) =>
     editor ? editor.isActive(type, opts) : false;
 
+  const toolBtnBase = 'bg-transparent border-none text-(--fd-text-muted) py-1.5 px-2 rounded-[3px] cursor-pointer flex items-center justify-center min-w-7 min-h-7 transition-all duration-100 hover:bg-(--fd-overlay-light) hover:text-(--fd-text)';
+  const toolBtnActive = 'bg-(--fd-accent) text-white border-none py-1.5 px-2 rounded-[3px] cursor-pointer flex items-center justify-center min-w-7 min-h-7';
+
   return (
-    <div className="treatment-editor-root">
-      <div className="treatment-header">
+    <div className="fixed inset-0 flex flex-col bg-(--fd-background) z-1">
+      <div className="flex items-center gap-3 py-2.5 px-4 border-b border-(--fd-border) shrink-0">
         <button
-          className="treatment-back-btn"
+          className="bg-transparent border border-(--fd-border) text-(--fd-text-muted) py-1.5 px-2.5 rounded cursor-pointer flex items-center hover:bg-(--fd-overlay-subtle) hover:text-(--fd-text)"
           onClick={handleBack}
           title="Back to project"
         >
@@ -164,18 +167,18 @@ const TreatmentEditor: React.FC = () => {
         </button>
         <input
           type="text"
-          className="treatment-title-input"
+          className="flex-1 min-w-0 bg-transparent border border-transparent outline-none text-(--fd-text) text-lg font-semibold py-1.5 px-2.5 rounded transition-[border-color,background] duration-150 cursor-text hover:border-(--fd-border) hover:bg-(--fd-overlay-subtle) focus:border-(--fd-accent) focus:bg-(--fd-overlay-subtle)"
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="Treatment title…"
         />
-        <div className="treatment-save-status">
+        <div className="text-[11px] text-(--fd-text-muted)">
           {saveStatus === 'saving' && 'Saving…'}
           {saveStatus === 'saved' && 'Saved'}
           {saveStatus === 'error' && 'Save failed'}
         </div>
         <button
-          className="treatment-save-btn"
+          className="bg-(--fd-accent) text-white border-none py-1.5 px-3 rounded cursor-pointer flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => save()}
           disabled={saving || !editor}
           title="Save (⌘S)"
@@ -184,9 +187,9 @@ const TreatmentEditor: React.FC = () => {
         </button>
       </div>
 
-      <div className="treatment-toolbar">
+      <div className="flex items-center gap-1 py-2 px-4 border-b border-(--fd-border) bg-(--fd-overlay-subtle) shrink-0">
         <select
-          className="treatment-element-select"
+          className="bg-(--fd-background) border border-(--fd-border) text-(--fd-text) py-1 px-2 rounded-[3px] text-xs mr-2"
           value={
             isActive('heading', { level: 1 }) ? 'h1' :
             isActive('heading', { level: 2 }) ? 'h2' :
@@ -213,50 +216,50 @@ const TreatmentEditor: React.FC = () => {
           <option value="blockquote">Block Quote</option>
         </select>
         <button
-          className={`treatment-tool-btn${isActive('bold') ? ' active' : ''}`}
+          className={isActive('bold') ? toolBtnActive : toolBtnBase}
           onClick={() => editor?.chain().focus().toggleBold().run()}
           disabled={!editor}
           title="Bold"
         ><FaBold /></button>
         <button
-          className={`treatment-tool-btn${isActive('italic') ? ' active' : ''}`}
+          className={isActive('italic') ? toolBtnActive : toolBtnBase}
           onClick={() => editor?.chain().focus().toggleItalic().run()}
           disabled={!editor}
           title="Italic"
         ><FaItalic /></button>
         <button
-          className={`treatment-tool-btn${isActive('underline') ? ' active' : ''}`}
+          className={isActive('underline') ? toolBtnActive : toolBtnBase}
           onClick={() => editor?.chain().focus().toggleUnderline().run()}
           disabled={!editor}
           title="Underline"
         ><FaUnderline /></button>
-        <div className="treatment-tool-sep" />
+        <div className="w-px h-5 bg-(--fd-border) mx-1.5" />
         <button
-          className={`treatment-tool-btn${isActive('bulletList') ? ' active' : ''}`}
+          className={isActive('bulletList') ? toolBtnActive : toolBtnBase}
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
           disabled={!editor}
           title="Bullet list"
         ><FaListUl /></button>
         <button
-          className={`treatment-tool-btn${isActive('orderedList') ? ' active' : ''}`}
+          className={isActive('orderedList') ? toolBtnActive : toolBtnBase}
           onClick={() => editor?.chain().focus().toggleOrderedList().run()}
           disabled={!editor}
           title="Numbered list"
         ><FaListOl /></button>
         <button
-          className={`treatment-tool-btn${isActive('blockquote') ? ' active' : ''}`}
+          className={isActive('blockquote') ? toolBtnActive : toolBtnBase}
           onClick={() => editor?.chain().focus().toggleBlockquote().run()}
           disabled={!editor}
           title="Block quote"
         ><FaQuoteLeft /></button>
       </div>
 
-      <div className="treatment-page-container">
-        <div className="treatment-page">
+      <div className="flex-1 overflow-y-auto py-10 bg-(--fd-canvas-bg,#1a1a1a)">
+        <div className="treatment-page max-w-[720px] min-h-[900px] mx-auto bg-(--fd-page-bg,white) text-[#111] py-18 px-24 font-['Times_New_Roman',Times,serif] text-[12pt] leading-[2] shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           {editor ? (
             <EditorContent editor={editor} />
           ) : (
-            <div className="treatment-initializing">Initializing editor…</div>
+            <div className="text-[#888] italic py-5">Initializing editor…</div>
           )}
         </div>
       </div>

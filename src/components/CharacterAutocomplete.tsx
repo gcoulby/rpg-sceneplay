@@ -92,7 +92,7 @@ const CharacterAutocomplete: React.FC<CharacterAutocompleteProps> = ({
 
   return (
     <div
-      className="character-autocomplete"
+      className="fixed z-2500 min-w-45 max-h-60 overflow-y-auto bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md shadow-[0_6px_20px_rgba(0,0,0,.5)] py-1 text-[13px]"
       ref={menuRef}
       style={{ top: adjustedPos.top, left: adjustedPos.left }}
     >
@@ -100,7 +100,7 @@ const CharacterAutocomplete: React.FC<CharacterAutocompleteProps> = ({
         <div
           key={name}
           ref={el => { itemRefs.current[i] = el; }}
-          className={`character-autocomplete-item${i === selectedIndex ? ' selected' : ''}`}
+          className={`py-1.25 px-3 cursor-pointer text-(--fd-text) rounded-[3px] mx-1 font-(--screenplay-font) uppercase tracking-[0.3px] hover:bg-(--fd-accent) hover:text-white${i === selectedIndex ? ' bg-(--fd-accent) text-white' : ''}`}
           onMouseDown={(e) => { e.preventDefault(); onSelect(name); }}
           onMouseEnter={() => setSelectedIndex(i)}
         >

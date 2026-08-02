@@ -42,14 +42,21 @@ const GoToPage: React.FC<GoToPageProps> = ({ onGoToPage }) => {
   if (!goToPageOpen) return null;
 
   return (
-    <div className="dialog-overlay" onClick={() => setGoToPageOpen(false)}>
-      <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-        <div className="dialog-header">Go to Page</div>
-        <div className="dialog-body">
-          <div className="dialog-row">
-            <label>Page number (1-{pageCount}):</label>
+    <div
+      className="fixed left-0 top-0 right-0 bg-black/50 z-[3000] flex items-start justify-center h-[var(--vv-height,100dvh)] pt-[5vh] px-4 pb-4 overflow-y-auto max-[480px]:pt-[env(safe-area-inset-top,0px)] max-[480px]:px-0 max-[480px]:pb-0"
+      onClick={() => setGoToPageOpen(false)}
+    >
+      <div
+        className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)] min-w-[320px] max-w-[400px] max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col max-[768px]:min-w-0 max-[768px]:max-w-none max-[768px]:w-[calc(100vw-32px-env(safe-area-inset-left,0px)-env(safe-area-inset-right,0px))] max-[480px]:w-screen! max-[480px]:max-w-screen! max-[480px]:rounded-t-none max-[480px]:rounded-b-xl max-[480px]:max-h-[60vh] max-[480px]:overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">Go to Page</div>
+        <div className="p-5 overflow-y-auto flex-1">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm text-(--fd-text-muted)">Page number (1-{pageCount}):</label>
             <input
               ref={inputRef}
+              className="h-9 bg-(--fd-input-bg) text-(--fd-text) border border-(--fd-border) rounded px-2.5 text-sm outline-none focus:border-(--fd-accent) max-[768px]:h-10 max-[768px]:text-base"
               type="number"
               min={1}
               max={pageCount}
@@ -61,9 +68,17 @@ const GoToPage: React.FC<GoToPageProps> = ({ onGoToPage }) => {
             />
           </div>
         </div>
-        <div className="dialog-actions">
-          <button onClick={() => setGoToPageOpen(false)}>Cancel</button>
-          <button className="dialog-primary" onClick={handleGo}>
+        <div className="dialog-actions flex justify-end gap-2 px-5 py-3.5 border-t border-(--fd-border) shrink-0">
+          <button
+            className="h-[34px] px-[18px] bg-(--fd-toolbar-bg) text-(--fd-text) border border-(--fd-border) rounded cursor-pointer text-sm hover:bg-(--fd-menu-hover) max-[768px]:h-10"
+            onClick={() => setGoToPageOpen(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="h-[34px] px-[18px] rounded cursor-pointer text-sm border bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90 max-[768px]:h-10"
+            onClick={handleGo}
+          >
             Go
           </button>
         </div>

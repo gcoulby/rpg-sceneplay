@@ -191,22 +191,22 @@ const MobileAccessoryBar: React.FC<MobileAccessoryBarProps> = ({ editor }) => {
       {/* Bottom sheet for element type picker */}
       {sheetOpen && (
         <div
-          className="mob-acc-sheet-overlay"
+          className="mob-acc-sheet-overlay fixed left-0 right-0 top-0 z-[3550] flex flex-col justify-end"
           style={{ bottom: bottom + 44 }}
           onPointerDown={(e) => {
             if (e.target === e.currentTarget) setSheetOpen(false);
           }}
         >
-          <div className="mob-acc-sheet">
-            <div className="mob-acc-sheet-header">Element Type</div>
-            <div className="mob-acc-sheet-list">
+          <div className="mob-acc-sheet bg-(--fd-dropdown-bg) border-t border-(--fd-border) rounded-t-xl max-h-[50vh] overflow-y-auto shadow-[0_-4px_20px_rgba(0,0,0,0.3)] pb-2 [-webkit-overflow-scrolling:touch]">
+            <div className="py-3 px-4 pb-2 text-xs font-semibold text-(--fd-text-muted) uppercase tracking-[0.5px] sticky top-0 bg-inherit">Element Type</div>
+            <div className="flex flex-col">
               {orderedTypes.map((type) => (
                 <button
                   key={type}
-                  className={`mob-acc-sheet-item${currentElement === type ? ' active' : ''}`}
+                  className={`flex items-center py-2.5 px-4 border-none bg-transparent text-(--fd-text) text-[15px] text-left cursor-pointer [-webkit-tap-highlight-color:transparent] active:bg-(--fd-accent) active:text-white ${currentElement === type ? 'text-(--fd-accent)! font-semibold' : ''}`}
                   onPointerDown={(e) => { e.preventDefault(); handleElementSelect(type); }}
                 >
-                  {ELEMENT_LABELS[type]}
+                  {currentElement === type && '\u2713 '}{ELEMENT_LABELS[type]}
                 </button>
               ))}
             </div>
@@ -217,23 +217,23 @@ const MobileAccessoryBar: React.FC<MobileAccessoryBarProps> = ({ editor }) => {
       {/* The accessory bar */}
       <div
         ref={barRef}
-        className="mob-acc-bar"
+        className="mob-acc-bar fixed left-0 right-0 z-[3600] h-11 flex items-center gap-0.5 px-1.5 bg-(--fd-toolbar-bg,var(--fd-bg-secondary)) border-t border-(--fd-border) shadow-[0_-2px_8px_rgba(0,0,0,0.2)] [-webkit-tap-highlight-color:transparent] [touch-action:none]"
         style={{ bottom }}
       >
         {/* Element type — most prominent */}
         <button
-          className="mob-acc-elem-btn"
+          className="flex items-center gap-1 h-8 px-2.5 bg-(--fd-accent) text-white border-none rounded-md text-[13px] font-semibold whitespace-nowrap cursor-pointer shrink-0 [-webkit-tap-highlight-color:transparent] active:opacity-80"
           onPointerDown={(e) => { e.preventDefault(); setSheetOpen(!sheetOpen); }}
         >
-          <span className="mob-acc-elem-label">{ELEMENT_LABELS[currentElement]}</span>
-          <span className="mob-acc-elem-arrow">{sheetOpen ? '\u25BC' : '\u25B2'}</span>
+          <span>{ELEMENT_LABELS[currentElement]}</span>
+          <span className="text-[9px] opacity-80">{sheetOpen ? '\u25BC' : '\u25B2'}</span>
         </button>
 
-        <div className="mob-acc-sep" />
+        <div className="w-px h-6 bg-(--fd-border) mx-1 shrink-0" />
 
         {/* Script Note */}
         <button
-          className="mob-acc-btn"
+          className="mob-acc-btn flex items-center justify-center w-10 h-9 bg-transparent border-none rounded-md text-(--fd-text-secondary,#aaa) cursor-pointer shrink-0 [-webkit-tap-highlight-color:transparent] active:bg-(--fd-accent) active:text-white"
           onPointerDown={(e) => { e.preventDefault(); handleAddNote(); }}
           title="Add Script Note"
         >
@@ -247,7 +247,7 @@ const MobileAccessoryBar: React.FC<MobileAccessoryBarProps> = ({ editor }) => {
 
         {/* Tag */}
         <button
-          className="mob-acc-btn"
+          className="mob-acc-btn flex items-center justify-center w-10 h-9 bg-transparent border-none rounded-md text-(--fd-text-secondary,#aaa) cursor-pointer shrink-0 [-webkit-tap-highlight-color:transparent] active:bg-(--fd-accent) active:text-white"
           onPointerDown={(e) => { e.preventDefault(); handleTag(); }}
           title="Tag"
         >

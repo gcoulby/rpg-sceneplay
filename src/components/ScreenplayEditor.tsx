@@ -3728,7 +3728,7 @@ const ScreenplayEditor: React.FC = () => {
   // Show loading screen while collab session is being set up
   if (collabLoading) {
     return (
-      <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <div className="app-container flex flex-col h-dvh overflow-hidden" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
         <div style={{ textAlign: 'center', color: 'var(--fd-text-secondary, #888)' }}>
           <div style={{ fontSize: 18, marginBottom: 8 }}>Joining collaboration session...</div>
           <div style={{ fontSize: 13 }}>Loading document</div>
@@ -3738,15 +3738,15 @@ const ScreenplayEditor: React.FC = () => {
   }
 
   return (
-    <div className={`app-container${isHistoryMode ? ' history-mode' : ''}`}>
+    <div className={`app-container flex flex-col h-dvh overflow-hidden${isHistoryMode ? ' history-mode' : ''}`}>
       {isHistoryMode && (
-        <div className="history-banner">
-          <span className="history-banner-icon">&#128337;</span>
-          <span className="history-banner-text">
+        <div className="history-banner flex items-center justify-center gap-2.5 bg-linear-to-br from-[#b8860b] to-[#8b6914] text-white py-2.5 px-5 text-[13px] font-medium tracking-[0.3px] shadow-[0_2px_8px_rgba(0,0,0,.3)] z-4000 shrink-0 select-none">
+          <span className="text-base">&#128337;</span>
+          <span className="shrink-0 [&_strong]:font-mono [&_strong]:text-xs [&_strong]:bg-(--fd-input-bg) [&_strong]:py-px [&_strong]:px-1.5 [&_strong]:rounded-[3px]">
             Viewing version <strong>{historyVersionLabel}</strong> — Read Only
           </span>
           <button
-            className="history-banner-back"
+            className="ml-4 bg-white/15 border border-white/30 text-white text-xs font-medium py-1 px-3.5 rounded cursor-pointer transition-all duration-150 hover:bg-white/25 hover:border-white/50"
             onClick={() => {
               if (urlProjectId && urlScriptId) {
                 navigate(`/project/${urlProjectId}/edit/${urlScriptId}`);
@@ -3834,12 +3834,12 @@ const ScreenplayEditor: React.FC = () => {
         </div>
       )}
       {saveStatus === 'error' && currentProject && currentScriptId && (
-        <div className="save-failure-banner">
-          <span className="save-failure-icon">&#9888;</span>
-          <span className="save-failure-text">
+        <div className="save-failure-banner flex items-center gap-2.5 py-1.5 px-4 bg-linear-to-r from-[#3a1a1a] to-[#3a2a1a] border-b border-[#7a3a3a] text-[13px] text-[#e0a0a0] min-h-8 shrink-0">
+          <span className="text-base text-[#ef4444] shrink-0">&#9888;</span>
+          <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
             Auto-save failed{saveError ? `: ${saveError}` : ''}. Your changes may not be saved.
           </span>
-          <button className="save-failure-btn" onClick={() => {
+          <button className="save-failure-btn py-0.75 px-2.5 rounded border border-[#7a3a3a] bg-transparent text-[#e0a0a0] text-xs cursor-pointer whitespace-nowrap hover:bg-[#4a2a2a]" onClick={() => {
             const content = buildSaveContent();
             if (!content || !currentProject || !currentScriptId) return;
             setSaveStatus('saving');
@@ -3854,12 +3854,12 @@ const ScreenplayEditor: React.FC = () => {
           }}>
             Retry
           </button>
-          <button className="save-failure-btn" onClick={() => {
+          <button className="save-failure-btn py-0.75 px-2.5 rounded border border-[#7a3a3a] bg-transparent text-[#e0a0a0] text-xs cursor-pointer whitespace-nowrap hover:bg-[#4a2a2a]" onClick={() => {
             useEditorStore.getState().setSaveAsOpen(true);
           }}>
             Save As
           </button>
-          <button className="save-failure-btn" onClick={() => {
+          <button className="save-failure-btn py-0.75 px-2.5 rounded border border-[#7a3a3a] bg-transparent text-[#e0a0a0] text-xs cursor-pointer whitespace-nowrap hover:bg-[#4a2a2a]" onClick={() => {
             // Goes through downloadOdraft so the file gets the .odraft envelope
             // and OpenDraft can actually reopen it. The previous version wrote a
             // bare payload via a raw anchor, which parseOdraft rejected — the
@@ -3889,7 +3889,7 @@ const ScreenplayEditor: React.FC = () => {
           }}>
             Export Backup
           </button>
-          <button className="save-failure-dismiss" onClick={() => setSaveStatus('unsaved')}>
+          <button className="save-failure-dismiss bg-transparent border-none text-[#e0a0a0] cursor-pointer text-base py-0 px-1 leading-none" onClick={() => setSaveStatus('unsaved')}>
             &times;
           </button>
         </div>
@@ -3908,19 +3908,19 @@ const ScreenplayEditor: React.FC = () => {
         setShareDialogOpen(true);
       }} onJoinCollab={() => setJoinCollabOpen(true)} isCollabActive={collabMode} isCollabGuest={collabMode && !isCollabHost} />}
       {!isHistoryMode && <Toolbar editor={editor} />}
-      <div className="editor-layout">
+      <div className="editor-layout flex flex-1 overflow-hidden">
         {!isHistoryMode && <SceneNavigator editor={editor} scrollContainer={editorMainRef.current} style={{ width: navWidth, minWidth: navWidth }} />}
         {!isHistoryMode && navigatorOpen && (
-          <div className="panel-resize-handle" onPointerDown={(e) => handleResizePointerDown('left', e)} style={{ touchAction: 'none' }} />
+          <div className="panel-resize-handle w-1 cursor-col-resize bg-transparent shrink-0 relative z-10 hover:bg-(--fd-accent) hover:opacity-50 active:bg-(--fd-accent) active:opacity-50" onPointerDown={(e) => handleResizePointerDown('left', e)} style={{ touchAction: 'none' }} />
         )}
-        <div className="editor-center">
+        <div className="editor-center flex flex-col flex-1 overflow-hidden min-w-0">
           {!isHistoryMode && <IndexCards editor={editor} scrollContainer={editorMainRef.current} />}
           {!isHistoryMode && statisticsOpen && editor ? (
             <ScriptStatistics editor={editor} />
           ) : !isHistoryMode && beatBoardOpen ? (
             <BeatBoard />
           ) : (
-            <div className="editor-main" ref={editorMainRef} onDragOver={handleEditorDragOver} onDragLeave={handleEditorDragLeave} onDrop={handleEditorDrop}>
+            <div className="editor-main flex-1 overflow-y-auto overflow-x-auto bg-(--fd-bg) flex justify-center pt-[30px] pb-[60px]" ref={editorMainRef} onDragOver={handleEditorDragOver} onDragLeave={handleEditorDragLeave} onDrop={handleEditorDrop}>
               <div
                 className="page-sizer"
                 style={{
@@ -4041,7 +4041,7 @@ const ScreenplayEditor: React.FC = () => {
           )}
         </div>
         {!isHistoryMode && rightPanelVisible && (
-          <div className="panel-resize-handle" onPointerDown={(e) => handleResizePointerDown('right', e)} style={{ touchAction: 'none' }} />
+          <div className="panel-resize-handle w-1 cursor-col-resize bg-transparent shrink-0 relative z-10 hover:bg-(--fd-accent) hover:opacity-50 active:bg-(--fd-accent) active:opacity-50" onPointerDown={(e) => handleResizePointerDown('right', e)} style={{ touchAction: 'none' }} />
         )}
         {!isHistoryMode && <ScriptNotes editor={editor} style={{ width: rightPanelWidth, minWidth: rightPanelWidth }} />}
         {!isHistoryMode && <CharacterProfiles editor={editor} projectId={currentProject?.id || ''} style={{ width: rightPanelWidth, minWidth: rightPanelWidth }} />}
@@ -4207,18 +4207,18 @@ const ScreenplayEditor: React.FC = () => {
         </div>
       )}
       {dropConfirmOpen && (
-        <div className="dialog-overlay" onClick={handleDropConfirmCancel}>
-          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-header">Unsaved Changes</div>
-            <div className="dialog-body">
+        <div className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center h-(--vv-height,100dvh) pt-[5vh] px-4 pb-4 overflow-y-auto" onClick={handleDropConfirmCancel}>
+          <div className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,.6)] min-w-80 max-w-100 max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="dialog-header py-3.5 px-5 border-b border-(--fd-border) font-semibold text-base shrink-0">Unsaved Changes</div>
+            <div className="dialog-body p-5 overflow-y-auto flex-1">
               <p style={{ margin: 0, fontSize: 14, color: 'var(--fd-text)' }}>
                 You have unsaved changes. Would you like to save before opening the new file?
               </p>
             </div>
-            <div className="dialog-actions">
+            <div className="dialog-actions flex justify-end gap-2 py-3.5 px-5 border-t border-(--fd-border) shrink-0 [&_button]:h-8.5 [&_button]:px-4.5 [&_button]:bg-(--fd-toolbar-bg) [&_button]:text-(--fd-text) [&_button]:border [&_button]:border-(--fd-border) [&_button]:rounded [&_button]:cursor-pointer [&_button]:text-sm [&_button:hover]:bg-(--fd-menu-hover)">
               <button onClick={handleDropConfirmCancel}>Cancel</button>
               <button onClick={handleDropConfirmDiscard}>Discard</button>
-              <button className="dialog-primary" onClick={handleDropConfirmSave}>Save &amp; Open</button>
+              <button className="dialog-primary bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90" onClick={handleDropConfirmSave}>Save &amp; Open</button>
             </div>
           </div>
         </div>

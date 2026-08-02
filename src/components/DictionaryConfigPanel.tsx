@@ -230,14 +230,14 @@ const LanguageInstallerDialog: React.FC<{ onClose: () => void }> = ({ onClose })
   };
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
+    <div className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center h-(--vv-height,100dvh) px-4 pt-[5vh] pb-4 overflow-y-auto" onClick={onClose}>
       <div
-        className="dialog-box"
+        className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
         onClick={(e) => e.stopPropagation()}
         style={{ maxWidth: 560, minWidth: 440, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
       >
-        <div className="dialog-header">Add Language</div>
-        <div className="dialog-body" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16 }}>
+        <div className="dialog-header px-5 py-3.5 border-b border-(--fd-border) font-semibold text-base shrink-0">Add Language</div>
+        <div className="dialog-body flex-1 overflow-y-auto" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16 }}>
           <div style={helpTextStyle}>
             Languages are downloaded from jsdelivr (wooorm/dictionaries) or
             the LibreOffice dictionaries repo on GitHub, and cached locally.
@@ -386,8 +386,8 @@ const LanguageInstallerDialog: React.FC<{ onClose: () => void }> = ({ onClose })
             )}
           </div>
         </div>
-        <div className="dialog-footer">
-          <button className="dialog-primary" onClick={onClose}>Done</button>
+        <div className="dialog-footer flex items-center gap-2 px-5 py-3.5 border-t border-(--fd-border) shrink-0">
+          <button className="dialog-primary h-8.5 px-4.5 border rounded cursor-pointer text-sm bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90" onClick={onClose}>Done</button>
         </div>
       </div>
     </div>

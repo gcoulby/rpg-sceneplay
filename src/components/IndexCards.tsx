@@ -551,19 +551,21 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
 
   if (!indexCardsOpen) return null;
 
-  const containerClass = `index-cards${fullscreen ? ' index-cards-fullscreen' : ''}`;
+  const containerClass = fullscreen
+    ? 'fixed inset-0 z-[3500] max-h-none overflow-y-auto bg-(--fd-bg) [&_.index-cards-header]:sticky [&_.index-cards-header]:top-0 [&_.index-cards-header]:z-[1] [&_.index-cards-header]:bg-(--fd-bg) [&_.index-cards-grid]:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] [&_.index-cards-grid]:p-4 [&_.index-cards-grid]:px-6 [&_.index-cards-grid]:gap-4 [&_.index-cards-grid]:content-start max-md:[&_.index-cards-grid]:grid-cols-[repeat(auto-fill,minmax(250px,1fr))]'
+    : 'bg-(--fd-navigator-bg) border-b border-(--fd-border) max-h-[50vh] overflow-y-auto shrink-0';
   const indicatorStyle = getIndicatorStyle();
 
   return (
     <div className={containerClass} ref={containerRef}>
-      <div className="index-cards-header">
-        <span className="index-cards-title">Index Cards</span>
-        <span className="index-cards-count">{scenes.length} scenes</span>
-        <div className="index-cards-actions">
+      <div className="index-cards-header flex items-center py-2.5 px-4 border-b border-(--fd-border) gap-2">
+        <span className="font-semibold text-xs uppercase tracking-[0.5px] text-(--fd-text-muted)">Index Cards</span>
+        <span className="text-[11px] text-(--fd-text-muted) mr-auto">{scenes.length} scenes</span>
+        <div className="flex gap-1">
           {dragMode ? (
             <>
               <button
-                className="ic-action-btn ic-undo-redo-btn"
+                className="flex items-center justify-center py-[3px] px-1.5 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[11px] cursor-pointer hover:border-[#555] hover:text-(--fd-text) disabled:opacity-40 disabled:cursor-default disabled:hover:border-(--fd-border) disabled:hover:text-(--fd-text-muted)"
                 onClick={undo}
                 disabled={!canUndo}
                 title="Undo (Ctrl+Z)"
@@ -574,7 +576,7 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
                 </svg>
               </button>
               <button
-                className="ic-action-btn ic-undo-redo-btn"
+                className="flex items-center justify-center py-[3px] px-1.5 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[11px] cursor-pointer hover:border-[#555] hover:text-(--fd-text) disabled:opacity-40 disabled:cursor-default disabled:hover:border-(--fd-border) disabled:hover:text-(--fd-text-muted)"
                 onClick={redo}
                 disabled={!canRedo}
                 title="Redo (Ctrl+Shift+Z)"
@@ -585,14 +587,14 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
                 </svg>
               </button>
               <button
-                className="ic-action-btn"
+                className="py-[3px] px-1.5 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[11px] cursor-pointer hover:border-[#555] hover:text-(--fd-text)"
                 onClick={cancelReorder}
                 title="Cancel reorder"
               >
                 Cancel
               </button>
               <button
-                className={`ic-action-btn ic-apply-btn${hasChanges ? ' active' : ''}`}
+                className={`py-[3px] px-1.5 border rounded-[3px] text-[11px] cursor-pointer disabled:opacity-40 disabled:cursor-default ${hasChanges ? 'bg-[#2d8a4e] border-[#2d8a4e] text-white' : 'bg-transparent border-(--fd-border) text-(--fd-text-muted) hover:border-[#555] hover:text-(--fd-text)'}`}
                 onClick={applyReorder}
                 title={hasChanges ? 'Apply scene reorder to screenplay' : 'No changes to apply'}
                 disabled={!hasChanges}
@@ -602,7 +604,7 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
             </>
           ) : (
             <button
-              className="ic-action-btn"
+              className="py-[3px] px-1.5 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[11px] cursor-pointer hover:border-[#555] hover:text-(--fd-text)"
               onClick={enterReorderMode}
               title="Enter drag-drop mode"
             >
@@ -610,7 +612,7 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
             </button>
           )}
           <button
-            className="ic-action-btn ic-fullscreen-btn"
+            className="flex items-center justify-center py-[3px] px-1.5 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[11px] cursor-pointer hover:border-[#555] hover:text-(--fd-text)"
             onClick={() => setFullscreen(!fullscreen)}
             title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
@@ -627,7 +629,7 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
             )}
           </button>
           <button
-            className="ic-action-btn ic-close-btn"
+            className="flex items-center justify-center py-[3px] px-1.5 bg-transparent border border-(--fd-border) rounded-[3px] text-(--fd-text-muted) text-[11px] cursor-pointer hover:border-[#555] hover:text-(--fd-text) [@media(hover:none)_and_(pointer:coarse)]:min-w-11 [@media(hover:none)_and_(pointer:coarse)]:min-h-11 [@media(hover:none)_and_(pointer:coarse)]:flex [@media(hover:none)_and_(pointer:coarse)]:items-center [@media(hover:none)_and_(pointer:coarse)]:justify-center [@media(hover:none)_and_(pointer:coarse)]:text-[22px]"
             onClick={() => { if (fullscreen) setFullscreen(false); toggleIndexCards(); }}
             title="Close Index Cards"
           >
@@ -638,9 +640,9 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
           </button>
         </div>
       </div>
-      <div className="index-cards-grid" ref={gridRef} style={{ position: 'relative' }}>
+      <div className="index-cards-grid grid grid-cols-3 gap-3 p-3 px-4 max-[1200px]:grid-cols-2 max-[800px]:grid-cols-1" ref={gridRef} style={{ position: 'relative' }}>
         {displayScenes.length === 0 ? (
-          <div className="index-cards-empty">
+          <div className="col-[1/-1] p-5 text-(--fd-text-muted) text-xs italic text-center">
             No scenes yet. Write a scene heading to see index cards here.
           </div>
         ) : (
@@ -655,16 +657,16 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
                 <div
                   key={scene.id}
                   className={
-                    `index-card` +
-                    (dragMode ? ' ic-draggable' : '') +
-                    (dragIdx === index ? ' ic-dragging' : '') +
-                    (movedUp ? ' ic-moved-up' : '') +
-                    (movedDown ? ' ic-moved-down' : '')
+                    'index-card flex bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md overflow-hidden transition-[border-color] duration-150 hover:border-(--fd-accent)' +
+                    (dragMode ? ' cursor-grab active:cursor-grabbing' : '') +
+                    (dragIdx === index ? ' opacity-25' : '') +
+                    (movedUp ? ' border-[#2d8a4e]! shadow-[0_0_0_1px_#2d8a4e] [&_.index-card-badge]:bg-[#2d8a4e]' : '') +
+                    (movedDown ? ' border-[#d97706]! shadow-[0_0_0_1px_#d97706] [&_.index-card-badge]:bg-[#d97706]' : '')
                   }
                 >
                   {dragMode && (
                     <div
-                      className="ic-drag-handle"
+                      className="flex items-center justify-center w-8 min-h-11 text-(--fd-text-muted) text-lg cursor-grab shrink-0 tracking-[-3px] select-none [touch-action:none] hover:text-(--fd-text)"
                       title="Drag to reorder"
                       onPointerDown={(e) => handleDragHandleDown(e, index)}
                     >
@@ -672,41 +674,41 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
                     </div>
                   )}
                   <div
-                    className="index-card-color-strip"
+                    className="w-[3px] shrink-0"
                     style={{ backgroundColor: scene.color || 'var(--fd-text-muted)' }}
                   />
-                  <div className="index-card-body">
-                    <div className="index-card-top">
-                      <span className="index-card-badge" style={scene.color ? { background: scene.color, borderColor: scene.color } : undefined}>
+                  <div className="flex-1 py-2.5 px-3 flex flex-col gap-2 min-w-0">
+                    <div className="flex items-start gap-2">
+                      <span className="index-card-badge flex items-center justify-center min-w-6 h-6 bg-(--fd-text-muted) text-(--fd-bg,#fff) text-xs font-bold rounded-full shrink-0 py-0 px-1 gap-0.5 whitespace-nowrap" style={scene.color ? { background: scene.color, borderColor: scene.color } : undefined}>
                         {(movedUp || movedDown) ? (
-                          <><span className="ic-orig-num">{origNum}</span> → {newNum}</>
+                          <><span className="line-through opacity-60">{origNum}</span> → {newNum}</>
                         ) : (
                           scene.sceneNumber ?? newNum
                         )}
                       </span>
                       <div
-                        className="index-card-heading"
+                        className="flex-1 text-xs [font-family:var(--screenplay-font)] text-(--fd-text) cursor-pointer overflow-hidden line-clamp-2 leading-[1.3] hover:text-(--fd-accent)"
                         onClick={() => !dragMode && goToScene(index)}
                         title={dragMode ? undefined : 'Click to navigate to scene'}
                       >
                         {scene.heading}
                       </div>
                       {(sceneLengths[index] > 0 || sceneTimings[index]?.finalSeconds > 0) && (
-                        <div className="index-card-meta">
+                        <div className="flex gap-1 text-[9px] text-(--fd-text-muted) [font-variant-numeric:tabular-nums] shrink-0 ml-auto items-center whitespace-nowrap">
                           {sceneLengths[index] > 0 && (
-                            <span className="ic-meta-item">{Number(sceneLengths[index].toFixed(1))}p</span>
+                            <span className="font-semibold">{Number(sceneLengths[index].toFixed(1))}p</span>
                           )}
                           {sceneTimings[index]?.finalSeconds > 0 && (
-                            <span className="ic-meta-item" style={{ color: getTimingColor(sceneTimings[index].finalSeconds) }}>
+                            <span className="font-semibold" style={{ color: getTimingColor(sceneTimings[index].finalSeconds) }}>
                               {formatSceneDuration(sceneTimings[index].finalSeconds)}
                             </span>
                           )}
                         </div>
                       )}
                     </div>
-                    <div className="index-card-synopsis-wrap">
+                    <div className="relative w-full">
                       <textarea
-                        className="index-card-synopsis"
+                        className="w-full bg-black/20 text-(--fd-text) border border-transparent rounded-[3px] py-1.5 px-2 text-[11px] [font-family:-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,sans-serif] leading-[1.4] resize-y outline-none placeholder:text-(--fd-text-muted) focus:border-(--fd-accent) focus:bg-black/30"
                         placeholder="Add synopsis..."
                         value={scene.synopsis}
                         onChange={(e) => {
@@ -717,7 +719,7 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
                         disabled={dragMode}
                       />
                       <button
-                        className="ic-synopsis-expand"
+                        className="absolute top-1 right-1 bg-none border-none cursor-pointer text-(--fd-text) opacity-30 p-[3px] rounded-[3px] flex items-center justify-center hover:opacity-80 hover:bg-(--fd-overlay-subtle) disabled:cursor-default disabled:opacity-15"
                         onClick={() => setSynopsisModal({ sceneIdx: index, id: scene.id, heading: scene.heading, synopsis: scene.synopsis, color: scene.color })}
                         title="Expand synopsis"
                         disabled={dragMode}
@@ -736,8 +738,8 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
             })}
             {/* Drop insertion indicator */}
             {indicatorStyle && (
-              <div className="ic-insert-indicator" style={indicatorStyle}>
-                <div className="ic-insert-indicator-dot" />
+              <div className="bg-(--fd-accent) rounded-sm" style={indicatorStyle}>
+                <div className="absolute -top-1 -left-[3px] w-[9px] h-[9px] rounded-full bg-(--fd-accent)" />
               </div>
             )}
           </>
@@ -761,7 +763,7 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
       {/* Floating drag overlay — exact clone of the dragged card */}
       {dragIdx !== null && dragPos && dragCardHtml && (
         <div
-          className="ic-drag-overlay"
+          className="fixed z-[10000] [pointer-events:none!important] shadow-[0_8px_24px_rgba(0,0,0,0.4)] opacity-[0.92] overflow-hidden [&_*]:[pointer-events:none!important]"
           style={{
             left: dragPos.x - dragOffset.x,
             top: dragPos.y - dragOffset.y,
@@ -770,7 +772,7 @@ const IndexCards: React.FC<IndexCardsProps> = ({ editor, scrollContainer }) => {
           }}
         >
           <div
-            className="index-card ic-overlay-card"
+            className="index-card flex bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-md overflow-hidden"
             style={{ width: '100%', height: '100%', margin: 0 }}
             dangerouslySetInnerHTML={{ __html: dragCardHtml }}
           />
