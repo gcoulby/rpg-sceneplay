@@ -1,6 +1,6 @@
-import { API_BASE, getCollabWsUrl } from '../config';
-import { useSettingsStore } from '../stores/settingsStore';
-import { authedFetch } from './authedFetch';
+import { API_BASE, getCollabWsUrl } from '../config'
+import { useSettingsStore } from '../stores/settingsStore'
+import { authedFetch } from './authedFetch'
 
 /**
  * Custom events dispatched by the API client so UI components (AuthGate) can
@@ -12,32 +12,32 @@ import { authedFetch } from './authedFetch';
  *   opendraft:quota-exceeded   — 402 with the quota payload in event.detail
  */
 export type QuotaErrorDetail = {
-  error: 'quota_exceeded';
-  message: string;
-  current_plan: string;
-  limit: number;
-  current: number;
-};
+  error: 'quota_exceeded'
+  message: string
+  current_plan: string
+  limit: number
+  current: number
+}
 
 export class ApiError extends Error {
-  status: number;
-  body: unknown;
+  status: number
+  body: unknown
   /** True when the API client has already surfaced this error to the user via
    *  an AuthGate event (sign-in prompt, quota dialog, verify-email prompt).
    *  Call sites should NOT show an additional toast when this is true, or
    *  the user sees both the nice dialog and the raw "API error 402: ..." */
-  handled: boolean;
+  handled: boolean
   constructor(status: number, body: unknown, message: string, handled = false) {
-    super(message);
-    this.status = status;
-    this.body = body;
-    this.handled = handled;
+    super(message)
+    this.status = status
+    this.body = body
+    this.handled = handled
   }
 }
 
 export function dispatchApiEvent(name: string, detail?: unknown): void {
   try {
-    window.dispatchEvent(new CustomEvent(name, { detail }));
+    window.dispatchEvent(new CustomEvent(name, { detail }))
   } catch {
     /* no-op in non-browser envs (SSR/tests) */
   }
@@ -48,36 +48,47 @@ export function dispatchApiEvent(name: string, detail?: unknown): void {
  * an ApiError carrying the status + parsed body. Shared by api.ts, cloudApi.ts,
  * and any other backend caller.
  */
-export async function handleNonOkResponse(res: Response, label: string): Promise<never> {
-  let parsedBody: unknown = null;
-  const rawText = await res.text().catch(() => '');
+export async function handleNonOkResponse(
+  res: Response,
+  label: string,
+): Promise<never> {
+  let parsedBody: unknown = null
+  const rawText = await res.text().catch(() => '')
   try {
-    parsedBody = rawText ? JSON.parse(rawText) : null;
+    parsedBody = rawText ? JSON.parse(rawText) : null
   } catch {
-    parsedBody = rawText;
+    parsedBody = rawText
   }
 
   // Track whether we surface this error via a dedicated dialog so callers
   // know to suppress their own toast.
-  let handled = false;
+  let handled = false
 
   if (res.status === 401) {
     // authedFetch has already cleared auth if refresh failed; ensure it's
     // cleared for the no-refresh-token path too.
-    useSettingsStore.getState().clearCollabAuth();
-    dispatchApiEvent('opendraft:auth-required');
-    handled = true;
+    useSettingsStore.getState().clearCollabAuth()
+    dispatchApiEvent('opendraft:auth-required')
+    handled = true
   } else if (res.status === 403) {
-    const detail = (parsedBody as any)?.detail;
-    if (detail && typeof detail === 'object' && detail.error === 'email_not_verified') {
-      dispatchApiEvent('opendraft:email-unverified');
-      handled = true;
+    const detail = (parsedBody as any)?.detail
+    if (
+      detail &&
+      typeof detail === 'object' &&
+      detail.error === 'email_not_verified'
+    ) {
+      dispatchApiEvent('opendraft:email-unverified')
+      handled = true
     }
   } else if (res.status === 402) {
-    const detail = (parsedBody as any)?.detail;
-    if (detail && typeof detail === 'object' && detail.error === 'quota_exceeded') {
-      dispatchApiEvent('opendraft:quota-exceeded', detail as QuotaErrorDetail);
-      handled = true;
+    const detail = (parsedBody as any)?.detail
+    if (
+      detail &&
+      typeof detail === 'object' &&
+      detail.error === 'quota_exceeded'
+    ) {
+      dispatchApiEvent('opendraft:quota-exceeded', detail as QuotaErrorDetail)
+      handled = true
     }
   }
 
@@ -86,157 +97,160 @@ export async function handleNonOkResponse(res: Response, label: string): Promise
     parsedBody,
     `${label} error ${res.status}: ${rawText || res.statusText}`,
     handled,
-  );
+  )
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options?.headers as Record<string, string>),
-  };
-  const res = await authedFetch(`${API_BASE}${path}`, { ...options, headers });
-  if (!res.ok) await handleNonOkResponse(res, 'API');
-  return res.json();
+  }
+  const res = await authedFetch(`${API_BASE}${path}`, { ...options, headers })
+  if (!res.ok) await handleNonOkResponse(res, 'API')
+  return res.json()
 }
 
 /** Authenticated request to the collab server (not the Python backend). */
-async function collabServerRequest<T>(path: string, options?: RequestInit): Promise<T> {
-  const base = getCollabWsUrl().replace(/^ws(s?):\/\//, 'http$1://');
+async function collabServerRequest<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const base = getCollabWsUrl().replace(/^ws(s?):\/\//, 'http$1://')
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options?.headers as Record<string, string>),
-  };
-  const res = await authedFetch(`${base}${path}`, { ...options, headers });
-  if (!res.ok) await handleNonOkResponse(res, 'Collab API');
-  return res.json();
+  }
+  const res = await authedFetch(`${base}${path}`, { ...options, headers })
+  if (!res.ok) await handleNonOkResponse(res, 'Collab API')
+  return res.json()
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface LinkPreview {
-  url: string;
-  title: string;
-  description: string;
-  image: string;
-  site_name: string;
+  url: string
+  title: string
+  description: string
+  image: string
+  site_name: string
 }
 
 export interface SubmissionEntry {
-  id: string;
-  date: string;
-  submitted_to: string;
-  type: string;
-  status: string;
-  notes: string;
+  id: string
+  date: string
+  submitted_to: string
+  type: string
+  status: string
+  notes: string
 }
 
 export interface ProjectProperties {
-  genre: string;
-  logline: string;
-  synopsis: string;
-  author: string;
-  contact: string;
-  copyright: string;
-  draft: string;
-  language: string;
-  format: string;
-  production_company: string;
-  director: string;
-  producer: string;
-  status: string;
-  target_length: string;
-  notes: string;
+  genre: string
+  logline: string
+  synopsis: string
+  author: string
+  contact: string
+  copyright: string
+  draft: string
+  language: string
+  format: string
+  production_company: string
+  director: string
+  producer: string
+  status: string
+  target_length: string
+  notes: string
   // Registration & Legal
-  wga_registration: string;
-  wga_registration_date: string;
-  copyright_registration: string;
-  copyright_year: string;
-  agent_name: string;
-  agent_contact: string;
-  manager_name: string;
-  manager_contact: string;
-  submissions: SubmissionEntry[];
-  dictionary_words?: string[];
+  wga_registration: string
+  wga_registration_date: string
+  copyright_registration: string
+  copyright_year: string
+  agent_name: string
+  agent_contact: string
+  manager_name: string
+  manager_contact: string
+  submissions: SubmissionEntry[]
+  dictionary_words?: string[]
 }
 
 export interface ProjectInfo {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-  properties: ProjectProperties;
-  color: string;
-  pinned: boolean;
-  sort_order: number;
+  id: string
+  name: string
+  created_at: string
+  updated_at: string
+  properties: ProjectProperties
+  color: string
+  pinned: boolean
+  sort_order: number
 }
 
 export interface ScriptMeta {
-  id: string;
-  title: string;
-  author: string;
-  format: string;
-  created_at: string;
-  updated_at: string;
-  page_count: number;
-  size_bytes: number;
-  color: string;
-  pinned: boolean;
-  sort_order: number;
-  preview: string;
+  id: string
+  title: string
+  author: string
+  format: string
+  created_at: string
+  updated_at: string
+  page_count: number
+  size_bytes: number
+  color: string
+  pinned: boolean
+  sort_order: number
+  preview: string
 }
 
 export interface ScriptResponse {
-  meta: ScriptMeta;
-  content: Record<string, unknown> | null;
+  meta: ScriptMeta
+  content: Record<string, unknown> | null
 }
 
 export interface VersionInfo {
-  hash: string;
-  short_hash: string;
-  message: string;
-  date: string;
-  author?: string;
+  hash: string
+  short_hash: string
+  message: string
+  date: string
+  author?: string
 }
 
 export interface DiffResponse {
-  diff: string;
-  from_hash: string;
-  to_hash: string;
+  diff: string
+  from_hash: string
+  to_hash: string
 }
 
 export interface CollabSession {
-  token: string;
-  project_id: string;
-  script_id: string;
-  collaborator_name: string;
-  role: string;
-  created_at: string;
-  expires_at: string;
-  active: boolean;
-  session_nonce?: string;
+  token: string
+  project_id: string
+  script_id: string
+  collaborator_name: string
+  role: string
+  created_at: string
+  expires_at: string
+  active: boolean
+  session_nonce?: string
 }
 
 // ── API methods ──────────────────────────────────────────────────────────────
 
 export interface LocationEntry {
-  id: string;
-  name: string;
-  fullName: string;
-  type: 'interior' | 'exterior' | 'both';
-  address: string;
-  notes: string;
-  contact: string;
-  availability: string;
-  tags: string[];
-  imageAssetIds: string[];
-  aliases: string[];
-  created_at: string;
-  updated_at: string;
+  id: string
+  name: string
+  fullName: string
+  type: 'interior' | 'exterior' | 'both'
+  address: string
+  notes: string
+  contact: string
+  availability: string
+  tags: string[]
+  imageAssetIds: string[]
+  aliases: string[]
+  created_at: string
+  updated_at: string
 }
 
 export interface DemoInfo {
-  demo: boolean;
-  message: string | null;
+  demo: boolean
+  message: string | null
 }
 
 export const api = {
@@ -255,8 +269,20 @@ export const api = {
 
   getProject: (id: string) => request<ProjectInfo>(`/projects/${id}`),
 
-  updateProject: (id: string, data: { name?: string; properties?: Partial<ProjectProperties>; color?: string; pinned?: boolean; sort_order?: number }) =>
-    request<ProjectInfo>(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  updateProject: (
+    id: string,
+    data: {
+      name?: string
+      properties?: Partial<ProjectProperties>
+      color?: string
+      pinned?: boolean
+      sort_order?: number
+    },
+  ) =>
+    request<ProjectInfo>(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 
   deleteProject: (id: string) =>
     request<{ message: string }>(`/projects/${id}`, { method: 'DELETE' }),
@@ -269,9 +295,14 @@ export const api = {
 
   // Scripts
   listScripts: (projectId: string, includePreview: boolean = false) =>
-    request<ScriptMeta[]>(`/projects/${projectId}/scripts/${includePreview ? '?include_preview=true' : ''}`),
+    request<ScriptMeta[]>(
+      `/projects/${projectId}/scripts/${includePreview ? '?include_preview=true' : ''}`,
+    ),
 
-  createScript: (projectId: string, data: { title: string; content?: any; format?: string }) =>
+  createScript: (
+    projectId: string,
+    data: { title: string; content?: any; format?: string },
+  ) =>
     request<ScriptResponse>(`/projects/${projectId}/scripts/`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -280,22 +311,38 @@ export const api = {
   getScript: (projectId: string, scriptId: string) =>
     request<ScriptResponse>(`/projects/${projectId}/scripts/${scriptId}`),
 
-  saveScript: (projectId: string, scriptId: string, data: { title?: string; content?: Record<string, unknown>; color?: string; pinned?: boolean; sort_order?: number }) =>
+  saveScript: (
+    projectId: string,
+    scriptId: string,
+    data: {
+      title?: string
+      content?: Record<string, unknown>
+      color?: string
+      pinned?: boolean
+      sort_order?: number
+    },
+  ) =>
     request<ScriptResponse>(`/projects/${projectId}/scripts/${scriptId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
 
-  reorderScripts: (projectId: string, items: Array<{ id: string; sort_order: number }>) =>
+  reorderScripts: (
+    projectId: string,
+    items: Array<{ id: string; sort_order: number }>,
+  ) =>
     request<{ message: string }>(`/projects/${projectId}/scripts/reorder`, {
       method: 'PUT',
       body: JSON.stringify({ items }),
     }),
 
   duplicateScript: (projectId: string, scriptId: string) =>
-    request<ScriptResponse>(`/projects/${projectId}/scripts/${scriptId}/duplicate`, {
-      method: 'POST',
-    }),
+    request<ScriptResponse>(
+      `/projects/${projectId}/scripts/${scriptId}/duplicate`,
+      {
+        method: 'POST',
+      },
+    ),
 
   deleteScript: (projectId: string, scriptId: string) =>
     request<{ message: string }>(`/projects/${projectId}/scripts/${scriptId}`, {
@@ -310,18 +357,18 @@ export const api = {
     }),
 
   getVersions: (projectId: string, scriptId?: string) => {
-    const qs = scriptId ? `?script_id=${encodeURIComponent(scriptId)}` : '';
-    return request<VersionInfo[]>(`/projects/${projectId}/versions/${qs}`);
+    const qs = scriptId ? `?script_id=${encodeURIComponent(scriptId)}` : ''
+    return request<VersionInfo[]>(`/projects/${projectId}/versions/${qs}`)
   },
 
   getVersionDiff: (projectId: string, fromHash: string, toHash: string) =>
     request<DiffResponse>(
-      `/projects/${projectId}/versions/diff?from_hash=${encodeURIComponent(fromHash)}&to_hash=${encodeURIComponent(toHash)}`
+      `/projects/${projectId}/versions/diff?from_hash=${encodeURIComponent(fromHash)}&to_hash=${encodeURIComponent(toHash)}`,
     ),
 
   getScriptAtVersion: (projectId: string, hash: string, scriptId: string) =>
     request<ScriptResponse>(
-      `/projects/${projectId}/versions/${encodeURIComponent(hash)}/scripts/${encodeURIComponent(scriptId)}`
+      `/projects/${projectId}/versions/${encodeURIComponent(hash)}/scripts/${encodeURIComponent(scriptId)}`,
     ),
 
   restoreVersion: (projectId: string, hash: string) =>
@@ -330,78 +377,128 @@ export const api = {
     }),
 
   // Collaboration (routed to collab server, not Python backend)
-  createCollabInvite: (projectId: string, scriptId: string, collaboratorName: string, role: string = 'editor', expiresInHours: number = 1, sessionNonce: string = '') =>
+  createCollabInvite: (
+    projectId: string,
+    scriptId: string,
+    collaboratorName: string,
+    role: string = 'editor',
+    expiresInHours: number = 1,
+    sessionNonce: string = '',
+  ) =>
     collabServerRequest<CollabSession>('/api/collab/invite', {
       method: 'POST',
-      body: JSON.stringify({ project_id: projectId, script_id: scriptId, collaborator_name: collaboratorName, role, expires_in_hours: expiresInHours, session_nonce: sessionNonce }),
+      body: JSON.stringify({
+        project_id: projectId,
+        script_id: scriptId,
+        collaborator_name: collaboratorName,
+        role,
+        expires_in_hours: expiresInHours,
+        session_nonce: sessionNonce,
+      }),
     }),
 
   validateCollabSession: (token: string) =>
     collabServerRequest<CollabSession>(`/api/collab/session/${token}`),
 
   listCollabSessions: (projectId: string, scriptId: string) =>
-    collabServerRequest<CollabSession[]>(`/api/collab/sessions/${projectId}/${scriptId}`),
+    collabServerRequest<CollabSession[]>(
+      `/api/collab/sessions/${projectId}/${scriptId}`,
+    ),
 
   revokeCollabSession: (token: string) =>
-    collabServerRequest<{ message: string }>(`/api/collab/session/${token}`, { method: 'DELETE' }),
+    collabServerRequest<{ message: string }>(`/api/collab/session/${token}`, {
+      method: 'DELETE',
+    }),
 
   revokeAllCollabSessions: (projectId: string, scriptId: string) =>
-    collabServerRequest<{ message: string }>(`/api/collab/sessions/${projectId}/${scriptId}`, { method: 'DELETE' }),
+    collabServerRequest<{ message: string }>(
+      `/api/collab/sessions/${projectId}/${scriptId}`,
+      { method: 'DELETE' },
+    ),
 
   // Assets
   listAssets: async (projectId: string): Promise<any[]> => {
-    const data = await request<{ assets: any[] }>(`/projects/${projectId}/assets/`);
-    return data.assets || [];
+    const data = await request<{ assets: any[] }>(
+      `/projects/${projectId}/assets/`,
+    )
+    return data.assets || []
   },
 
-  uploadAsset: async (projectId: string, file: File, tags: string[] = []): Promise<any> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (tags.length) formData.append('tags', tags.join(','));
+  uploadAsset: async (
+    projectId: string,
+    file: File,
+    tags: string[] = [],
+  ): Promise<any> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (tags.length) formData.append('tags', tags.join(','))
     // Multipart — do NOT set Content-Type; the browser adds the boundary.
-    const res = await authedFetch(`${API_BASE}/projects/${projectId}/assets/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-    if (!res.ok) await handleNonOkResponse(res, 'Upload');
-    return res.json();
+    const res = await authedFetch(
+      `${API_BASE}/projects/${projectId}/assets/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+    )
+    if (!res.ok) await handleNonOkResponse(res, 'Upload')
+    return res.json()
   },
 
   deleteAsset: async (projectId: string, assetId: string): Promise<void> => {
-    await request<{ message: string }>(`/projects/${projectId}/assets/${assetId}`, { method: 'DELETE' });
+    await request<{ message: string }>(
+      `/projects/${projectId}/assets/${assetId}`,
+      { method: 'DELETE' },
+    )
   },
 
-  updateAssetTags: async (projectId: string, assetId: string, tags: string[]): Promise<void> => {
+  updateAssetTags: async (
+    projectId: string,
+    assetId: string,
+    tags: string[],
+  ): Promise<void> => {
     await request<any>(`/projects/${projectId}/assets/${assetId}/tags`, {
       method: 'PUT',
       body: JSON.stringify(tags),
-    });
+    })
   },
 
-  getAssetUrl: (projectId: string, assetId: string, _filename?: string): string => {
-    return `${API_BASE.replace(/\/api$/, '')}/api/projects/${projectId}/assets/${assetId}`;
+  getAssetUrl: (
+    projectId: string,
+    assetId: string,
+    _filename?: string,
+  ): string => {
+    return `${API_BASE.replace(/\/api$/, '')}/api/projects/${projectId}/assets/${assetId}`
   },
 
   fetchLinkPreview: async (url: string): Promise<LinkPreview> => {
     return request<LinkPreview>('/link/preview', {
       method: 'POST',
       body: JSON.stringify({ url }),
-    });
+    })
   },
 
   // Locations
   listLocations: async (projectId: string): Promise<LocationEntry[]> => {
-    const data = await request<{ locations: LocationEntry[] }>(`/projects/${projectId}/locations/`);
-    return data.locations || [];
+    const data = await request<{ locations: LocationEntry[] }>(
+      `/projects/${projectId}/locations/`,
+    )
+    return data.locations || []
   },
 
-  createLocation: (projectId: string, data: Partial<LocationEntry> & { name: string }) =>
+  createLocation: (
+    projectId: string,
+    data: Partial<LocationEntry> & { name: string },
+  ) =>
     request<LocationEntry>(`/projects/${projectId}/locations/`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  updateLocation: (projectId: string, locId: string, data: Partial<LocationEntry>) =>
+  updateLocation: (
+    projectId: string,
+    locId: string,
+    data: Partial<LocationEntry>,
+  ) =>
     request<LocationEntry>(`/projects/${projectId}/locations/${locId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -419,8 +516,7 @@ export const api = {
     ),
 
   // Formatting templates
-  listFormattingTemplates: () =>
-    request<any[]>('/formatting-templates/'),
+  listFormattingTemplates: () => request<any[]>('/formatting-templates/'),
 
   createFormattingTemplate: (template: any) =>
     request<any>('/formatting-templates/', {
@@ -436,7 +532,7 @@ export const api = {
 
   deleteFormattingTemplate: (id: string) =>
     request<any>(`/formatting-templates/${id}`, { method: 'DELETE' }),
-};
+}
 
 // ── Local storage initialisation ────────────────────────────────────────────
 // On Tauri (desktop + mobile) we use a local SQLite database instead of the
@@ -448,16 +544,21 @@ export const api = {
 // Must be called once before the React tree renders (see main.tsx).
 
 export async function initStorage(): Promise<void> {
-  const { setCompat } = await import('./compat');
+  const { setCompat } = await import('./compat')
   // Dynamic imports keep the Tauri/SQLite code out of web bundles.
-  const { isTauri } = await import('./platform');
-  const { useStorageStatusStore } = await import('../stores/storageStatusStore');
+  const { isTauri } = await import('./platform')
+  const { useStorageStatusStore } = await import('../stores/storageStatusStore')
 
   if (!isTauri()) {
-    setCompat('storage', 'Storage', 'primary',
-      'HTTP API (Python backend)', 'localStorage (browser fallback)');
-    useStorageStatusStore.getState().setMode('http');
-    return;                                           // ← web: nothing changes
+    setCompat(
+      'storage',
+      'Storage',
+      'primary',
+      'HTTP API (Python backend)',
+      'localStorage (browser fallback)',
+    )
+    useStorageStatusStore.getState().setMode('http')
+    return // ← web: nothing changes
   }
 
   try {
@@ -465,26 +566,39 @@ export async function initStorage(): Promise<void> {
     // fires when Tauri IPC is fundamentally broken (e.g. older macOS
     // WKWebView).  Normal first-run migrations finish well under 15 s.
     // We clear the timer on success/failure to avoid an unhandled rejection.
-    const { createLocalStorage } = await import('./local-storage');
-    const localApi: Awaited<ReturnType<typeof createLocalStorage>> = await new Promise(
-      (resolve, reject) => {
+    const { createLocalStorage } = await import('./local-storage')
+    const localApi: Awaited<ReturnType<typeof createLocalStorage>> =
+      await new Promise((resolve, reject) => {
         const timer = setTimeout(
-          () => reject(new Error(
-            'Tauri SQLite init timed out (15 s) — IPC may not work on this macOS version'
-          )),
+          () =>
+            reject(
+              new Error(
+                'Tauri SQLite init timed out (15 s) — IPC may not work on this macOS version',
+              ),
+            ),
           15_000,
-        );
+        )
         createLocalStorage()
-          .then((api) => { clearTimeout(timer); resolve(api); })
-          .catch((err) => { clearTimeout(timer); reject(err); });
-      },
-    );
+          .then((api) => {
+            clearTimeout(timer)
+            resolve(api)
+          })
+          .catch((err) => {
+            clearTimeout(timer)
+            reject(err)
+          })
+      })
     // Swap every method on the existing `api` object so all call-sites pick
     // up the local implementation automatically.
-    Object.assign(api, localApi);
-    setCompat('storage', 'Storage', 'primary',
-      'Tauri SQLite (local database)', 'File-based fallback (AppData)');
-    useStorageStatusStore.getState().setMode('sqlite');
+    Object.assign(api, localApi)
+    setCompat(
+      'storage',
+      'Storage',
+      'primary',
+      'Tauri SQLite (local database)',
+      'File-based fallback (AppData)',
+    )
+    useStorageStatusStore.getState().setMode('sqlite')
 
     // ── Recovery: SQLite is back, drain anything that landed in the file
     //    fallback during a previous degraded session.  Never overwrites —
@@ -492,60 +606,90 @@ export async function initStorage(): Promise<void> {
     //    so it doesn't block app startup.
     void (async () => {
       try {
-        const { migrateFileFallbackToSqlite } = await import('./file-fallback-recovery');
-        const result = await migrateFileFallbackToSqlite(localApi);
-        if (!result) return;
-        const { showToast } = await import('../components/Toast');
+        const { migrateFileFallbackToSqlite } =
+          await import('./file-fallback-recovery')
+        const result = await migrateFileFallbackToSqlite(localApi)
+        if (!result) return
+        const { showToast } = await import('@/components/open-draft/Toast')
         const counts = [
-          result.projects ? `${result.projects} project${result.projects === 1 ? '' : 's'}` : null,
-          result.scripts ? `${result.scripts} script${result.scripts === 1 ? '' : 's'}` : null,
-          result.assets ? `${result.assets} asset${result.assets === 1 ? '' : 's'}` : null,
-          result.templates ? `${result.templates} template${result.templates === 1 ? '' : 's'}` : null,
-        ].filter(Boolean).join(', ');
+          result.projects
+            ? `${result.projects} project${result.projects === 1 ? '' : 's'}`
+            : null,
+          result.scripts
+            ? `${result.scripts} script${result.scripts === 1 ? '' : 's'}`
+            : null,
+          result.assets
+            ? `${result.assets} asset${result.assets === 1 ? '' : 's'}`
+            : null,
+          result.templates
+            ? `${result.templates} template${result.templates === 1 ? '' : 's'}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(', ')
         if (result.errors.length === 0 && counts) {
-          showToast(`Imported ${counts} from file-based fallback storage`, 'success');
+          showToast(
+            `Imported ${counts} from file-based fallback storage`,
+            'success',
+          )
         } else if (result.errors.length > 0) {
-          console.error('[recovery] errors:', result.errors);
+          console.error('[recovery] errors:', result.errors)
           showToast(
             `Imported ${counts || 'nothing'} from fallback. ${result.errors.length} item(s) failed — check DevTools for details.`,
             'error',
-          );
+          )
         }
       } catch (recoveryErr) {
-        console.error('[recovery] migration crashed:', recoveryErr);
+        console.error('[recovery] migration crashed:', recoveryErr)
       }
-    })();
+    })()
   } catch (err) {
     // Tauri SQLite failed.  Drop to the file-based fallback (index in
     // localStorage, content in $APPDATA/file-fallback/) — this gives us a
     // sane degraded mode without hitting the localStorage 5 MB cap.
-    const sqliteReason = err instanceof Error
-      ? `${err.name}: ${err.message}`
-      : String(err);
-    console.error('Tauri SQLite init failed, falling back to file storage:', err);
+    const sqliteReason =
+      err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+    console.error(
+      'Tauri SQLite init failed, falling back to file storage:',
+      err,
+    )
     try {
-      const { createFileFallbackStorage } = await import('./file-fallback-storage');
-      const fallbackApi = await createFileFallbackStorage();
-      Object.assign(api, fallbackApi);
-      setCompat('storage', 'Storage', 'fallback',
-        'Tauri SQLite (local database)', 'File-based fallback (AppData)',
-        sqliteReason);
-      useStorageStatusStore.getState().setMode('file-fallback', sqliteReason);
+      const { createFileFallbackStorage } =
+        await import('./file-fallback-storage')
+      const fallbackApi = await createFileFallbackStorage()
+      Object.assign(api, fallbackApi)
+      setCompat(
+        'storage',
+        'Storage',
+        'fallback',
+        'Tauri SQLite (local database)',
+        'File-based fallback (AppData)',
+        sqliteReason,
+      )
+      useStorageStatusStore.getState().setMode('file-fallback', sqliteReason)
     } catch (fileErr) {
       // Even the file fallback couldn't initialise (fs plugin disabled,
       // app-data dir not writable).  Drop to localStorage so something
       // works, but flag it loudly via the dialog.
-      console.error('File fallback init also failed, dropping to localStorage:', fileErr);
-      const { createFallbackStorage } = await import('./fallback-storage');
-      const fallbackApi = createFallbackStorage();
-      Object.assign(api, fallbackApi);
+      console.error(
+        'File fallback init also failed, dropping to localStorage:',
+        fileErr,
+      )
+      const { createFallbackStorage } = await import('./fallback-storage')
+      const fallbackApi = createFallbackStorage()
+      Object.assign(api, fallbackApi)
       const reason = `${sqliteReason}\n\nFile fallback also failed: ${
         fileErr instanceof Error ? fileErr.message : String(fileErr)
-      }`;
-      setCompat('storage', 'Storage', 'fallback',
-        'Tauri SQLite (local database)', 'localStorage (browser fallback)',
-        reason);
-      useStorageStatusStore.getState().setMode('localstorage-fallback', reason);
+      }`
+      setCompat(
+        'storage',
+        'Storage',
+        'fallback',
+        'Tauri SQLite (local database)',
+        'localStorage (browser fallback)',
+        reason,
+      )
+      useStorageStatusStore.getState().setMode('localstorage-fallback', reason)
     }
   }
 }

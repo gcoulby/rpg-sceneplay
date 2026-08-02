@@ -1,0 +1,5874 @@
+import React, { useEffect, useCallback, useRef, useState, useMemo } from 'react'
+import { useEditor, EditorContent } from '@tiptap/react'
+import Document from '@tiptap/extension-document'
+import Text from '@tiptap/extension-text'
+import {
+  ScreenplayHardBreak,
+  HardBreakLeafText,
+} from '@/editor/extensions/ScreenplayHardBreak'
+import Bold from '@tiptap/extension-bold'
+import Italic from '@tiptap/extension-italic'
+import Underline from '@tiptap/extension-underline'
+import History from '@tiptap/extension-history'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import Dropcursor from '@tiptap/extension-dropcursor'
+import Gapcursor from '@tiptap/extension-gapcursor'
+import TextAlign from '@tiptap/extension-text-align'
+import Placeholder from '@tiptap/extension-placeholder'
+import TextStyle from '@tiptap/extension-text-style'
+import Color from '@tiptap/extension-color'
+import FontFamily from '@tiptap/extension-font-family'
+import { Extension } from '@tiptap/core'
+import * as Y from 'yjs'
+import { HocuspocusProvider } from '@hocuspocus/provider'
+
+import {
+  SceneHeading,
+  Action,
+  Character,
+  Dialogue,
+  Parenthetical,
+  Transition,
+  General,
+  Shot,
+  NewAct,
+  EndOfAct,
+  Lyrics,
+  ShowEpisode,
+  CastList,
+  FontSize,
+  ScriptNoteMark,
+  TagMark,
+  FormatOverride,
+  CustomElement,
+  DualDialogue,
+  DualDialogueColumn,
+  TitlePage,
+  AvBlock,
+  AvRow,
+  AvCell,
+  AvPara,
+  AvShot,
+  AvDirection,
+  AvKeymap,
+} from '@/editor/extensions'
+import { registerAvCellPicker } from '@/editor/extensions/AvBlock'
+import Strike from '@tiptap/extension-strike'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
+import Highlight from '@tiptap/extension-highlight'
+import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
+import { generateTemplateCss, injectTemplateCss } from '@/utils/templateCss'
+import { docHasAnyText } from '@/utils/docText'
+import {
+  getCurrentElementRule,
+  getLockedFormatting,
+} from '@/utils/effectiveFormatting'
+import { createPaginationPlugin, getPageMetrics } from '@/editor/pagination'
+import { createContdCasePlugin } from '@/editor/contdCase'
+import { ScreenplayImage } from '@/editor/extensions/ScreenplayImage'
+import { insertImageNode } from '@/utils/insertImage'
+
+import {
+  useEditorStore,
+  DEFAULT_HEADER_CONTENT,
+  DEFAULT_FOOTER_CONTENT,
+  DEFAULT_PAGE_LAYOUT,
+  DEFAULT_TAG_CATEGORIES,
+  resolveMoresContds,
+} from '@/stores/editorStore'
+import type { ElementType } from '@/stores/editorStore'
+import MenuBar from './MenuBar'
+import Toolbar from './Toolbar'
+import SceneNavigator from './SceneNavigator'
+import IndexCards from './IndexCards'
+import BeatBoard from './BeatBoard'
+import ScriptStatistics from './ScriptStatistics'
+import ScriptNotes from './ScriptNotes'
+import CharacterProfiles from './CharacterProfiles'
+import TagsPanel from './TagsPanel'
+import LocationDatabase from './LocationDatabase'
+import FormatPanel from './FormatPanel'
+import StatusBar from './StatusBar'
+import SearchReplace, { createSearchPlugin } from './SearchReplace'
+import GoToPage from './GoToPage'
+import ElementPicker from './ElementPicker'
+import CharacterAutocomplete from './CharacterAutocomplete'
+import SpellCheckModal from './SpellCheckModal'
+import WritingSuggestionsModal from './WritingSuggestionsModal'
+import GrammarRulesPanel from './GrammarRulesPanel'
+// MobileAccessoryBar removed — context menu via 3-finger touch only
+import ScriptContextMenu from './ScriptContextMenu'
+import { SpellCheck, spellCheckPluginKey } from '@/editor/extensions/SpellCheck'
+import { Grammar, grammarPluginKey } from '@/editor/extensions/Grammar'
+import { spellChecker, BUILTIN_LANGUAGE } from '@/editor/spellchecker'
+import { grammarIgnore } from '@/editor/grammar/grammarIgnore'
+import { buildSaveContent as buildSaveContentShared } from '@/utils/saveContent'
+import { characterKey } from '@/utils/nodeText'
+import { computeContdChanges, type ContdBlock } from '@/editor/contdAuto'
+import { useBackupScheduler } from '@/hooks/useBackupScheduler'
+import { useBackupStatusStore } from '@/stores/backupStatusStore'
+import {
+  runRetext,
+  RETEXT_CATEGORIES,
+  type RetextCategory,
+} from '@/editor/grammar/retextProvider'
+import { runHarper } from '@/editor/grammar/harperProvider'
+import { clearEditorHistory } from '@/editor/clearHistory'
+import { useProjectStore } from '@/stores/projectStore'
+import { api } from '@/services/api'
+import { cloudApi } from '@/services/cloudApi'
+import { projectApi } from '@/services/projectApi'
+import { scriptApi } from '@/services/scriptApi'
+import { API_BASE, getCollabWsUrl } from '@/config'
+import { showToast } from './Toast'
+import VersionHistory from './VersionHistory'
+import AssetManager from './AssetManager'
+import { useParams, useNavigate } from 'react-router-dom'
+import OpenFile from './OpenFile'
+import type { OpenSource } from './OpenFile'
+import WelcomeDialog, { type WelcomeChoice } from './WelcomeDialog'
+import { parseFountain } from '@/utils/fountainParser'
+import { parseFDXFull } from '@/utils/fdxParser'
+import { parseOdraft, downloadOdraft } from '@/utils/odraftFormat'
+import { hydrateEditorStoresFromContent } from '@/utils/hydrateStores'
+import {
+  stashSessionDoc,
+  takeSessionDoc,
+  clearSessionDoc,
+} from '@/utils/sessionDoc'
+import SaveAsDialog from './SaveAsDialog'
+import TitlePageEditor from './TitlePageEditor'
+import MoresContdsDialog from './MoresContdsDialog'
+import ShareDialog from './ShareDialog'
+import CollabLoginDialog from './CollabLoginDialog'
+import JoinCollabDialog from './JoinCollabDialog'
+import CompareVersionPicker from './CompareVersionPicker'
+import ZoomPanel from './ZoomPanel'
+import { useIsTouchDevice, useSwipeEdge, usePinchZoom } from '@/hooks/useTouch'
+import { useSettingsStore } from '@/stores/settingsStore'
+import { startCollabSync, stopCollabSync } from '@/services/collabSync'
+import {
+  collabAuthApi,
+  setLogoutCollabTeardown,
+  setLogoutEditorReset,
+  isCollabAuthenticated,
+} from '@/services/collabAuth'
+import { platformFetch, isTauri } from '@/services/platform'
+import { reportSaveError } from '@/stores/saveErrorStore'
+import { pluginRegistry } from '@/plugins/registry'
+import {
+  createTrackChangesPlugin,
+  trackChangesPluginKey,
+} from '@/editor/trackChanges'
+import type { VersionInfo } from '@/services/api'
+
+// Vibrant dark colors for collaboration cursors and avatars
+const COLLAB_COLORS = [
+  '#7C3AED',
+  '#DC2626',
+  '#D97706',
+  '#059669',
+  '#2563EB',
+  '#DB2777',
+  '#7C2D12',
+  '#4338CA',
+  '#0E7490',
+  '#9333EA',
+]
+function randomCollabColor() {
+  return COLLAB_COLORS[Math.floor(Math.random() * COLLAB_COLORS.length)]
+}
+
+// Default next element type when pressing Enter
+const DEFAULT_NEXT_TYPE: Record<string, string> = {
+  sceneHeading: 'action',
+  action: 'action',
+  character: 'dialogue',
+  dialogue: 'dialogue',
+  parenthetical: 'dialogue',
+  transition: 'sceneHeading',
+  general: 'general',
+  shot: 'action',
+  newAct: 'sceneHeading',
+  endOfAct: 'newAct',
+  lyrics: 'lyrics',
+  showEpisode: 'action',
+  castList: 'castList',
+}
+
+const ALL_ELEMENT_TYPES: ElementType[] = [
+  'sceneHeading',
+  'action',
+  'character',
+  'dialogue',
+  'parenthetical',
+  'transition',
+  'general',
+  'shot',
+  'newAct',
+  'endOfAct',
+  'lyrics',
+  'showEpisode',
+  'castList',
+]
+
+const SAMPLE_CONTENT = {
+  type: 'doc',
+  content: [
+    {
+      type: 'sceneHeading',
+      content: [{ type: 'text', text: 'INT. COFFEE SHOP - DAY' }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'A busy coffee shop in downtown Los Angeles. Patrons sit at small tables, laptops open, headphones on. The hiss of the espresso machine punctuates the low murmur of conversation. A BARISTA calls out orders while steam curls from ceramic cups.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'SARAH CHEN (30s, sharp eyes, worn leather jacket) sits alone at a corner table, nursing a cold coffee. She stares at her phone, waiting. Her leg bounces under the table — the only outward sign of the tension coiled inside her.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'SARAH' }] },
+    {
+      type: 'parenthetical',
+      content: [{ type: 'text', text: '(under her breath)' }],
+    },
+    {
+      type: 'dialogue',
+      content: [{ type: 'text', text: 'Come on... pick up.' }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'The door SWINGS open. MARCUS WEBB (40s, rumpled suit, easy smile that hides something harder) enters, shaking rain off his umbrella. He spots Sarah and heads her way, weaving between tables with practiced ease.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'MARCUS' }] },
+    {
+      type: 'dialogue',
+      content: [
+        {
+          type: 'text',
+          text: 'You know, most people just text when they want to meet.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'SARAH' }] },
+    {
+      type: 'dialogue',
+      content: [{ type: 'text', text: "Most people aren't being followed." }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: "Marcus's smile fades. He sits down across from her, leaning in close. The ambient noise of the coffee shop seems to recede, leaving them in their own bubble of urgency.",
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'MARCUS' }] },
+    { type: 'parenthetical', content: [{ type: 'text', text: '(low)' }] },
+    {
+      type: 'dialogue',
+      content: [
+        { type: 'text', text: 'Tell me everything. From the beginning.' },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'SARAH' }] },
+    {
+      type: 'dialogue',
+      content: [
+        {
+          type: 'text',
+          text: "Three weeks ago I found a file on Reeves' server. Something called NIGHTFALL. It had names, dates, bank accounts — everything. The next day, my access was revoked and someone broke into my apartment.",
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'MARCUS' }] },
+    {
+      type: 'dialogue',
+      content: [{ type: 'text', text: 'Did you make a copy?' }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'Sarah reaches into her jacket and slides a USB drive across the table. Marcus stares at it like it might explode.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'SARAH' }] },
+    {
+      type: 'dialogue',
+      content: [
+        {
+          type: 'text',
+          text: "That's the only copy. Guard it with your life. I mean that literally.",
+        },
+      ],
+    },
+    { type: 'transition', content: [{ type: 'text', text: 'CUT TO:' }] },
+    {
+      type: 'sceneHeading',
+      content: [{ type: 'text', text: 'EXT. CITY STREET - NIGHT' }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'Rain slicks the pavement, reflecting neon signs in shattered patterns. Sarah walks quickly, collar up, glancing over her shoulder every few steps. The city feels hostile — every shadow a threat, every passing car a potential tail.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'She turns down an alley. Stops. Listens. Nothing but the patter of rain on dumpsters and the distant wail of a siren. She exhales, allows herself a moment of relief.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'Then: FOOTSTEPS. Behind her. Measured. Deliberate.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: "Sarah doesn't run. She turns slowly, hands loose at her sides, ready.",
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'A FIGURE emerges from the shadows. Tall, broad-shouldered, face hidden under a dark hood. He stops ten feet away.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'HOODED FIGURE' }] },
+    {
+      type: 'dialogue',
+      content: [
+        { type: 'text', text: 'You should have left it alone, Sarah.' },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'SARAH' }] },
+    {
+      type: 'dialogue',
+      content: [{ type: 'text', text: "I tried. Your boss wouldn't let me." }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'The figure takes a step forward. Sarah holds her ground. Rain streams down her face, but her eyes are steady, defiant.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'HOODED FIGURE' }] },
+    {
+      type: 'dialogue',
+      content: [
+        {
+          type: 'text',
+          text: "Give me the drive and you walk away. That's the deal. Only deal you're going to get.",
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'SARAH' }] },
+    { type: 'parenthetical', content: [{ type: 'text', text: '(smiling)' }] },
+    {
+      type: 'dialogue',
+      content: [{ type: 'text', text: "I don't have it anymore." }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: "The figure's posture shifts. Anger, barely contained.",
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'HOODED FIGURE' }] },
+    {
+      type: 'dialogue',
+      content: [{ type: 'text', text: 'Then we have a problem.' }],
+    },
+    { type: 'transition', content: [{ type: 'text', text: 'SMASH CUT TO:' }] },
+    {
+      type: 'sceneHeading',
+      content: [{ type: 'text', text: "INT. MARCUS' APARTMENT - NIGHT" }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'A small, cluttered studio. Stacks of newspapers, half-eaten takeout containers, a wall covered in pinned photos and red string. Marcus sits at his desk, the USB drive plugged into his laptop.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'His eyes widen as he scrolls through the files. Page after page of financial records, offshore accounts, wire transfers. Names he recognizes — senators, CEOs, a Supreme Court justice.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'MARCUS' }] },
+    { type: 'parenthetical', content: [{ type: 'text', text: '(whispered)' }] },
+    { type: 'dialogue', content: [{ type: 'text', text: 'Holy shit.' }] },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'His phone BUZZES. A text from an unknown number: "CHECK YOUR DOOR."',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'Marcus freezes. Slowly turns toward his front door. Through the peephole: nothing but the empty hallway. But on his doormat — a manila envelope.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'He opens it with trembling hands. Inside: a single photograph of Sarah, taken from above, a red X drawn across her face.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'Marcus grabs his phone, dials Sarah. It rings. And rings. And rings.',
+        },
+      ],
+    },
+    { type: 'character', content: [{ type: 'text', text: 'MARCUS' }] },
+    {
+      type: 'parenthetical',
+      content: [{ type: 'text', text: '(into phone, desperate)' }],
+    },
+    {
+      type: 'dialogue',
+      content: [{ type: 'text', text: 'Pick up, Sarah. Pick up...' }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'No answer. Marcus stares at the photograph, then at the laptop screen full of secrets. He makes a decision.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'He copies the files to a second drive, tapes it under his desk drawer, grabs his coat and the original drive, and heads for the door.',
+        },
+      ],
+    },
+    { type: 'transition', content: [{ type: 'text', text: 'CUT TO:' }] },
+    {
+      type: 'sceneHeading',
+      content: [{ type: 'text', text: 'EXT. CITY STREET - CONTINUOUS' }],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'Marcus bursts out of his building into the rain. He looks left, right — the street is deserted. He starts walking fast, then running.',
+        },
+      ],
+    },
+    {
+      type: 'action',
+      content: [
+        {
+          type: 'text',
+          text: 'Behind him, a black sedan pulls away from the curb. Its headlights stay off.',
+        },
+      ],
+    },
+  ],
+}
+
+interface OverlayInfo {
+  top: number
+  pageNumber: number
+  isDialogueSplit: boolean
+  characterName: string
+  isTitlePage: boolean
+}
+
+/** Resolve dynamic field placeholders in header/footer text */
+function resolveHFFields(
+  text: string,
+  pageNum: number,
+  totalPages: number,
+  title: string,
+  revisionColor: string,
+): string {
+  if (!text) return ''
+  return text
+    .replace(/\{page\}/gi, String(pageNum))
+    .replace(/\{pages\}/gi, String(totalPages))
+    .replace(/\{title\}/gi, title)
+    .replace(/\{date\}/gi, new Date().toLocaleDateString())
+    .replace(/\{revision\}/gi, revisionColor)
+}
+
+const ScreenplayEditor: React.FC = () => {
+  const {
+    projectId: urlProjectId,
+    scriptId: urlScriptId,
+    commitHash: urlCommitHash,
+    collabToken: urlCollabToken,
+  } = useParams<{
+    projectId?: string
+    scriptId?: string
+    commitHash?: string
+    collabToken?: string
+  }>()
+  const navigate = useNavigate()
+  const isHistoryMode = Boolean(urlCommitHash)
+
+  const {
+    setActiveElement,
+    setScenes,
+    setPageCount,
+    setCurrentPage,
+    zoomLevel,
+    setZoomLevel,
+    fontFamily,
+    fontSize,
+    pageLayout,
+    tagsVisible,
+    notesVisible,
+    beatBoardOpen,
+    statisticsOpen,
+    navigatorOpen,
+    toggleNavigator,
+    scriptNotesOpen,
+    toggleScriptNotes,
+    characterProfilesOpen,
+    tagsPanelOpen,
+    locationDatabaseOpen,
+    spellCheckEnabled,
+    spellModalOpen,
+    setSpellModalOpen,
+    grammarCheckEnabled,
+    grammarModalOpen,
+    setGrammarModalOpen,
+    grammarRulesPanelOpen,
+    setGrammarRulesPanelOpen,
+    setDocumentTitle,
+    sceneNumbersVisible,
+    sceneNumbersLocked,
+    saveStatus,
+    saveError,
+    setSaveStatus,
+  } = useEditorStore()
+
+  const {
+    currentProject,
+    currentScriptId,
+    setCurrentProject,
+    setCurrentScriptId,
+    scriptReloadKey,
+    markCloudScript,
+    isCloudScript,
+  } = useProjectStore()
+
+  // ── Collaboration state ──
+  const [collabMode, setCollabMode] = useState(false)
+  const [collabUserName, setCollabUserName] = useState('Owner')
+  const [isCollabHost, setIsCollabHost] = useState(false)
+  const [collabRole, setCollabRole] = useState<'editor' | 'viewer'>('editor')
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [collabLoginOpen, setCollabLoginOpen] = useState(false)
+  const [joinCollabOpen, setJoinCollabOpen] = useState(false)
+  const [collabUsers, setCollabUsers] = useState<
+    { name: string; color: string }[]
+  >([])
+  const collabColor = useMemo(() => randomCollabColor(), [])
+  const [collabConnectionState, setCollabConnectionState] = useState<
+    'connecting' | 'connected' | 'synced' | 'disconnected'
+  >('connecting')
+  // ── Collaboration activity log ──
+  const [collabActivityLog, setCollabActivityLog] = useState<
+    { time: Date; message: string }[]
+  >([])
+  const [collabActivityOpen, setCollabActivityOpen] = useState(false)
+  const addCollabActivity = useCallback((message: string) => {
+    setCollabActivityLog((prev) => [
+      ...prev.slice(-49),
+      { time: new Date(), message },
+    ])
+  }, [])
+
+  // ── Panel resize state ──
+  const [navWidth, setNavWidth] = useState(240)
+  const [rightPanelWidth, setRightPanelWidth] = useState(300)
+
+  // Sync nav width to store for floating menu positioning
+  useEffect(() => {
+    useEditorStore.getState().setNavPanelWidth(navigatorOpen ? navWidth : 0)
+  }, [navWidth, navigatorOpen])
+  const resizingRef = useRef<'left' | 'right' | null>(null)
+  const resizeStartXRef = useRef(0)
+  const resizeStartWidthRef = useRef(0)
+
+  const handleResizePointerDown = useCallback(
+    (side: 'left' | 'right', e: React.PointerEvent) => {
+      e.preventDefault()
+      resizingRef.current = side
+      resizeStartXRef.current = e.clientX
+      resizeStartWidthRef.current = side === 'left' ? navWidth : rightPanelWidth
+
+      const handlePointerMove = (ev: PointerEvent) => {
+        const delta = ev.clientX - resizeStartXRef.current
+        if (resizingRef.current === 'left') {
+          setNavWidth(
+            Math.max(160, Math.min(500, resizeStartWidthRef.current + delta)),
+          )
+        } else {
+          setRightPanelWidth(
+            Math.max(200, Math.min(600, resizeStartWidthRef.current - delta)),
+          )
+        }
+      }
+
+      const handlePointerUp = () => {
+        resizingRef.current = null
+        document.removeEventListener('pointermove', handlePointerMove)
+        document.removeEventListener('pointerup', handlePointerUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+
+      document.addEventListener('pointermove', handlePointerMove)
+      document.addEventListener('pointerup', handlePointerUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    },
+    [navWidth, rightPanelWidth],
+  )
+
+  const rightPanelVisible =
+    scriptNotesOpen ||
+    characterProfilesOpen ||
+    tagsPanelOpen ||
+    locationDatabaseOpen
+
+  // Yjs document & provider — stable across renders while collab is active
+  const ydocRef = useRef<Y.Doc | null>(null)
+  const providerRef = useRef<HocuspocusProvider | null>(null)
+  // Editor ref for onSynced callback to seed content when Yjs doc is empty
+  const collabEditorRef = useRef<ReturnType<typeof useEditor>>(null)
+  // Track current collab document name to prevent duplicate setup (React StrictMode)
+  const collabDocNameRef = useRef<string | null>(null)
+
+  // Cleanup collab provider
+  const destroyCollab = useCallback(() => {
+    stopCollabSync()
+    collabDocNameRef.current = null
+    if (providerRef.current) {
+      providerRef.current.destroy()
+      providerRef.current = null
+    }
+    if (ydocRef.current) {
+      ydocRef.current.destroy()
+      ydocRef.current = null
+    }
+    setCollabUsers([])
+  }, [])
+
+  // Guard to prevent duplicate collab-exit handling (awareness fires multiple
+  // times, and onAuthenticationFailed may also fire after session-ended).
+  const collabExitingRef = useRef(false)
+
+  // Called when host broadcasts session-ended — guest auto-disconnects
+  const handleSessionEnded = useCallback(() => {
+    if (collabExitingRef.current) return
+    collabExitingRef.current = true
+    showToast('The host has ended the collaboration session', 'info')
+    destroyCollab()
+    setCollabMode(false)
+    setIsCollabHost(false)
+    setCollabRole('editor')
+    // Clear project context so sample content can't overwrite the real file on save
+    setCurrentProject(null)
+    setCurrentScriptId(null)
+    setDocumentTitle('Untitled Screenplay')
+    setEditorKey((k) => k + 1)
+    navigate('/')
+  }, [
+    destroyCollab,
+    navigate,
+    setCurrentProject,
+    setCurrentScriptId,
+    setDocumentTitle,
+  ])
+
+  const handleSessionEndedRef = useRef(handleSessionEnded)
+  handleSessionEndedRef.current = handleSessionEnded
+
+  // Ref for document-switch handler (defined after setupCollab to avoid circular dependency)
+  const handleDocumentSwitchRef = useRef<
+    (projectId: string, scriptId: string, token: string) => void
+  >(() => {})
+
+  const setupCollab = useCallback(
+    (
+      docName: string,
+      inviteToken: string,
+      _userName: string,
+      isHost = false,
+      overrideWsUrl?: string,
+    ) => {
+      // Skip if already setting up the same document (prevents React StrictMode
+      // double-invoke from destroying a provider that's still connecting)
+      if (collabDocNameRef.current === docName && providerRef.current) {
+        return
+      }
+      destroyCollab()
+      collabDocNameRef.current = docName
+      collabExitingRef.current = false
+      setCollabConnectionState('connecting')
+      setCollabActivityLog([])
+      addCollabActivity('Starting collaboration session')
+      const ydoc = new Y.Doc()
+
+      // Build compound token: "jwt:<access>|invite:<invite>" when auth is available and valid
+      const { collabAuth, clearCollabAuth } = useSettingsStore.getState()
+      let token = inviteToken
+      if (collabAuth.accessToken) {
+        // Check JWT expiry client-side to avoid sending expired tokens
+        try {
+          const payload = JSON.parse(atob(collabAuth.accessToken.split('.')[1]))
+          if (payload.exp && payload.exp * 1000 > Date.now()) {
+            token = `jwt:${collabAuth.accessToken}|invite:${inviteToken}`
+          } else {
+            // JWT expired — clear it so we don't keep sending it
+            clearCollabAuth()
+          }
+        } catch {
+          // Malformed JWT — just use invite token
+          clearCollabAuth()
+        }
+      }
+
+      // Use the collab server URL extracted from the invite link if provided,
+      // otherwise fall back to the local setting.
+      const wsUrl = overrideWsUrl || getCollabWsUrl()
+      console.log(
+        `[Collab] setupCollab: docName="${docName}", wsUrl="${wsUrl}", isHost=${isHost}, tokenPrefix="${inviteToken.slice(0, 8)}..."`,
+      )
+
+      const provider = new HocuspocusProvider({
+        url: wsUrl,
+        name: docName,
+        document: ydoc,
+        token,
+        onConnect: () => {
+          console.log(
+            `[Collab] Connected to room "${docName}" (${isHost ? 'host' : 'guest'})`,
+          )
+          setCollabConnectionState('connected')
+          addCollabActivity('Connected to collaboration server')
+        },
+        onClose: ({ event }) => {
+          console.log(
+            `[Collab] Connection closed for "${docName}": code=${event.code}`,
+          )
+          setCollabConnectionState('disconnected')
+          addCollabActivity(`Connection lost (code ${event.code})`)
+        },
+        onSynced: ({ state }) => {
+          console.log(
+            `[Collab] Synced for "${docName}": state=${state}, isHost=${isHost}`,
+          )
+          if (state) {
+            setCollabConnectionState('synced')
+            addCollabActivity('Document synced')
+          }
+          // After initial sync, if the Yjs doc is empty (fresh room) and we have
+          // content to seed, force-set it via the editor.
+          if (state && isHost && providerRef.current === provider) {
+            const fragment = ydoc.getXmlFragment('default')
+            if (fragment.length === 0 && collabInitialContent.current) {
+              console.log(
+                '[Collab] Yjs doc empty after sync — seeding from initial content',
+              )
+              const ed = collabEditorRef.current
+              if (ed && !ed.isDestroyed) {
+                ed.commands.setContent(collabInitialContent.current)
+              }
+            }
+          }
+        },
+        onAuthenticationFailed: ({ reason }) => {
+          // Ignore auth failures from a stale provider (e.g. old provider fires
+          // after host switched documents and a new provider replaced it)
+          if (providerRef.current !== provider) return
+          // Skip if session-ended already handled the exit
+          if (collabExitingRef.current) {
+            provider.disconnect()
+            return
+          }
+          collabExitingRef.current = true
+
+          console.error(`[Collab] Auth FAILED for "${docName}": ${reason}`)
+          const isSessionEnded =
+            reason?.includes('expired') || reason?.includes('Invalid')
+          showToast(
+            isSessionEnded
+              ? 'The collaboration session has ended'
+              : `Unable to join collaboration: ${reason}`,
+            isSessionEnded ? 'info' : 'error',
+          )
+          // Prevent reconnection loop — disconnect provider immediately, then clean up
+          provider.disconnect()
+          setTimeout(() => {
+            destroyCollab()
+            setCollabMode(false)
+            setCollabRole('editor')
+            if (!isHost) {
+              // Clear project context so sample content can't overwrite the real file
+              setCurrentProject(null)
+              setCurrentScriptId(null)
+              setDocumentTitle('Untitled Screenplay')
+            }
+            setEditorKey((k) => k + 1)
+            if (!isHost) navigate('/')
+          }, 0)
+        },
+        onAwarenessUpdate: ({ states }) => {
+          // Ignore events from a stale provider after doc switch
+          if (providerRef.current !== provider) return
+
+          const users: { name: string; color: string }[] = []
+          let sessionEnded = false
+          let switchProjectId = ''
+          let switchScriptId = ''
+          let switchToken = ''
+          states.forEach((state: Record<string, unknown>) => {
+            const user = state.user as
+              | {
+                  name: string
+                  color: string
+                  sessionEnded?: boolean
+                  documentSwitch?: {
+                    projectId: string
+                    scriptId: string
+                    token: string
+                  }
+                }
+              | undefined
+            if (user?.sessionEnded) sessionEnded = true
+            if (user?.documentSwitch) {
+              switchProjectId = user.documentSwitch.projectId
+              switchScriptId = user.documentSwitch.scriptId
+              switchToken = user.documentSwitch.token
+            }
+            if (user?.name) users.push(user)
+          })
+          // Detect user join/leave for activity log
+          setCollabUsers((prev) => {
+            const prevNames = new Set(prev.map((u) => u.name))
+            const newNames = new Set(users.map((u) => u.name))
+            for (const u of users) {
+              if (!prevNames.has(u.name))
+                addCollabActivity(`${u.name} joined the session`)
+            }
+            for (const u of prev) {
+              if (!newNames.has(u.name))
+                addCollabActivity(`${u.name} left the session`)
+            }
+            return users
+          })
+          // Only guests react to sessionEnded / documentSwitch — the host
+          // handles these itself via handleStopCollab / switchCollabDocument.
+          // Without this guard the host processes its OWN awareness broadcast,
+          // causing a second setupCollab that fights with the first.
+          if (isHost) return
+          if (sessionEnded) {
+            handleSessionEndedRef.current()
+          }
+          if (switchProjectId && switchScriptId && switchToken) {
+            handleDocumentSwitchRef.current(
+              switchProjectId,
+              switchScriptId,
+              switchToken,
+            )
+          }
+        },
+      })
+      ydocRef.current = ydoc
+      providerRef.current = provider
+
+      // Start syncing metadata (characters, notes, tags, beats) via Yjs
+      startCollabSync(ydoc, isHost)
+    },
+    [destroyCollab],
+  )
+
+  // Called when host broadcasts document-switch — guest auto-follows
+  const handleDocumentSwitch = useCallback(
+    async (projectId: string, scriptId: string, sharedToken: string) => {
+      try {
+        // Validate the shared token to get the session_nonce for the room name
+        const session = await api.validateCollabSession(sharedToken)
+        const nonce = session.session_nonce || ''
+
+        const project = await projectApi.getProject(projectId)
+        const scriptResp = await scriptApi.getScript(projectId, scriptId)
+
+        const content = scriptResp.content as Record<string, unknown> | null
+        if (
+          content &&
+          typeof content === 'object' &&
+          'type' in content &&
+          content.type === 'doc'
+        ) {
+          const {
+            _notes,
+            _generalNotes,
+            _tags,
+            _tagCategories,
+            _characterProfiles,
+            _characterRelationships,
+            _templateId,
+            _pageLayout: _plCollab,
+            ...pmDoc
+          } = content as Record<string, unknown>
+          collabInitialContent.current = pmDoc
+        } else if (
+          content &&
+          typeof content === 'object' &&
+          Object.keys(content).length > 0
+        ) {
+          collabInitialContent.current = content
+        }
+
+        // Restore per-document template
+        const tplId = (content as any)?._templateId
+        useFormattingTemplateStore
+          .getState()
+          .setActiveTemplateId(typeof tplId === 'string' ? tplId : null)
+
+        const docName = `${projectId}/${scriptId}${nonce ? `/${nonce}` : ''}`
+        setupCollab(docName, sharedToken, collabUserName)
+
+        setCurrentProject(project)
+        setCurrentScriptId(scriptId)
+        setDocumentTitle(scriptResp.meta.title)
+        setEditorKey((k) => k + 1)
+        showToast(`Host switched to: ${scriptResp.meta.title}`, 'info')
+      } catch {
+        showToast('Failed to follow host to new document', 'error')
+      }
+    },
+    [
+      setupCollab,
+      collabUserName,
+      setCurrentProject,
+      setCurrentScriptId,
+      setDocumentTitle,
+    ],
+  )
+
+  handleDocumentSwitchRef.current = handleDocumentSwitch
+
+  // Force editor recreation when collab mode toggles
+  const [editorKey, setEditorKey] = useState(0)
+
+  const editorMainRef = useRef<HTMLDivElement>(null)
+  const pageRef = useRef<HTMLDivElement>(null)
+  const setPageCountRef = useRef(setPageCount)
+  setPageCountRef.current = setPageCount
+  const pageLayoutRef = useRef(pageLayout)
+  pageLayoutRef.current = pageLayout
+
+  // ── Touch gestures (must be after editorMainRef) ──
+  const isTouch = useIsTouchDevice()
+  useSwipeEdge({
+    edge: 'left',
+    onSwipe: toggleNavigator,
+    enabled:
+      isTouch &&
+      !navigatorOpen &&
+      typeof window !== 'undefined' &&
+      window.innerWidth <= 1100,
+  })
+  useSwipeEdge({
+    edge: 'right',
+    onSwipe: toggleScriptNotes,
+    enabled: isTouch && !rightPanelVisible,
+  })
+  usePinchZoom(editorMainRef, {
+    currentZoom: zoomLevel,
+    onZoomChange: setZoomLevel,
+    enabled: isTouch && !beatBoardOpen,
+  })
+
+  // 3-finger touch opens context menu on touch devices
+  useEffect(() => {
+    if (!isTouch) return
+    const handleThreeFingerTouch = (e: TouchEvent) => {
+      if (e.touches.length === 3) {
+        e.preventDefault()
+        // Use center of the three touches as position
+        let cx = 0,
+          cy = 0
+        for (let i = 0; i < 3; i++) {
+          cx += e.touches[i].clientX
+          cy += e.touches[i].clientY
+        }
+        cx /= 3
+        cy /= 3
+        setCtxMenuState({
+          visible: true,
+          position: { x: cx, y: cy },
+          spellInfo: null,
+          grammarInfo: null,
+        })
+      }
+    }
+    document.addEventListener('touchstart', handleThreeFingerTouch, {
+      passive: false,
+    })
+    return () =>
+      document.removeEventListener('touchstart', handleThreeFingerTouch)
+  }, [isTouch])
+
+  const zoomLevelRef = useRef(zoomLevel)
+  // Preserve scroll position when zoom changes: content scales but scrollTop
+  // is in viewport pixels, so without an adjustment the user lands on a
+  // completely different page after each zoom step.
+  const prevZoomRef = useRef(zoomLevel)
+  useEffect(() => {
+    const el = editorMainRef.current
+    if (!el) {
+      prevZoomRef.current = zoomLevel
+      return
+    }
+    const oldScale = (prevZoomRef.current || 100) / 100
+    const newScale = (zoomLevel || 100) / 100
+    if (oldScale !== newScale && el.scrollTop > 0) {
+      el.scrollTop = el.scrollTop * (newScale / oldScale)
+    }
+    prevZoomRef.current = zoomLevel
+  }, [zoomLevel])
+  zoomLevelRef.current = zoomLevel
+
+  const [overlays, setOverlays] = useState<OverlayInfo[]>([])
+
+  const {
+    openFileOpen,
+    setOpenFileOpen,
+    saveAsOpen,
+    setSaveAsOpen,
+    titlePageEditorOpen,
+    setTitlePageEditorOpen,
+    moresContdsOpen,
+    setMoresContdsOpen,
+    compareVersionOpen,
+    setCompareVersionOpen,
+    setTrackChangesEnabled,
+    setTrackChangesLabel,
+  } = useEditorStore()
+
+  // Auto-fit page to viewport on mobile/tablet
+  const autoZoomApplied = useRef(false)
+  useEffect(() => {
+    const handleAutoZoom = () => {
+      if (window.innerWidth <= 768 && editorMainRef.current) {
+        const containerWidth = editorMainRef.current.clientWidth - 16 // small padding
+        const pageWidthPx = pageLayout.pageWidth * 96 // 1in = 96px
+        const fitZoom = Math.floor((containerWidth / pageWidthPx) * 100)
+        setZoomLevel(Math.max(50, Math.min(100, fitZoom)))
+        autoZoomApplied.current = true
+      } else if (autoZoomApplied.current && window.innerWidth > 768) {
+        setZoomLevel(100)
+        autoZoomApplied.current = false
+      }
+    }
+    // Delay initial call to ensure editorMainRef is measured
+    const timer = setTimeout(handleAutoZoom, 100)
+    window.addEventListener('resize', handleAutoZoom)
+    window.addEventListener('orientationchange', handleAutoZoom)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', handleAutoZoom)
+      window.removeEventListener('orientationchange', handleAutoZoom)
+    }
+  }, [pageLayout.pageWidth, setZoomLevel])
+
+  // ── Handle /collab/:token route — resolve token to project/script, then enter collab mode ──
+  const collabInitDone = useRef(false)
+  const collabInitialContent = useRef<Record<string, unknown> | null>(null)
+  const [collabLoading, setCollabLoading] = useState(Boolean(urlCollabToken))
+  useEffect(() => {
+    if (!urlCollabToken || collabInitDone.current) return
+    collabInitDone.current = true
+    ;(async () => {
+      try {
+        // Try collab server first (validates against all configured backends),
+        // then fall back to local backend
+        let session: import('@/services/api').CollabSession | null = null
+        const collabHttpUrl = getCollabWsUrl().replace(/^ws/, 'http')
+        try {
+          const res = await platformFetch(
+            `${collabHttpUrl}/api/collab/session/${urlCollabToken}`,
+          )
+          if (res.ok) session = await res.json()
+        } catch {
+          /* collab server unreachable */
+        }
+        if (!session) {
+          session = await api.validateCollabSession(urlCollabToken)
+        }
+
+        // Load script content FIRST so the editor can seed the Yjs doc.
+        // Try multiple backends (local + alternatives) for cross-backend joins.
+        // Derive host from the collab server URL setting so cross-machine access works.
+        const collabHost = (() => {
+          try {
+            return new URL(collabHttpUrl).hostname
+          } catch {
+            return 'localhost'
+          }
+        })()
+        const backends = [
+          API_BASE,
+          `http://${collabHost}:8000/api`,
+          `http://${collabHost}:18321/api`,
+        ].filter((v, i, a) => a.indexOf(v) === i)
+
+        let project: any = null
+        let scriptResp: any = null
+        for (const base of backends) {
+          try {
+            const pRes = await platformFetch(
+              `${base}/projects/${session.project_id}`,
+            )
+            if (!pRes.ok) continue
+            project = await pRes.json()
+            const sRes = await platformFetch(
+              `${base}/projects/${session.project_id}/scripts/${session.script_id}`,
+            )
+            if (!sRes.ok) continue
+            scriptResp = await sRes.json()
+            break
+          } catch {
+            /* try next */
+          }
+        }
+
+        // Seed the Yjs doc if content was loaded; otherwise Yjs will sync from host
+        if (scriptResp) {
+          const content = scriptResp.content as Record<string, unknown> | null
+          if (
+            content &&
+            typeof content === 'object' &&
+            'type' in content &&
+            content.type === 'doc'
+          ) {
+            const {
+              _notes,
+              _generalNotes,
+              _tags,
+              _tagCategories,
+              _characterProfiles,
+              _characterRelationships,
+              _templateId,
+              _pageLayout: _plGuest,
+              ...pmDoc
+            } = content as Record<string, unknown>
+            collabInitialContent.current = pmDoc
+          } else if (
+            content &&
+            typeof content === 'object' &&
+            Object.keys(content).length > 0
+          ) {
+            collabInitialContent.current = content
+          }
+        }
+
+        // Setup provider synchronously before triggering editor rebuild
+        // Include session_nonce so guest joins the exact same Yjs room as the host
+        const nonce = session.session_nonce || ''
+        const docName = `${session.project_id}/${session.script_id}${nonce ? `/${nonce}` : ''}`
+        setupCollab(docName, urlCollabToken, session.collaborator_name)
+
+        setCollabUserName(session.collaborator_name)
+        setCollabRole((session.role as 'editor' | 'viewer') || 'editor')
+        setCollabMode(true)
+        setEditorKey((k) => k + 1)
+
+        setCurrentProject(
+          project || { id: session.project_id, name: 'Collaboration' },
+        )
+        setCurrentScriptId(session.script_id)
+        setDocumentTitle(scriptResp?.meta?.title || 'Untitled')
+        setCollabLoading(false)
+
+        if (session.role === 'viewer') {
+          showToast('Connected as viewer (read-only)', 'info')
+        }
+      } catch (err) {
+        showToast('Invalid or expired collaboration link', 'error')
+        setCollabLoading(false)
+        navigate('/')
+      }
+    })()
+  }, [
+    urlCollabToken,
+    navigate,
+    setCurrentProject,
+    setCurrentScriptId,
+    setDocumentTitle,
+    setupCollab,
+  ])
+
+  // handleStartCollab is defined after the editor — see below useEditor
+
+  const handleStopCollab = useCallback(async () => {
+    const isHost = isCollabHost
+
+    // Host: save the latest editor content before tearing down collab so it's not lost
+    const ed = collabEditorRef.current
+    if (isHost && ed && !ed.isDestroyed && currentProject && currentScriptId) {
+      const doc = ed.getJSON()
+      const store = useEditorStore.getState()
+      const content = {
+        ...doc,
+        _notes: store.notes,
+        _generalNotes: store.generalNotes,
+        _tags: store.tags,
+        _tagCategories: store.tagCategories,
+        _characterProfiles: store.characterProfiles,
+        _characterRelationships: store.characterRelationships,
+      }
+      try {
+        await scriptApi.saveScript(currentProject.id, currentScriptId, {
+          content,
+        })
+      } catch {
+        /* best-effort — auto-save will catch up */
+      }
+    }
+
+    if (isHost && currentProject && currentScriptId) {
+      // Host: broadcast session-ended to all connected guests via awareness
+      if (providerRef.current) {
+        providerRef.current.setAwarenessField('user', {
+          name: collabUserName,
+          color: collabColor,
+          sessionEnded: true,
+        })
+        // Brief delay to allow awareness to propagate before destroying
+        await new Promise((r) => setTimeout(r, 300))
+      }
+      // Host: revoke all invitation links
+      try {
+        await api.revokeAllCollabSessions(currentProject.id, currentScriptId)
+      } catch {
+        /* ignore — cleanup is best-effort */
+      }
+
+      // Host: kick all remaining connections on the collab server.
+      // Use the actual room name (includes nonce) so closeConnections matches.
+      const docName =
+        collabDocNameRef.current || `${currentProject.id}/${currentScriptId}`
+      try {
+        await collabAuthApi.closeDocument(docName)
+      } catch {
+        /* best-effort */
+      }
+    }
+
+    destroyCollab()
+    setCollabMode(false)
+    setIsCollabHost(false)
+    setCollabRole('editor')
+
+    if (isHost && currentProject && currentScriptId) {
+      // Navigate to the project URL so the content-loading effect reloads the saved file
+      navigate(`/project/${currentProject.id}/edit/${currentScriptId}`)
+      showToast('Collaboration session ended', 'success')
+    } else if (isHost) {
+      setEditorKey((k) => k + 1)
+      showToast('Collaboration session ended', 'success')
+    } else {
+      // Clear project context so sample content can't overwrite the real file
+      setCurrentProject(null)
+      setCurrentScriptId(null)
+      setDocumentTitle('Untitled Screenplay')
+      setEditorKey((k) => k + 1)
+      navigate('/')
+    }
+  }, [
+    destroyCollab,
+    collabUserName,
+    collabColor,
+    currentProject,
+    currentScriptId,
+    navigate,
+    setCurrentProject,
+    setCurrentScriptId,
+    setDocumentTitle,
+  ])
+
+  // Host switches to a different document while collab is active
+  const switchCollabDocument = useCallback(
+    async (newProjectId: string, newScriptId: string) => {
+      if (!providerRef.current) return
+
+      // 1. Create a shared invite token for the new document so guests can follow
+      let sharedToken: string
+      let sharedNonce: string
+      try {
+        const invite = await api.createCollabInvite(
+          newProjectId,
+          newScriptId,
+          'Guest',
+          'editor',
+          1,
+        )
+        sharedToken = invite.token
+        sharedNonce = invite.session_nonce || ''
+      } catch {
+        showToast('Failed to create invite for new document', 'error')
+        return
+      }
+
+      // 2. Broadcast document-switch to all guests via awareness
+      // (Old invites are NOT revoked here — they expire naturally.
+      //  Revoking during switch caused a race where the backend file write
+      //  from revoke could corrupt reads from concurrent token validation.)
+      providerRef.current.setAwarenessField('user', {
+        name: collabUserName,
+        color: collabColor,
+        documentSwitch: {
+          projectId: newProjectId,
+          scriptId: newScriptId,
+          token: sharedToken,
+        },
+      })
+      await new Promise((r) => setTimeout(r, 400))
+
+      // 4. Load the new script content and reconnect host
+      try {
+        const project = await projectApi.getProject(newProjectId)
+        const scriptResp = await scriptApi.getScript(newProjectId, newScriptId)
+
+        const content = scriptResp.content as Record<string, unknown> | null
+        if (
+          content &&
+          typeof content === 'object' &&
+          'type' in content &&
+          content.type === 'doc'
+        ) {
+          const {
+            _notes,
+            _generalNotes,
+            _tags,
+            _tagCategories,
+            _characterProfiles,
+            _characterRelationships,
+            _templateId,
+            ...pmDoc
+          } = content as Record<string, unknown>
+          collabInitialContent.current = pmDoc
+        } else if (
+          content &&
+          typeof content === 'object' &&
+          Object.keys(content).length > 0
+        ) {
+          collabInitialContent.current = content
+        }
+
+        // Create host's own token for the new document, sharing the same nonce
+        let hostToken: string
+        try {
+          const hostInvite = await api.createCollabInvite(
+            newProjectId,
+            newScriptId,
+            collabUserName,
+            'editor',
+            24,
+            sharedNonce,
+          )
+          hostToken = hostInvite.token
+        } catch {
+          hostToken = sharedToken
+        }
+
+        const docName = `${newProjectId}/${newScriptId}${sharedNonce ? `/${sharedNonce}` : ''}`
+        setupCollab(docName, hostToken, collabUserName, true)
+
+        setCurrentProject(project)
+        setCurrentScriptId(newScriptId)
+        setDocumentTitle(scriptResp.meta.title)
+        setEditorKey((k) => k + 1)
+      } catch {
+        showToast('Failed to switch collab document', 'error')
+      }
+    },
+    [
+      collabColor,
+      currentProject,
+      currentScriptId,
+      setupCollab,
+      setCurrentProject,
+      setCurrentScriptId,
+      setDocumentTitle,
+    ],
+  )
+
+  // Join a collab session via pasted link/token (works from app without browser)
+  const handleJoinCollab = useCallback(
+    async (
+      session: import('@/services/api').CollabSession,
+      token: string,
+      collabServerUrl?: string,
+    ) => {
+      try {
+        // Determine the collab server to use: prefer URL extracted from invite link,
+        // fall back to local setting.
+        const collabWs = collabServerUrl || getCollabWsUrl()
+
+        // Connect to the collab WebSocket immediately — Yjs will sync content from the host.
+        // Do NOT wait for backend content loading (which may hang on unreachable ports).
+        const nonce = session.session_nonce || ''
+        const docName = `${session.project_id}/${session.script_id}${nonce ? `/${nonce}` : ''}`
+        setupCollab(docName, token, session.collaborator_name, false, collabWs)
+
+        setCollabUserName(session.collaborator_name)
+        setCollabRole((session.role as 'editor' | 'viewer') || 'editor')
+        setCollabMode(true)
+        setJoinCollabOpen(false)
+        setEditorKey((k) => k + 1)
+
+        // Set a placeholder project — Yjs will sync the actual content from the host
+        setCurrentProject({
+          id: session.project_id,
+          name: 'Collaboration',
+        } as any)
+        setCurrentScriptId(session.script_id)
+        setDocumentTitle('Untitled')
+
+        if (session.role === 'viewer') {
+          showToast('Connected as viewer (read-only)', 'info')
+        } else {
+          showToast(
+            `Joined collaboration as ${session.collaborator_name}`,
+            'success',
+          )
+        }
+
+        // Try to load project metadata in the background (non-blocking).
+        // This fills in the title and project name if reachable, but is not required.
+        try {
+          const pRes = await platformFetch(
+            `${API_BASE}/projects/${session.project_id}`,
+          )
+          if (pRes.ok) {
+            const project = await pRes.json()
+            setCurrentProject(project as any)
+            const sRes = await platformFetch(
+              `${API_BASE}/projects/${session.project_id}/scripts/${session.script_id}`,
+            )
+            if (sRes.ok) {
+              const scriptResp = await sRes.json()
+              setDocumentTitle(scriptResp?.meta?.title || 'Untitled')
+            }
+          }
+        } catch {
+          // Backend unreachable — fine, Yjs handles content sync
+        }
+      } catch (err) {
+        console.error('[Collab] handleJoinCollab failed:', err)
+        showToast(
+          `Failed to join collaboration: ${err instanceof Error ? err.message : String(err)}`,
+          'error',
+        )
+      }
+    },
+    [setupCollab, setCurrentProject, setCurrentScriptId, setDocumentTitle],
+  )
+
+  // Register collab teardown so performLogout can end the session before clearing auth.
+  // Uses a fast path: destroy locally first, then fire-and-forget server cleanup.
+  useEffect(() => {
+    setLogoutCollabTeardown(async () => {
+      if (!collabMode) return
+
+      // Immediately disconnect — no awareness delay needed during signout
+      const docName = collabDocNameRef.current
+      const projectId = currentProject?.id
+      const scriptId = currentScriptId
+
+      destroyCollab()
+      setCollabMode(false)
+      setIsCollabHost(false)
+      setCollabRole('editor')
+
+      // Fire-and-forget server cleanup (don't block signout)
+      if (isCollabHost && projectId && scriptId) {
+        api.revokeAllCollabSessions(projectId, scriptId).catch(() => {})
+        if (docName) collabAuthApi.closeDocument(docName).catch(() => {})
+      }
+    })
+    return () => {
+      setLogoutCollabTeardown(null)
+    }
+  }, [collabMode, isCollabHost, currentProject, currentScriptId, destroyCollab])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      destroyCollab()
+    }
+  }, [destroyCollab])
+
+  // Welcome dialog — show on first visit
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return (
+      !localStorage.getItem('opendraft:welcomed') &&
+      !urlScriptId &&
+      !urlCollabToken
+    )
+  })
+
+  // ── Drag-and-drop file import state ──
+  const [dragOverEditor, setDragOverEditor] = useState(false)
+  const [pendingDropFile, setPendingDropFile] = useState<File | null>(null)
+  const [dropConfirmOpen, setDropConfirmOpen] = useState(false)
+
+  // Element picker state. `availableTypes`, when set, restricts the picker
+  // to that exact list (used inside AV cells where only avPara/avShot/avDirection apply).
+  const [pickerState, setPickerState] = useState<{
+    visible: boolean
+    position: { top: number; left: number }
+    defaultType: ElementType
+    availableTypes?: ElementType[]
+  }>({ visible: false, position: { top: 0, left: 0 }, defaultType: 'action' })
+
+  const showPickerRef = useRef<
+    (defaultType: ElementType, availableTypes?: ElementType[]) => void
+  >(() => {})
+
+  // Character autocomplete state
+  const [knownCharacters, setKnownCharacters] = useState<string[]>([])
+  const [charAutoState, setCharAutoState] = useState<{
+    visible: boolean
+    position: { top: number; left: number }
+    suggestions: string[]
+  }>({ visible: false, position: { top: 0, left: 0 }, suggestions: [] })
+  const charAutoDismissedRef = useRef(false)
+
+  const [formatPanelOpen, setFormatPanelOpen] = useState(false)
+
+  // Script context menu state
+  const [ctxMenuState, setCtxMenuState] = useState<{
+    visible: boolean
+    position: { x: number; y: number }
+    spellInfo: {
+      word: string
+      from: number
+      to: number
+      suggestions: string[]
+    } | null
+    grammarInfo: {
+      from: number
+      to: number
+      ruleId: string
+      message: string
+      severity: 'style' | 'grammar'
+      suggestions: string[]
+    } | null
+    savedSelection?: { from: number; to: number }
+  }>({
+    visible: false,
+    position: { x: 0, y: 0 },
+    spellInfo: null,
+    grammarInfo: null,
+  })
+
+  const breaksRef = useRef<import('@/editor/pagination').BreakInfo[]>([])
+
+  // Measure overlay positions from the actual DOM after decorations are applied
+  const measureOverlays = useCallback(() => {
+    if (!pageRef.current) return
+    const pageEl = pageRef.current
+    const root = pageEl.querySelector('.tiptap')
+    if (!root) return
+
+    const pageRect = pageEl.getBoundingClientRect()
+    const m = getPageMetrics(pageLayoutRef.current)
+    // Track-change deletion widgets become DOM siblings of real document
+    // nodes, which would shift every index after them and make the page
+    // break overlay land in the wrong place.  Filter them out so
+    // children[brk.nodeIndex] matches the ProseMirror model index.
+    // Normal editing (no track changes) has no such widgets, so this is
+    // a no-op there.
+    const children = (Array.from(root.children) as HTMLElement[]).filter(
+      (el) =>
+        !el.classList.contains('track-change-deleted') &&
+        !el.classList.contains('track-change-deleted-block'),
+    )
+    const breaks = breaksRef.current
+    if (breaks.length === 0) {
+      setOverlays([])
+      return
+    }
+
+    // getBoundingClientRect returns coordinates in viewport space (affected by
+    // CSS transform: scale), but the overlay top is in the page's local
+    // (unscaled) coordinate system.  Divide by zoom to convert.
+    const scale = (zoomLevelRef.current || 100) / 100
+    const lineHeightPx = 12 * (96 / 72) // 16px — matches pagination LINE_HEIGHT_PT
+    const newOverlays: OverlayInfo[] = []
+    for (const brk of breaks) {
+      const el = children[brk.nodeIndex]
+      if (!el) continue
+      const elRect = el.getBoundingClientRect()
+      const contdHeight = brk.isDialogueSplit ? lineHeightPx : 0
+      const overlayTop =
+        (elRect.top - pageRect.top) / scale - m.sepHeightPx - contdHeight
+      newOverlays.push({
+        top: overlayTop,
+        pageNumber: brk.pageNumber,
+        isDialogueSplit: brk.isDialogueSplit,
+        characterName: brk.characterName,
+        isTitlePage: brk.isTitlePage,
+      })
+    }
+    setOverlays(newOverlays)
+  }, [])
+
+  const [PaginationExtension] = React.useState(() =>
+    Extension.create({
+      name: 'pagination',
+      addProseMirrorPlugins() {
+        return [
+          createPaginationPlugin(
+            (state) => {
+              setPageCountRef.current(state.pageCount)
+              breaksRef.current = state.breaks
+              // Measure from DOM after ProseMirror applies decoration margins
+              requestAnimationFrame(() =>
+                requestAnimationFrame(measureOverlays),
+              )
+            },
+            () => pageLayoutRef.current,
+          ),
+        ]
+      },
+    }),
+  )
+
+  const [ContdCaseExtension] = React.useState(() =>
+    Extension.create({
+      name: 'contdCase',
+      addProseMirrorPlugins() {
+        return [createContdCasePlugin(() => pageLayoutRef.current)]
+      },
+    }),
+  )
+
+  // Search highlight plugin
+  const [SearchExtension] = React.useState(() =>
+    Extension.create({
+      name: 'searchHighlight',
+      addProseMirrorPlugins() {
+        return [createSearchPlugin()]
+      },
+    }),
+  )
+
+  // Track changes plugin
+  const [TrackChangesExtension] = React.useState(() =>
+    Extension.create({
+      name: 'trackChanges',
+      addProseMirrorPlugins() {
+        return [createTrackChangesPlugin()]
+      },
+    }),
+  )
+
+  // Block formatting shortcuts (Mod-b/i/u) when the attribute is locked by the template
+  const [EnforceGuardExtension] = React.useState(() =>
+    Extension.create({
+      name: 'enforceGuard',
+      priority: 1001,
+      addKeyboardShortcuts() {
+        const isLocked = (
+          editor: any,
+          attr: 'bold' | 'italic' | 'underline',
+        ) => {
+          const tpl = useFormattingTemplateStore.getState().getActiveTemplate()
+          if (tpl.mode !== 'enforce') return false
+          const rule = getCurrentElementRule(editor, tpl)
+          const locked = getLockedFormatting(rule, true)
+          return locked[attr]
+        }
+        return {
+          'Mod-b': ({ editor }) => isLocked(editor, 'bold'),
+          'Mod-i': ({ editor }) => isLocked(editor, 'italic'),
+          'Mod-u': ({ editor }) => isLocked(editor, 'underline'),
+        }
+      },
+    }),
+  )
+
+  // Centralized Enter handler — overrides per-extension Enter handlers via high priority
+  const [EnterHandlerExtension] = React.useState(() =>
+    Extension.create({
+      name: 'enterHandler',
+      priority: 1000,
+      addKeyboardShortcuts() {
+        return {
+          Enter: ({ editor }) => {
+            const { $from } = editor.state.selection
+            const currentNode = $from.parent
+            const currentType = currentNode.type.name
+            const isEmpty = currentNode.textContent.trim() === ''
+
+            // A non-text selection (e.g. a selected image atom) — let ProseMirror's
+            // default Enter handle it. Computing block positions below would throw
+            // "no position before the top-level node" for a top-level NodeSelection.
+            if (!$from.parent.isTextblock) return false
+
+            // Title-page lines must STAY in the title page: Enter adds another
+            // (blank) title-page line instead of a body element, so the content
+            // shifts down one line rather than breaking to the next page.
+            if (currentType === 'titlePage') {
+              const atStartTp = $from.parentOffset === 0
+              editor.chain().splitBlock().run()
+              const s2 = editor.state
+              const np = s2.selection.$from
+              if (np.depth > 0) {
+                const cursorStart = np.before(np.depth)
+                let blankPos = -1
+                if (atStartTp) {
+                  if (cursorStart > 0) {
+                    const prev = s2.doc.resolve(cursorStart - 1)
+                    if (prev.depth > 0) blankPos = prev.before(prev.depth)
+                  }
+                } else {
+                  const n = s2.doc.nodeAt(cursorStart)
+                  if (n && n.textContent.trim() === '') blankPos = cursorStart
+                }
+                if (blankPos >= 0) {
+                  const bn = s2.doc.nodeAt(blankPos)
+                  if (
+                    bn &&
+                    bn.type.name === 'titlePage' &&
+                    bn.attrs.field !== 'blank'
+                  ) {
+                    editor.view.dispatch(
+                      s2.tr.setNodeMarkup(blankPos, undefined, {
+                        ...bn.attrs,
+                        field: 'blank',
+                      }),
+                    )
+                  }
+                }
+              }
+              return true
+            }
+
+            // Inside dualDialogue on an empty line: exit the container
+            if (isEmpty) {
+              for (let d = $from.depth; d >= 0; d--) {
+                if ($from.node(d).type.name === 'dualDialogue') {
+                  // Delete the empty node, then insert action after dual dialogue
+                  const emptyFrom = $from.before($from.depth)
+                  const emptyTo = $from.after($from.depth)
+                  const afterDual = $from.after(d)
+                  editor
+                    .chain()
+                    .deleteRange({ from: emptyFrom, to: emptyTo })
+                    .insertContentAt(afterDual - (emptyTo - emptyFrom), {
+                      type: 'action',
+                    })
+                    .focus(afterDual - (emptyTo - emptyFrom) + 1)
+                    .run()
+                  return true
+                }
+              }
+              // Normal blank line: show element picker
+              showPickerRef.current(currentType as ElementType)
+              return true
+            }
+
+            // Check if cursor is at the very beginning of the block
+            const atBlockStart = $from.parentOffset === 0
+
+            // Non-empty line: split block, then fix up both halves' types
+            // Use template rules if available, fall back to DEFAULT_NEXT_TYPE
+            const templateStore = useFormattingTemplateStore.getState()
+            const activeTemplate = templateStore.getActiveTemplate()
+            // For custom elements, use customTypeId to find the rule
+            const effectiveType =
+              currentType === 'customElement'
+                ? currentNode.attrs?.customTypeId || currentType
+                : currentType
+            const elementRule = activeTemplate.rules[effectiveType]
+            const nextType =
+              elementRule?.nextOnEnter ||
+              DEFAULT_NEXT_TYPE[currentType] ||
+              currentType
+            editor.chain().splitBlock().run()
+
+            // After split, cursor is in the new (second) block.
+            const { tr, schema, selection } = editor.state
+            const pos = selection.$from
+            const newBlockStart = pos.before(pos.depth)
+
+            if (atBlockStart) {
+              // Cursor was at position 0: user is inserting a blank line above.
+              // The second block (with content) should keep the original type.
+              // The first block (empty, above) becomes action for a clean blank line.
+              const origNodeType = schema.nodes[currentType]
+              if (
+                origNodeType &&
+                tr.doc.nodeAt(newBlockStart)?.type.name !== currentType
+              ) {
+                tr.setNodeMarkup(newBlockStart, origNodeType)
+              }
+              const prevResolved = tr.doc.resolve(newBlockStart - 1)
+              const prevBlockStart = prevResolved.before(prevResolved.depth)
+              const actionType = schema.nodes['action']
+              if (
+                actionType &&
+                tr.doc.nodeAt(prevBlockStart)?.type.name !== 'action'
+              ) {
+                tr.setNodeMarkup(prevBlockStart, actionType)
+              }
+            } else {
+              // Cursor was in the middle/end: apply normal type transition.
+              // Fix the new block's type, and ensure the first block kept original type.
+              const isNextBuiltIn = !!schema.nodes[nextType]
+              if (isNextBuiltIn) {
+                const newNodeType = schema.nodes[nextType]
+                if (
+                  newNodeType &&
+                  tr.doc.nodeAt(newBlockStart)?.type.name !== nextType
+                ) {
+                  tr.setNodeMarkup(newBlockStart, newNodeType)
+                }
+              } else {
+                // Custom element transition
+                const customNodeType = schema.nodes['customElement']
+                const nextRule = activeTemplate.rules[nextType]
+                if (customNodeType && nextRule) {
+                  tr.setNodeMarkup(newBlockStart, customNodeType, {
+                    customTypeId: nextType,
+                    customLabel: nextRule.label,
+                  })
+                }
+              }
+              const prevResolved = tr.doc.resolve(newBlockStart - 1)
+              const prevBlockStart = prevResolved.before(prevResolved.depth)
+              const origNodeType =
+                schema.nodes[currentType] || schema.nodes['customElement']
+              if (
+                origNodeType &&
+                tr.doc.nodeAt(prevBlockStart)?.type.name !== currentType
+              ) {
+                if (schema.nodes[currentType]) {
+                  tr.setNodeMarkup(prevBlockStart, schema.nodes[currentType])
+                }
+                // For customElement, the type is already correct from splitBlock
+              }
+            }
+            if (tr.steps.length > 0) {
+              editor.view.dispatch(tr)
+            }
+            return true
+          },
+        }
+      },
+    }),
+  )
+
+  // Element shortcuts: Mod-1 through Mod-8 to set element type
+  const [ElementShortcutExtension] = React.useState(() =>
+    Extension.create({
+      name: 'elementShortcuts',
+      priority: 999,
+      addKeyboardShortcuts() {
+        const types = [
+          'sceneHeading',
+          'action',
+          'character',
+          'dialogue',
+          'parenthetical',
+          'transition',
+          'general',
+          'shot',
+        ]
+        const shortcuts: Record<string, any> = {}
+        types.forEach((type, i) => {
+          shortcuts[`Mod-${i + 1}`] = ({ editor }: { editor: any }) => {
+            if (!editor.schema.nodes[type]) return false
+            editor.chain().focus().setNode(type).run()
+            return true
+          }
+        })
+        return shortcuts
+      },
+    }),
+  )
+
+  // Centralized Tab handler — reads nextOnTab from active template
+  const [TabHandlerExtension] = React.useState(() =>
+    Extension.create({
+      name: 'tabHandler',
+      priority: 1000,
+      addKeyboardShortcuts() {
+        return {
+          Tab: ({ editor }) => {
+            const { $from } = editor.state.selection
+            const currentNode = $from.parent
+            const currentType = currentNode.type.name
+
+            // For custom elements, look up by customTypeId
+            const effectiveType =
+              currentType === 'customElement'
+                ? currentNode.attrs?.customTypeId || currentType
+                : currentType
+
+            const templateStore = useFormattingTemplateStore.getState()
+            const activeTemplate = templateStore.getActiveTemplate()
+            const rule = activeTemplate.rules[effectiveType]
+
+            if (!rule?.nextOnTab) return false
+
+            const nextId = rule.nextOnTab
+            // Check if next type is a built-in or custom element
+            const isBuiltIn = ALL_ELEMENT_TYPES.includes(nextId as ElementType)
+
+            if (isBuiltIn) {
+              return editor.chain().splitBlock().setNode(nextId).run()
+            } else {
+              // Custom element
+              const nextRule = activeTemplate.rules[nextId]
+              if (nextRule) {
+                return editor
+                  .chain()
+                  .splitBlock()
+                  .setNode('customElement', {
+                    customTypeId: nextId,
+                    customLabel: nextRule.label,
+                  })
+                  .run()
+              }
+            }
+            return false
+          },
+        }
+      },
+    }),
+  )
+
+  // Build collaboration extensions when in collab mode
+  const collabExtensions = useMemo(() => {
+    if (!collabMode || !ydocRef.current || !providerRef.current) {
+      return []
+    }
+    return [
+      Collaboration.configure({
+        document: ydocRef.current,
+      }),
+      CollaborationCursor.configure({
+        provider: providerRef.current,
+        user: { name: collabUserName, color: collabColor },
+      }),
+    ]
+  }, [collabMode, collabUserName, collabColor, editorKey])
+
+  const editor = useEditor(
+    {
+      extensions: [
+        Document.extend({
+          content: 'block+',
+        }),
+        // HardBreakLeafText must travel with ScreenplayHardBreak — see that module.
+        Text,
+        ScreenplayHardBreak,
+        HardBreakLeafText,
+        Bold,
+        Italic,
+        Underline,
+        Strike,
+        Dropcursor,
+        Gapcursor,
+        Subscript,
+        Superscript,
+        Highlight.configure({ multicolor: true }),
+        TextStyle,
+        Color,
+        FontFamily,
+        FontSize,
+        FormatOverride,
+        CustomElement,
+        ScreenplayImage,
+        // Use History in normal mode, Collaboration in collab mode
+        ...(collabMode
+          ? collabExtensions
+          : [History.configure({ newGroupDelay: 150 })]),
+        TextAlign.configure({ types: [...ALL_ELEMENT_TYPES, 'customElement'] }),
+        Placeholder.configure({
+          placeholder: ({ node }) => {
+            // Check template rules first for custom placeholders
+            const tplStore = useFormattingTemplateStore.getState()
+            const tpl = tplStore.getActiveTemplate()
+            // For custom elements, use customTypeId attribute
+            if (node.type.name === 'customElement') {
+              const customTypeId = node.attrs?.customTypeId
+              if (customTypeId && tpl.rules[customTypeId]) {
+                return tpl.rules[customTypeId].placeholder || ''
+              }
+              return ''
+            }
+            // For built-in elements, check template rule
+            if (tpl.rules[node.type.name]?.placeholder) {
+              return tpl.rules[node.type.name].placeholder
+            }
+            // Fallback defaults
+            const m: Record<string, string> = {
+              sceneHeading: 'INT./EXT. LOCATION - TIME',
+              action: 'Describe what happens...',
+              character: 'CHARACTER NAME',
+              dialogue: 'Dialogue...',
+              parenthetical: '(direction)',
+              transition: 'CUT TO:',
+              general: 'Text...',
+              shot: 'SHOT DESCRIPTION',
+              newAct: 'ACT ONE',
+              endOfAct: 'END OF ACT',
+              lyrics: 'Lyrics...',
+              showEpisode: 'SHOW TITLE',
+              castList: 'Cast...',
+            }
+            return m[node.type.name] || ''
+          },
+        }),
+        SceneHeading,
+        Action,
+        Character,
+        Dialogue,
+        Parenthetical,
+        Transition,
+        General,
+        Shot,
+        NewAct,
+        EndOfAct,
+        Lyrics,
+        ShowEpisode,
+        CastList,
+        DualDialogue,
+        DualDialogueColumn,
+        TitlePage,
+        AvBlock,
+        AvRow,
+        AvCell,
+        AvPara,
+        AvShot,
+        AvDirection,
+        AvKeymap,
+        ScriptNoteMark,
+        TagMark,
+        PaginationExtension,
+        ContdCaseExtension,
+        SearchExtension,
+        TrackChangesExtension,
+        ...(isHistoryMode
+          ? []
+          : [
+              EnforceGuardExtension,
+              EnterHandlerExtension,
+              TabHandlerExtension,
+              ElementShortcutExtension,
+            ]),
+        SpellCheck,
+        Grammar,
+        ...pluginRegistry.getEditorExtensions(),
+      ],
+      // In collab mode, pass fetched content so TipTap seeds the Yjs doc on first connect.
+      // For normal editing from URL, content is loaded later via useEffect.
+      content: collabMode
+        ? collabInitialContent.current || {
+            type: 'doc',
+            content: [{ type: 'action', content: [] }],
+          }
+        : urlScriptId || urlCommitHash
+          ? undefined
+          : { type: 'doc', content: [{ type: 'action', content: [] }] },
+      editable: !isHistoryMode && !(collabMode && collabRole === 'viewer'),
+      editorProps: {
+        attributes: {
+          class: `screenplay-content${isHistoryMode ? ' history-readonly' : ''}`,
+          spellcheck: 'false',
+        },
+      },
+      onSelectionUpdate: ({ editor: ed }) => {
+        // Check custom element first
+        if (ed.isActive('customElement')) {
+          // Use customTypeId as the active element label
+          const attrs = ed.getAttributes('customElement')
+          if (attrs?.customTypeId) {
+            setActiveElement(attrs.customTypeId as ElementType)
+            return
+          }
+        }
+        for (const type of ALL_ELEMENT_TYPES) {
+          if (ed.isActive(type)) {
+            setActiveElement(type)
+            break
+          }
+        }
+      },
+    },
+    [editorKey],
+  )
+
+  // Keep editor ref updated for onSynced callback
+  collabEditorRef.current = editor
+
+  // Route native undo/redo (e.g. iOS shake-to-undo) to the editor
+  useEffect(() => {
+    if (!editor) return
+    const handleBeforeInput = (e: Event) => {
+      const ie = e as InputEvent
+      if (ie.inputType === 'historyUndo') {
+        e.preventDefault()
+        try {
+          editor.chain().undo().run()
+        } catch {}
+      } else if (ie.inputType === 'historyRedo') {
+        e.preventDefault()
+        try {
+          editor.chain().redo().run()
+        } catch {}
+      }
+    }
+    document.addEventListener('beforeinput', handleBeforeInput)
+    return () => document.removeEventListener('beforeinput', handleBeforeInput)
+  }, [editor])
+
+  // ── Dynamic CSS injection for custom formatting templates ──
+  const activeTemplateId = useFormattingTemplateStore((s) => s.activeTemplateId)
+  const templatesLoaded = useFormattingTemplateStore((s) => s.loaded)
+  const templates = useFormattingTemplateStore((s) => s.templates)
+
+  useEffect(() => {
+    // Load templates on mount
+    useFormattingTemplateStore.getState().loadTemplates()
+  }, [])
+
+  useEffect(() => {
+    const template = useFormattingTemplateStore.getState().getActiveTemplate()
+    // If the resolved template is industry standard, use static CSS
+    if (template.id === '__industry_standard__') {
+      injectTemplateCss(null)
+      return
+    }
+    const css = generateTemplateCss(template, pageLayout)
+    injectTemplateCss(css)
+
+    return () => {
+      injectTemplateCss(null)
+    }
+  }, [activeTemplateId, templatesLoaded, templates, pageLayout])
+
+  // ── Owner starts collaboration — save current content, create own token, switch to collab mode ──
+  const handleStartCollab = useCallback(
+    async (guestSession: import('@/services/api').CollabSession) => {
+      if (!editor || !currentProject || !currentScriptId) return
+
+      // Save current editor content so it can seed the Yjs doc
+      const doc = editor.getJSON()
+      const {
+        _notes,
+        _generalNotes: _gn3,
+        _tags,
+        _tagCategories,
+        _characterProfiles,
+        _characterRelationships,
+        _templateId: _tpl3,
+        _pageLayout: _pl3,
+        ...pmDoc
+      } = doc as Record<string, unknown>
+      collabInitialContent.current = pmDoc
+
+      // The guest invite carries a session_nonce that makes the Yjs room unique
+      // per collab session, so stale state from previous sessions is never loaded.
+      const nonce = guestSession.session_nonce || ''
+
+      // Create a separate session token for the owner, sharing the same nonce
+      let ownerToken: string
+      try {
+        const ownerSession = await api.createCollabInvite(
+          currentProject.id,
+          currentScriptId,
+          'Host',
+          'editor',
+          1,
+          nonce,
+        )
+        ownerToken = ownerSession.token
+      } catch {
+        ownerToken = guestSession.token
+      }
+
+      // Include the nonce in the room name so each session gets a fresh Yjs document
+      const docName = `${currentProject.id}/${currentScriptId}/${nonce}`
+      // Use the logged-in user's display name so remote users see the real name
+      const hostDisplayName =
+        useSettingsStore.getState().collabAuth.user?.displayName || 'Host'
+      setupCollab(docName, ownerToken, hostDisplayName, true)
+
+      setCollabUserName(hostDisplayName)
+      setIsCollabHost(true)
+      setCollabMode(true)
+      // Keep ShareDialog open so the host can immediately copy the invite link
+      setEditorKey((k) => k + 1)
+    },
+    [editor, currentProject, currentScriptId, setupCollab],
+  )
+
+  // --- Image insertion: upload to the project's assets, then insert a node that
+  // references the asset (keeps the document small). Falls back to an inline data
+  // URL only when there is no project to upload to. ---
+  const imageFileInputRef = useRef<HTMLInputElement>(null)
+  // The cursor position captured when the menu/toolbar triggers image insertion,
+  // so the upload's async gap (file dialog) doesn't lose the insertion point.
+  const imageInsertPosRef = useRef<number | null>(null)
+  const setImageInsertHandler = useEditorStore((s) => s.setImageInsertHandler)
+  useEffect(() => {
+    setImageInsertHandler(() => {
+      imageInsertPosRef.current = editor ? editor.state.selection.to : null
+      imageFileInputRef.current?.click()
+    })
+    return () => setImageInsertHandler(null)
+  }, [setImageInsertHandler, editor])
+
+  const handleImageFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      e.target.value = '' // allow re-selecting the same file
+      if (!file || !editor) return
+      if (!file.type.startsWith('image/')) {
+        showToast('Please choose an image file', 'error')
+        return
+      }
+      // Insert at the captured cursor position (valid block position), not doc start.
+      const pos = imageInsertPosRef.current ?? editor.state.selection.to
+      const insertAt = (attrs: Record<string, unknown>) =>
+        insertImageNode(editor, attrs, pos)
+      try {
+        if (currentProject) {
+          const asset = await api.uploadAsset(currentProject.id, file, [
+            'inline-image',
+          ])
+          insertAt({
+            assetId: asset.id,
+            projectId: currentProject.id,
+            filename: asset.filename ?? file.name,
+            align: 'center',
+          })
+        } else {
+          // No project yet (unsaved local doc) — embed as a data URL.
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const r = new FileReader()
+            r.onload = () => resolve(r.result as string)
+            r.onerror = () => reject(r.error)
+            r.readAsDataURL(file)
+          })
+          insertAt({ src: dataUrl, align: 'center' })
+        }
+      } catch (err) {
+        showToast(
+          `Failed to insert image: ${err instanceof Error ? err.message : String(err)}`,
+          'error',
+        )
+      }
+    },
+    [editor, currentProject],
+  )
+
+  // Helper: clear track changes when switching documents
+  const clearTrackChanges = useCallback(() => {
+    const store = useEditorStore.getState()
+    if (!store.trackChangesEnabled) return
+    store.setTrackChangesEnabled(false)
+    store.setTrackChangesLabel('')
+    if (editor) {
+      const { tr } = editor.state
+      tr.setMeta(trackChangesPluginKey, { enabled: false, baseline: null })
+      editor.view.dispatch(tr)
+    }
+  }, [editor])
+
+  // --- Scene navigator + scene number assignment ---
+  const updateScenes = useCallback(() => {
+    if (!editor) return
+    const list: {
+      id: string
+      heading: string
+      sceneNumber: number | null
+      color: string
+      synopsis: string
+    }[] = []
+    const locked = useEditorStore.getState().sceneNumbersLocked
+    const visible = useEditorStore.getState().sceneNumbersVisible
+    let idx = 0
+    // Collect scene positions for attribute updates
+    const attrUpdates: { pos: number; number: string }[] = []
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name === 'sceneHeading') {
+        idx++
+        let num: string
+        if (locked && node.attrs.sceneNumber != null) {
+          // Keep the locked number
+          num = String(node.attrs.sceneNumber)
+        } else {
+          num = String(idx)
+        }
+        const sceneId = `scene-${idx}`
+        list.push({
+          id: sceneId,
+          heading: node.textContent || 'Untitled Scene',
+          sceneNumber: parseInt(num, 10),
+          color: node.attrs.sceneColor || '',
+          synopsis: node.attrs.synopsis || '',
+        })
+        // Update node attrs if scene numbers are visible and the number changed
+        if (visible && String(node.attrs.sceneNumber) !== num) {
+          attrUpdates.push({ pos, number: num })
+        }
+        // Clear scene number attr if not visible and it was set
+        if (!visible && node.attrs.sceneNumber != null) {
+          attrUpdates.push({ pos, number: '' })
+        }
+      }
+      return true
+    })
+    // Batch attribute updates in a single transaction
+    if (attrUpdates.length > 0) {
+      const { tr } = editor.state
+      for (const { pos, number } of attrUpdates) {
+        tr.setNodeMarkup(pos, undefined, {
+          ...editor.state.doc.nodeAt(pos)?.attrs,
+          sceneNumber: number || null,
+        })
+      }
+      tr.setMeta('addToHistory', false)
+      editor.view.dispatch(tr)
+    }
+    setScenes(list)
+  }, [editor, setScenes])
+
+  useEffect(() => {
+    if (!editor) return
+    updateScenes()
+    editor.on('update', updateScenes)
+    return () => {
+      editor.off('update', updateScenes)
+    }
+  }, [editor, updateScenes])
+
+  // Re-run when scene numbering visibility or lock state changes
+  useEffect(() => {
+    if (editor) updateScenes()
+  }, [editor, sceneNumbersVisible, sceneNumbersLocked, updateScenes])
+
+  // --- Collect character names from document ---
+  // `characterKey` (utils/nodeText) is the one normalization: collapse hard
+  // breaks to spaces, drop extensions like (CONT'D)/(V.O.)/(O.S.), uppercase.
+  // Every site that compares a cue to a stored name must use it on both sides.
+  const { setCharacters } = useEditorStore()
+  // Per-document "Mores & Continueds" config. Reactive: editing it re-runs the
+  // CONT'D effect and re-renders the page-break markers.
+  const moresContds = resolveMoresContds(pageLayout)
+  const { characterContd, contdText } = moresContds
+
+  const updateCharacters = useCallback(() => {
+    if (!editor) return
+    const names = new Set<string>()
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === 'character') {
+        const base = characterKey(node.textContent)
+        if (base) names.add(base)
+      }
+      return true
+    })
+    const sorted = Array.from(names).sort()
+    setKnownCharacters(sorted)
+    setCharacters(sorted)
+  }, [editor, setCharacters])
+
+  useEffect(() => {
+    if (!editor) return
+    updateCharacters()
+    // Only update character list when the cursor leaves a character node
+    // (i.e., user finished typing the name and pressed Enter / moved away)
+    let prevInCharNode = false
+    const handleSelectionUpdate = () => {
+      const { $from } = editor.state.selection
+      const inCharNode = $from.parent.type.name === 'character'
+      // Update when leaving a character node, or when entering a non-character node after being in one
+      if (prevInCharNode && !inCharNode) {
+        updateCharacters()
+      }
+      prevInCharNode = inCharNode
+    }
+    // Also update on transaction that changes node type (e.g., setNode from character to dialogue)
+    const handleUpdate = ({
+      transaction,
+    }: {
+      transaction: { docChanged: boolean }
+    }) => {
+      if (!transaction.docChanged) return
+      const { $from } = editor.state.selection
+      if ($from.parent.type.name !== 'character') {
+        updateCharacters()
+      }
+    }
+    editor.on('selectionUpdate', handleSelectionUpdate)
+    editor.on('update', handleUpdate)
+    return () => {
+      editor.off('selectionUpdate', handleSelectionUpdate)
+      editor.off('update', handleUpdate)
+    }
+  }, [editor, updateCharacters])
+
+  // --- Auto CONT'D: add/remove (CONT'D) based on previous dialogue ---
+  // Industry rule (Final Draft / WriterDuet / Fade In): append the continued
+  // marker when the same character resumes speaking after action *within the same
+  // scene*. A scene heading / transition resets continuation. A per-cue override
+  // remembers when the writer deletes it so it is not re-added there. Gated by the
+  // per-document characterContd setting; page-break (CONT'D)/(MORE) is separate.
+  useEffect(() => {
+    if (!editor || !characterContd) return
+    let timeout: ReturnType<typeof setTimeout> | null = null
+    // Configured marker, e.g. "(CONT'D)".
+    const contdMarker = contdText.trim() || "(CONT'D)"
+
+    const updateContd = () => {
+      const { doc } = editor.state
+
+      // Collect every top-level block. `nodeSize` travels with each one so the
+      // replace range is derived from it rather than from the text length —
+      // the latter is short by one per hard break, which would leave the tail
+      // of the cue behind and duplicate it.
+      const blocks: ContdBlock[] = []
+      doc.forEach((node, offset) => {
+        blocks.push({
+          type: node.type.name,
+          text: node.textContent,
+          pos: offset,
+          nodeSize: node.nodeSize,
+          attrs: node.attrs,
+        })
+      })
+
+      const changes = computeContdChanges(blocks, { contdMarker })
+      if (changes.length === 0) return
+
+      // Apply changes in reverse document order so earlier positions don't shift.
+      const { tr } = editor.state
+      for (let i = changes.length - 1; i >= 0; i--) {
+        const c = changes[i]
+        if (c.attrs) tr.setNodeMarkup(c.pos, undefined, c.attrs)
+        if (c.oldText !== null && c.newText !== null) {
+          tr.insertText(c.newText, c.from, c.to)
+        }
+      }
+      tr.setMeta('addToHistory', false)
+      editor.view.dispatch(tr)
+    }
+
+    const debouncedUpdate = () => {
+      if (timeout) clearTimeout(timeout)
+      timeout = setTimeout(updateContd, 800)
+    }
+
+    editor.on('update', debouncedUpdate)
+    setTimeout(updateContd, 500)
+    return () => {
+      editor.off('update', debouncedUpdate)
+      if (timeout) clearTimeout(timeout)
+    }
+  }, [editor, characterContd, contdText])
+
+  // --- Character autocomplete: show/update on each editor update while in character block ---
+  useEffect(() => {
+    if (!editor) return
+    const onUpdate = () => {
+      if (!editor.isActive('character')) {
+        setCharAutoState((s) => (s.visible ? { ...s, visible: false } : s))
+        charAutoDismissedRef.current = false
+        return
+      }
+      if (charAutoDismissedRef.current) return
+
+      const { $from } = editor.state.selection
+      const text = characterKey($from.parent.textContent)
+      if (!text) {
+        setCharAutoState((s) => (s.visible ? { ...s, visible: false } : s))
+        charAutoDismissedRef.current = false
+        return
+      }
+
+      // Filter known characters that start with typed text (exclude exact match)
+      // Only match against base names (without extensions)
+      const matches = knownCharacters.filter(
+        (n) => n.startsWith(text) && n !== text,
+      )
+
+      if (matches.length === 0) {
+        setCharAutoState((s) => (s.visible ? { ...s, visible: false } : s))
+        return
+      }
+
+      const { from } = editor.state.selection
+      const coords = editor.view.coordsAtPos(from)
+      setCharAutoState({
+        visible: true,
+        position: { top: coords.bottom + 4, left: coords.left },
+        suggestions: matches,
+      })
+    }
+    editor.on('update', onUpdate)
+    editor.on('selectionUpdate', onUpdate)
+    return () => {
+      editor.off('update', onUpdate)
+      editor.off('selectionUpdate', onUpdate)
+    }
+  }, [editor, knownCharacters])
+
+  // Re-measure overlays after editor updates (decorations settle)
+  useEffect(() => {
+    if (!editor) return
+    const run = () =>
+      requestAnimationFrame(() => requestAnimationFrame(measureOverlays))
+    editor.on('update', run)
+    // Initial measurement passes
+    const timers = [200, 500, 1000].map((ms) => setTimeout(run, ms))
+    return () => {
+      editor.off('update', run)
+      timers.forEach(clearTimeout)
+    }
+  }, [editor, measureOverlays])
+
+  // Re-paginate when page layout changes (e.g., after FDX import)
+  useEffect(() => {
+    if (!editor) return
+    const t = setTimeout(() => {
+      const { tr } = editor.state
+      tr.setMeta('forceRepaginate', true)
+      editor.view.dispatch(tr)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [editor, pageLayout])
+
+  // --- Initialize spell checker on mount ---
+  useEffect(() => {
+    spellChecker.init().catch(() => {})
+  }, [])
+
+  // --- Toggle spell check plugin when store changes ---
+  useEffect(() => {
+    if (!editor) return
+    const { tr } = editor.state
+    tr.setMeta(spellCheckPluginKey, { toggle: spellCheckEnabled })
+    editor.view.dispatch(tr)
+  }, [editor, spellCheckEnabled])
+
+  // --- Spell modal needs decorations to highlight the active word.
+  //     If auto-check is off, enable the plugin while the modal is open and
+  //     restore the store's setting on close. ---
+  useEffect(() => {
+    if (!editor) return
+    if (!spellModalOpen) return
+    if (spellCheckEnabled) return // plugin already on via the toggle effect above
+    const tr1 = editor.state.tr.setMeta(spellCheckPluginKey, { toggle: true })
+    editor.view.dispatch(tr1)
+    return () => {
+      if (editor.isDestroyed) return
+      // Re-read the latest setting; if user turned auto-check on while the modal was open, leave it on.
+      const stillOff = !useEditorStore.getState().spellCheckEnabled
+      if (stillOff) {
+        const tr2 = editor.state.tr.setMeta(spellCheckPluginKey, {
+          toggle: false,
+        })
+        editor.view.dispatch(tr2)
+      }
+    }
+  }, [editor, spellModalOpen, spellCheckEnabled])
+
+  // --- Register the local rule-based grammar providers exactly once. ---
+  // retext: style/wordiness checks (passive voice, weak intensifiers, etc.)
+  // harper: actual grammar (subject-verb agreement, tense, articles, ...)
+  useEffect(() => {
+    pluginRegistry.registerGrammarProvider(
+      'opendraft-retext',
+      async (text, baseOffset, signal) => {
+        const enabledSet = new Set<RetextCategory>()
+        const rulesEnabled = useEditorStore.getState().grammarRulesEnabled || {}
+        for (const cat of RETEXT_CATEGORIES) {
+          if (rulesEnabled[cat] !== false) enabledSet.add(cat)
+        }
+        return runRetext(text, baseOffset, enabledSet, signal)
+      },
+    )
+    pluginRegistry.registerGrammarProvider(
+      'opendraft-harper',
+      (text, baseOffset, signal) => {
+        return runHarper(text, baseOffset, signal)
+      },
+    )
+    return () => {
+      pluginRegistry.unregisterGrammarProvider('opendraft-retext')
+      pluginRegistry.unregisterGrammarProvider('opendraft-harper')
+    }
+  }, [])
+
+  // --- Toggle grammar plugin when store changes ---
+  useEffect(() => {
+    if (!editor) return
+    const { tr } = editor.state
+    tr.setMeta(grammarPluginKey, { toggle: grammarCheckEnabled })
+    editor.view.dispatch(tr)
+  }, [editor, grammarCheckEnabled])
+
+  // --- If auto-grammar is off but the modal is open, enable it temporarily. ---
+  useEffect(() => {
+    if (!editor) return
+    if (!grammarModalOpen) return
+    if (grammarCheckEnabled) return
+    const tr1 = editor.state.tr.setMeta(grammarPluginKey, { toggle: true })
+    editor.view.dispatch(tr1)
+    return () => {
+      if (editor.isDestroyed) return
+      const stillOff = !useEditorStore.getState().grammarCheckEnabled
+      if (stillOff) {
+        const tr2 = editor.state.tr.setMeta(grammarPluginKey, { toggle: false })
+        editor.view.dispatch(tr2)
+      }
+    }
+  }, [editor, grammarModalOpen, grammarCheckEnabled])
+
+  // Build a saveable content object: editor JSON + store metadata at top level.
+  // The payload shape lives in utils/saveContent so MenuBar's Cmd+S and the
+  // backup writer cannot drift from it again. Keep the useCallback wrapper —
+  // its identity is a dependency of the auto-save and metadata-save effects.
+  const buildSaveContent = useCallback(
+    (): Record<string, unknown> | undefined => buildSaveContentShared(editor),
+    [editor],
+  )
+
+  // --- Auto-save to backend every 30 seconds if a project/script is active ---
+  // Skip for collab guests — they don't own the document and the project may
+  // not exist on their local backend.
+  const lastSavedJsonRef = useRef<string>('')
+  // Tracks whether the script currently in the editor has real (textful) content
+  // saved. When true, an auto-save that finds the editor body suddenly empty is
+  // treated as an editor glitch (reset/remount) and skipped — never written.
+  //
+  // Seeded from the store rather than `false`: mounting with a script already
+  // open (a remount after a trip to Settings) means a saved script exists that
+  // this mount has not read yet, and until it does, the safe assumption is that
+  // it has content. Starting at `false` left that window unguarded — the only
+  // thing that stopped the blank body being written was the storage-layer guard
+  // throwing, which surfaced as a save-error modal.
+  const lastSavedNonEmptyRef = useRef<boolean>(
+    Boolean(currentProject && currentScriptId),
+  )
+
+  // Register an editor-reset hook so performLogout can flush any pending
+  // save for a cloud file and then drop the editor back to a blank, local
+  // "Untitled Screenplay". Runs while the access token is still valid so the
+  // final PUT is authenticated; without this the auto-save loop keeps firing
+  // after signout and every save returns 401.
+  useEffect(() => {
+    setLogoutEditorReset(async () => {
+      scriptSwitchingRef.current = true
+      try {
+        if (
+          currentProject &&
+          currentScriptId &&
+          isCloudScript(currentProject.id, currentScriptId)
+        ) {
+          const pendingContent = buildSaveContent()
+          if (pendingContent) {
+            const pendingJson = JSON.stringify(pendingContent)
+            if (pendingJson !== lastSavedJsonRef.current) {
+              try {
+                await scriptApi.saveScript(currentProject.id, currentScriptId, {
+                  content: pendingContent,
+                })
+                lastSavedJsonRef.current = pendingJson
+              } catch (err) {
+                // Save can fail if the token already expired — log and keep going.
+                console.warn('Final cloud save on signout failed:', err)
+              }
+            }
+          }
+        }
+
+        // Reset the editor to a fresh, blank document — mirrors handleNewScreenplay.
+        // Drop the stash too, so the signed-out document cannot be restored into
+        // the blank one on the next route change.
+        clearSessionDoc()
+        if (editor && !editor.isDestroyed) {
+          clearTrackChanges()
+          editor.commands.setContent(
+            { type: 'doc', content: [{ type: 'sceneHeading', content: [] }] },
+            true,
+          )
+          clearEditorHistory(editor)
+        }
+        setCurrentProject(null)
+        setCurrentScriptId(null)
+        const store = useEditorStore.getState()
+        store.setDocumentTitle('Untitled Screenplay')
+        store.setBeats([])
+        store.setBeatColumns([])
+        store.setBeatArrangeMode('auto')
+        store.setNotes([])
+        store.setGeneralNotes([])
+        store.setTags([])
+        store.setTagCategories([...DEFAULT_TAG_CATEGORIES])
+        store.setCharacterProfiles([])
+        store.setCharacterRelationships([])
+        store.setScenes([])
+        store.setPageLayout({ ...DEFAULT_PAGE_LAYOUT })
+        lastSavedJsonRef.current = ''
+        if (window.location.pathname !== '/') {
+          navigate('/', { replace: true })
+        }
+      } finally {
+        scriptSwitchingRef.current = false
+      }
+    })
+    return () => {
+      setLogoutEditorReset(null)
+    }
+  }, [
+    editor,
+    currentProject,
+    currentScriptId,
+    isCloudScript,
+    buildSaveContent,
+    setCurrentProject,
+    setCurrentScriptId,
+    navigate,
+  ])
+  // Guard: suppress auto-save while switching scripts.  During the switch the
+  // store metadata is cleared (0 relationships, 0 profiles, etc.) but the
+  // auto-save closure still holds the OLD project/script IDs.  Without this
+  // guard the auto-save would overwrite the old script with empty metadata.
+  const scriptSwitchingRef = useRef(false)
+  const isCollabGuest = collabMode && !isCollabHost
+
+  // Subscribed (not getState) so a rename is reflected in the next snapshot's
+  // filename without waiting for an unrelated re-render.
+  const backupDocumentTitle = useEditorStore((s) => s.documentTitle)
+
+  // Timed snapshots to the user's backup folder. Separate from the auto-save
+  // below — different cadence, and it also covers documents that were never
+  // saved to the library. No-ops unless enabled on desktop.
+  useBackupScheduler({
+    buildSaveContent,
+    documentTitle: backupDocumentTitle,
+    projectId: currentProject?.id ?? null,
+    scriptId: currentScriptId,
+    projectTitle: currentProject?.name,
+    scriptSwitchingRef,
+    isCollabGuest,
+    isHistoryMode,
+  })
+
+  useEffect(() => {
+    if (!editor || !currentProject || !currentScriptId || isCollabGuest) return
+    const { setSaveStatus } = useEditorStore.getState()
+    const timer = setInterval(() => {
+      if (scriptSwitchingRef.current) return
+      const content = buildSaveContent()
+      if (!content) return
+      // Data-loss guard: never let an empty/just-reset editor body overwrite a
+      // script that has real content saved (the blank-document bug).
+      if (!docHasAnyText(content) && lastSavedNonEmptyRef.current) {
+        console.warn(
+          'Auto-save skipped: editor body is empty but saved content is not (likely editor reset).',
+        )
+        return
+      }
+      const json = JSON.stringify(content)
+      if (json !== lastSavedJsonRef.current) {
+        lastSavedJsonRef.current = json
+        lastSavedNonEmptyRef.current = docHasAnyText(content)
+        setSaveStatus('saving')
+        scriptApi
+          .saveScript(currentProject.id, currentScriptId, { content })
+          .then(() => {
+            setSaveStatus('saved')
+          })
+          .catch((err) => {
+            console.error('Auto-save failed:', err)
+            const msg = err instanceof Error ? err.message : String(err)
+            setSaveStatus('error', msg)
+            // AuthGate / QuotaExceededDialog already showed a dialog for handled
+            // errors (401/402/403); reportSaveError skips them.  All other
+            // failures get a blocking modal the user must acknowledge.
+            reportSaveError(err, 'auto-save')
+          })
+      }
+    }, 30000)
+    return () => clearInterval(timer)
+  }, [editor, currentProject, currentScriptId, buildSaveContent, isCollabGuest])
+
+  // --- Track unsaved changes for status bar ---
+  useEffect(() => {
+    if (!editor || !currentProject || !currentScriptId || isCollabGuest) return
+    const markUnsaved = () => {
+      const { saveStatus } = useEditorStore.getState()
+      // Only mark unsaved if we're in idle or saved state (not during saving or error)
+      if (saveStatus === 'idle' || saveStatus === 'saved') {
+        useEditorStore.getState().setSaveStatus('unsaved')
+      }
+    }
+    editor.on('update', markUnsaved)
+    return () => {
+      editor.off('update', markUnsaved)
+    }
+  }, [editor, currentProject, currentScriptId, isCollabGuest])
+
+  // --- Flush metadata-only changes to backend ---
+  // Store metadata (profiles, relationships, notes, etc.) can change without an
+  // editor document update.  The 30s auto-save would eventually persist them, but
+  // users expect "Save" to mean "saved" — a refresh within 30s would lose data.
+  // This effect watches key metadata fields and triggers a debounced save (2s).
+  useEffect(() => {
+    if (!editor || !currentProject || !currentScriptId || isCollabGuest) return
+    const pid = currentProject.id
+    const sid = currentScriptId
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    const unsub = useEditorStore.subscribe((state, prev) => {
+      // Only react to metadata field changes
+      if (
+        state.characterRelationships === prev.characterRelationships &&
+        state.characterProfiles === prev.characterProfiles &&
+        state.notes === prev.notes &&
+        state.generalNotes === prev.generalNotes &&
+        state.tags === prev.tags &&
+        state.beats === prev.beats &&
+        state.beatColumns === prev.beatColumns &&
+        state.spellCheckEnabled === prev.spellCheckEnabled &&
+        state.grammarCheckEnabled === prev.grammarCheckEnabled
+      )
+        return
+      if (scriptSwitchingRef.current) return
+      // Mark unsaved immediately
+      const { saveStatus, setSaveStatus } = useEditorStore.getState()
+      if (saveStatus === 'idle' || saveStatus === 'saved')
+        setSaveStatus('unsaved')
+      // Debounce the actual save (2s)
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        if (scriptSwitchingRef.current) return
+        const content = buildSaveContent()
+        if (!content) return
+        // Data-loss guard (see auto-save): don't overwrite real content with an
+        // empty/just-reset editor body.
+        if (!docHasAnyText(content) && lastSavedNonEmptyRef.current) {
+          console.warn(
+            'Metadata-save skipped: editor body is empty but saved content is not.',
+          )
+          return
+        }
+        const json = JSON.stringify(content)
+        if (json !== lastSavedJsonRef.current) {
+          lastSavedJsonRef.current = json
+          lastSavedNonEmptyRef.current = docHasAnyText(content)
+          useEditorStore.getState().setSaveStatus('saving')
+          scriptApi
+            .saveScript(pid, sid, { content })
+            .then(() => {
+              useEditorStore.getState().setSaveStatus('saved')
+            })
+            .catch((err) => {
+              console.error('Metadata save failed:', err)
+              const msg = err instanceof Error ? err.message : String(err)
+              useEditorStore.getState().setSaveStatus('error', msg)
+              reportSaveError(err, 'metadata-save')
+            })
+        }
+      }, 2000)
+    })
+
+    return () => {
+      unsub()
+      if (timer) clearTimeout(timer)
+    }
+  }, [editor, currentProject, currentScriptId, buildSaveContent, isCollabGuest])
+
+  // --- Persist project dictionary words when they change ---
+  // Words live on the Project entity (shared by every script in the project).
+  // Subscribe to spell-checker changes and write the new list back to the
+  // project via projectApi, debounced. Skipped for collab guests.
+  useEffect(() => {
+    if (!currentProject || isCollabGuest) return
+    const pid = currentProject.id
+    let timer: ReturnType<typeof setTimeout> | null = null
+    // Baseline: whatever the project currently believes its words are.
+    let lastSavedKey = JSON.stringify(
+      [
+        ...((currentProject.properties?.dictionary_words ?? []) as string[]),
+      ].sort(),
+    )
+    const unsub = spellChecker.onChange(() => {
+      const words = spellChecker.getProjectWords()
+      const key = JSON.stringify(words)
+      if (key === lastSavedKey) return
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(async () => {
+        try {
+          const proj = useProjectStore.getState().currentProject
+          if (!proj || proj.id !== pid) return
+          const updated = await projectApi.updateProject(pid, {
+            properties: { ...proj.properties, dictionary_words: words } as any,
+          })
+          setCurrentProject(updated)
+          lastSavedKey = key
+        } catch (err) {
+          console.warn('Failed to persist project dictionary words', err)
+        }
+      }, 800)
+    })
+    return () => {
+      unsub()
+      if (timer) clearTimeout(timer)
+    }
+  }, [currentProject, isCollabGuest, setCurrentProject])
+
+  // --- Save on page unload (refresh / close) ---
+  // Two strategies depending on platform:
+  //   1. Tauri desktop / mobile — register a `onCloseRequested` handler that
+  //      preventDefault()s the close, awaits the SQLite save, and only then
+  //      closes the window.  Plain `beforeunload` is unreliable on WebView2
+  //      (Windows): the renderer is torn down before the async IPC save
+  //      completes, so the last unsaved edits are silently lost.
+  //   2. Web — `beforeunload` is the only hook available.  We fire the save
+  //      and, if there are unsaved changes, also set returnValue so the
+  //      browser shows its standard "Leave this page?" prompt.  That gives
+  //      the in-flight save a few extra milliseconds before the tab dies.
+  //
+  // NOTE: We intentionally do NOT save on component unmount because the
+  // editor may already be destroyed at that point, and editor.getJSON()
+  // would return an empty doc, overwriting the saved file with blank content.
+  useEffect(() => {
+    if (!editor || !currentProject || !currentScriptId || isCollabGuest) return
+    const pid = currentProject.id
+    const sid = currentScriptId
+
+    const flushPendingSave = async (): Promise<void> => {
+      if (editor.isDestroyed) return
+      const content = buildSaveContent()
+      if (!content) return
+      const json = JSON.stringify(content)
+      if (json === lastSavedJsonRef.current) return
+      lastSavedJsonRef.current = json
+      try {
+        await scriptApi.saveScript(pid, sid, { content })
+      } catch (err) {
+        // Bubble through console — the close handler decides what to do
+        // about persistence failures (it falls back to confirm()).
+        console.error('Save-on-close failed:', err)
+        throw err
+      }
+    }
+
+    // ── Tauri path ────────────────────────────────────────────────────────
+    let unlistenCloseRequested: (() => void) | null = null
+    let cancelled = false
+
+    if (isTauri()) {
+      ;(async () => {
+        try {
+          const { getCurrentWebviewWindow } =
+            await import('@tauri-apps/api/webviewWindow')
+          const win = getCurrentWebviewWindow()
+          const unlisten = await win.onCloseRequested(async (event) => {
+            if (editor.isDestroyed) return
+            const content = buildSaveContent()
+            if (!content) return
+            const json = JSON.stringify(content)
+            if (json === lastSavedJsonRef.current) return
+            // We have unsaved edits.  Block the close, run the save, then
+            // close programmatically.  If the save fails, ask the user
+            // before discarding their work.
+            event.preventDefault()
+            try {
+              await flushPendingSave()
+              await win.destroy()
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err)
+              const proceed = window.confirm(
+                `Could not save your latest changes:\n\n${msg}\n\n` +
+                  'Close anyway and lose those changes?',
+              )
+              if (proceed) await win.destroy()
+            }
+          })
+          if (cancelled) unlisten()
+          else unlistenCloseRequested = unlisten
+        } catch (err) {
+          console.error('Failed to register onCloseRequested handler:', err)
+        }
+      })()
+    }
+
+    // ── Web path (and a defensive fallback for Tauri) ─────────────────────
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (editor.isDestroyed) return
+      const content = buildSaveContent()
+      if (!content) return
+      const json = JSON.stringify(content)
+      if (json === lastSavedJsonRef.current) return
+      lastSavedJsonRef.current = json
+      // Fire-and-forget save.  The browser will give the request a brief
+      // grace window before terminating the tab.  If the user cancels the
+      // unload (returnValue prompt below), they'll still be in the editor
+      // and need to know the save failed — so push it to the modal store.
+      scriptApi.saveScript(pid, sid, { content }).catch((err) => {
+        console.error('Save-on-unload failed:', err)
+        reportSaveError(err, 'save-on-close')
+      })
+      // Trigger the browser's native confirm prompt so the user gets a
+      // chance to abort the close while the save is still in flight.
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      cancelled = true
+      if (unlistenCloseRequested) unlistenCloseRequested()
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [editor, currentProject, currentScriptId, buildSaveContent, isCollabGuest])
+
+  // --- Keep the open document across route changes ---
+  // Going to Settings (or any other route) unmounts this component and destroys
+  // the editor, and only a script whose ids are in the URL is refetched below.
+  // Everything else — File → Open, an imported file, an unsaved draft — used to
+  // come back blank. TipTap schedules the destroy a tick after unmount, so the
+  // document is still readable from this cleanup.
+  useEffect(() => {
+    if (!editor || collabMode || isHistoryMode) return
+    return () => {
+      if (editor.isDestroyed) return
+      try {
+        const doc = editor.getJSON()
+        // A blank body is never worth restoring, and stashing one could put an
+        // empty document back over a real one.
+        if (!docHasAnyText(doc)) return
+        stashSessionDoc({
+          doc,
+          projectId: currentProject?.id ?? null,
+          scriptId: currentScriptId ?? null,
+        })
+      } catch (err) {
+        console.warn('Could not stash the open document:', err)
+      }
+    }
+  }, [editor, collabMode, isHistoryMode, currentProject, currentScriptId])
+
+  // Put it back on the way in. Skipped when the URL carries script ids — that
+  // load path owns the content and reads the saved version, which is newer than
+  // anything stashed.
+  //
+  // Strictly a mount-time action: the attempt is marked done as soon as the
+  // editor exists, whether or not anything was restored. Retrying later would
+  // mean a stash left over from an earlier document could land on top of a
+  // script that has since been loaded from the library.
+  const sessionRestoreDoneRef = useRef(false)
+  useEffect(() => {
+    if (!editor || collabMode || isHistoryMode) return
+    if (sessionRestoreDoneRef.current) return
+    sessionRestoreDoneRef.current = true
+    if (urlScriptId || urlCommitHash) return
+
+    const doc = takeSessionDoc(
+      currentProject?.id ?? null,
+      currentScriptId ?? null,
+    )
+    if (!doc) return
+    try {
+      editor.commands.setContent(doc as Record<string, unknown>, false)
+      clearEditorHistory(editor)
+      setShowWelcome(false)
+      updateScenes()
+    } catch (err) {
+      console.error('Could not restore the open document:', err)
+      showToast('Could not restore the document you had open', 'error')
+    }
+  }, [
+    editor,
+    collabMode,
+    isHistoryMode,
+    urlScriptId,
+    urlCommitHash,
+    currentProject,
+    currentScriptId,
+    updateScenes,
+  ])
+
+  // --- Load script from URL params ---
+  // Reset the guard when the editor instance changes so we reload
+  // content if TipTap recreates the editor.
+  const loadedScriptRef = useRef<string | null>(null)
+  const [historyVersionLabel, setHistoryVersionLabel] = useState('')
+  useEffect(() => {
+    // Allow re-load for new editor instance, but NOT during collab —
+    // switchCollabDocument already handles content seeding via collabInitialContent.
+    // Resetting the guard during collab caused the normal load path to run and
+    // create duplicate setupCollab calls with different nonces.
+    if (editor && !collabMode) {
+      loadedScriptRef.current = null
+    }
+  }, [editor, collabMode])
+  // Reset load guard when a version is restored so the editor refetches the content
+  useEffect(() => {
+    if (scriptReloadKey > 0) {
+      loadedScriptRef.current = null
+    }
+  }, [scriptReloadKey])
+  useEffect(() => {
+    if (!editor || !urlProjectId || !urlScriptId) return
+    const loadKey = `${urlProjectId}/${urlScriptId}${urlCommitHash ? `@${urlCommitHash}` : ''}`
+    // Avoid reloading the same script
+    if (loadedScriptRef.current === loadKey) return
+
+    // Host switching documents during collab — redirect through switchCollabDocument
+    if (collabMode && isCollabHost && !isHistoryMode) {
+      const isNewScript = currentScriptId && currentScriptId !== urlScriptId
+      if (isNewScript) {
+        loadedScriptRef.current = loadKey
+        switchCollabDocument(urlProjectId, urlScriptId)
+        return
+      }
+    }
+
+    // Capture the previous load key BEFORE overwriting it. A null value here
+    // means this is the first load in this mount — there is nothing to flush
+    // (the editor only holds its default empty content, which would overwrite
+    // the stored script if saved).
+    const prevLoadKey = loadedScriptRef.current
+    loadedScriptRef.current = loadKey
+    clearTrackChanges()
+    scriptSwitchingRef.current = true
+    ;(async () => {
+      try {
+        // Flush unsaved changes to the CURRENT script before switching so
+        // metadata (character profiles, relationships, etc.) is not lost.
+        // Only do this if we actually loaded a prior script in this mount —
+        // otherwise the "pending" content is just the editor's default empty
+        // state and would clobber a stored screenplay.
+        if (prevLoadKey && currentProject && currentScriptId) {
+          const pendingContent = buildSaveContent()
+          if (pendingContent) {
+            const pendingJson = JSON.stringify(pendingContent)
+            if (pendingJson !== lastSavedJsonRef.current) {
+              lastSavedJsonRef.current = pendingJson
+              try {
+                await scriptApi.saveScript(currentProject.id, currentScriptId, {
+                  content: pendingContent,
+                })
+              } catch {}
+            }
+          }
+        }
+
+        const project = await projectApi.getProject(urlProjectId)
+        setCurrentProject(project)
+        setCurrentScriptId(isHistoryMode ? null : urlScriptId)
+        // Loading a project-backed script means we're no longer editing an
+        // imported standalone file — drop the source-file notice.
+        useEditorStore.getState().setImportedSource(null)
+
+        let scriptResp
+        if (isHistoryMode && urlCommitHash) {
+          scriptResp = await api.getScriptAtVersion(
+            urlProjectId,
+            urlCommitHash,
+            urlScriptId,
+          )
+          setHistoryVersionLabel(urlCommitHash.slice(0, 7))
+        } else {
+          scriptResp = await scriptApi.getScript(urlProjectId, urlScriptId)
+        }
+        const content = scriptResp.content as Record<string, unknown> | null
+
+        // Strip app metadata keys before feeding to ProseMirror
+        let pmDoc: Record<string, unknown> | null = null
+        if (
+          content &&
+          typeof content === 'object' &&
+          'type' in content &&
+          content.type === 'doc'
+        ) {
+          const {
+            _notes,
+            _generalNotes: _gn,
+            _tags,
+            _tagCategories,
+            _characterProfiles,
+            _characterRelationships,
+            _beats,
+            _beatColumns,
+            _beatArrangeMode,
+            _templateId: _tpl,
+            _ignoredWords: _iw,
+            _ignoredOnce: _io,
+            _customDictWords: _cdw,
+            _enabledGlobalDicts: _egd,
+            _projectDictEnabled: _pde,
+            _enabledLanguages: _elx,
+            _ignoredGrammarRules: _igr,
+            _ignoredGrammarOnce: _igo,
+            _spellCheckEnabled: _sce,
+            _grammarCheckEnabled: _gce,
+            _sceneNumbersVisible: _snv,
+            _sceneNumbersLocked: _snl,
+            _pageLayout: _pl,
+            ...rest
+          } = content as any
+          pmDoc = rest
+        }
+
+        try {
+          if (
+            pmDoc &&
+            Array.isArray(pmDoc.content) &&
+            pmDoc.content.length > 0
+          ) {
+            editor.commands.setContent(pmDoc)
+          } else if (
+            content &&
+            typeof content === 'object' &&
+            Object.keys(content).length > 0
+          ) {
+            editor.commands.setContent(content)
+          } else {
+            editor.commands.setContent({
+              type: 'doc',
+              content: [{ type: 'action', content: [] }],
+            })
+          }
+        } catch (setErr) {
+          console.error('setContent failed:', setErr)
+          showToast(
+            `Failed to render content: ${setErr instanceof Error ? setErr.message : String(setErr)}`,
+            'error',
+          )
+          editor.commands.setContent({
+            type: 'doc',
+            content: [{ type: 'action', content: [] }],
+          })
+        }
+        clearEditorHistory(editor)
+
+        // Record whether this script holds real content, so a later editor reset
+        // to an empty body cannot silently overwrite it (data-loss guard).
+        lastSavedNonEmptyRef.current = docHasAnyText(pmDoc ?? content)
+
+        // Restore metadata from top-level content keys (skip in history mode)
+        if (!isHistoryMode) {
+          const store = useEditorStore.getState()
+          // Clear per-screenplay metadata so we don't carry over from a previously opened screenplay
+          store.setCharacterProfiles([])
+          store.setCharacterRelationships([])
+          store.setNotes([])
+          store.setGeneralNotes([])
+          store.setTags([])
+          store.setTagCategories([...DEFAULT_TAG_CATEGORIES])
+          store.setBeats([])
+          store.setBeatColumns([])
+          store.setPageLayout({ ...DEFAULT_PAGE_LAYOUT })
+          const parseAttr = (val: unknown): unknown[] => {
+            if (typeof val === 'string') {
+              try {
+                const p = JSON.parse(val)
+                return Array.isArray(p) ? p : []
+              } catch {
+                return []
+              }
+            }
+            if (Array.isArray(val)) return val
+            return []
+          }
+          if (content) {
+            const c = content as Record<string, unknown>
+            const notes = parseAttr(c._notes)
+            if (notes.length > 0)
+              store.setNotes(notes as import('@/stores/editorStore').NoteInfo[])
+            const gNotes = parseAttr(c._generalNotes)
+            if (gNotes.length > 0)
+              store.setGeneralNotes(
+                gNotes as import('@/stores/editorStore').GeneralNote[],
+              )
+            const tagsArr = parseAttr(c._tags)
+            if (tagsArr.length > 0)
+              store.setTags(tagsArr as import('@/stores/editorStore').TagItem[])
+            const tagCats = parseAttr(c._tagCategories)
+            if (tagCats.length > 0)
+              store.setTagCategories(
+                tagCats as import('@/stores/editorStore').TagCategory[],
+              )
+            const profiles = parseAttr(c._characterProfiles)
+            if (profiles.length > 0) {
+              for (const prof of profiles as Record<string, unknown>[]) {
+                if (prof.name && typeof prof.name === 'string') {
+                  store.upsertCharacterProfile(prof.name, {
+                    description: (prof.description as string) || '',
+                    color: (prof.color as string) || '',
+                    highlighted: (prof.highlighted as boolean) || false,
+                    gender: (prof.gender as string) || '',
+                    age: (prof.age as string) || '',
+                    role: (prof.role as string) || '',
+                    backstory: (prof.backstory as string) || '',
+                    arc: (prof.arc as string) || '',
+                    speechPattern: (prof.speechPattern as string) || '',
+                    vocabulary: (prof.vocabulary as string) || '',
+                    verbalTics: (prof.verbalTics as string) || '',
+                    sampleDialogue: (prof.sampleDialogue as string) || '',
+                    images: Array.isArray(prof.images)
+                      ? (prof.images as string[])
+                      : [],
+                  })
+                }
+              }
+            }
+            const rels = parseAttr(c._characterRelationships)
+            if (rels.length > 0) {
+              store.setCharacterRelationships(
+                rels as import('@/stores/editorStore').CharacterRelationship[],
+              )
+            }
+            const beatsArr = parseAttr(c._beats)
+            store.setBeats(
+              beatsArr as import('@/stores/editorStore').BeatInfo[],
+            )
+            const beatColsArr = parseAttr(c._beatColumns)
+            store.setBeatColumns(
+              beatColsArr as import('@/stores/editorStore').BeatColumn[],
+            )
+            if (
+              c._beatArrangeMode === 'auto' ||
+              c._beatArrangeMode === 'custom'
+            ) {
+              store.setBeatArrangeMode(c._beatArrangeMode)
+            }
+            // Restore scene numbering state
+            if (typeof c._sceneNumbersVisible === 'boolean') {
+              store.setSceneNumbersVisible(c._sceneNumbersVisible)
+            }
+            if (typeof c._sceneNumbersLocked === 'boolean') {
+              store.setSceneNumbersLocked(c._sceneNumbersLocked)
+            }
+            // Restore per-document formatting template
+            if (c._templateId && typeof c._templateId === 'string') {
+              useFormattingTemplateStore
+                .getState()
+                .setActiveTemplateId(c._templateId)
+            } else {
+              useFormattingTemplateStore.getState().setActiveTemplateId(null)
+            }
+            // Restore per-document ignored words for spell check
+            const ignoredArr = parseAttr(c._ignoredWords)
+            spellChecker.setIgnoredWords(ignoredArr as string[])
+            const ignoredOnceArr = parseAttr(c._ignoredOnce)
+            spellChecker.setIgnoredOnce(ignoredOnceArr as string[])
+            // Project dictionary: words live on the Project entity. Merge with
+            // any legacy per-script `_customDictWords` so we don't lose words
+            // saved by older clients (the script copy is dropped on next save).
+            const scriptDictWords = (
+              parseAttr(c._customDictWords) as string[]
+            ).map((s) => String(s))
+            const projDictWords = (
+              (project.properties?.dictionary_words ?? []) as string[]
+            ).map((s) => String(s))
+            const mergedSet = new Set<string>()
+            for (const w of projDictWords)
+              if (typeof w === 'string') mergedSet.add(w.toLowerCase())
+            for (const w of scriptDictWords)
+              if (typeof w === 'string') mergedSet.add(w.toLowerCase())
+            const merged = [...mergedSet].sort()
+            spellChecker.setProjectWords(merged)
+            // If the script carried words the project didn't have, write the
+            // merged set back to the project so the migration sticks.
+            const needsMigration =
+              scriptDictWords.length > 0 &&
+              JSON.stringify(merged) !==
+                JSON.stringify([...projDictWords].sort())
+            if (needsMigration) {
+              try {
+                const updated = await projectApi.updateProject(project.id, {
+                  properties: {
+                    ...project.properties,
+                    dictionary_words: merged,
+                  } as any,
+                })
+                setCurrentProject(updated)
+              } catch (err) {
+                console.warn('Project dictionary migration save failed', err)
+              }
+            }
+            if (c._enabledGlobalDicts === undefined) {
+              // Legacy script (saved before this feature) — auto-enable "Personal"
+              // if it exists, so users who had the old global custom dictionary keep
+              // those words recognized.
+              const lib = useEditorStore.getState().customDictionaries
+              spellChecker.setEnabledGlobalDicts(
+                lib['Personal'] ? ['Personal'] : [],
+              )
+            } else {
+              const enabledGlobals = parseAttr(c._enabledGlobalDicts)
+              spellChecker.setEnabledGlobalDicts(enabledGlobals as string[])
+            }
+            // Per-script project-dictionary toggle. Default to enabled (back-compat).
+            spellChecker.setProjectDictionaryEnabled(
+              typeof c._projectDictEnabled === 'boolean'
+                ? c._projectDictEnabled
+                : true,
+            )
+            // Per-script enabled-languages. Default to built-in only.
+            const langs = parseAttr(c._enabledLanguages)
+            spellChecker.setEnabledLanguages(
+              langs.length > 0 ? (langs as string[]) : [BUILTIN_LANGUAGE],
+            )
+            // Restore per-document ignored grammar rules / occurrences
+            const grammarRules = parseAttr(c._ignoredGrammarRules)
+            grammarIgnore.setIgnoredRules(grammarRules as string[])
+            const grammarOnce = parseAttr(c._ignoredGrammarOnce)
+            grammarIgnore.setIgnoredOnce(grammarOnce as string[])
+            // Restore per-document spell/grammar check toggles (default off)
+            store.setSpellCheckEnabled(c._spellCheckEnabled === true)
+            store.setGrammarCheckEnabled(c._grammarCheckEnabled === true)
+            // Restore per-document page layout (header/footer, margins)
+            if (c._pageLayout && typeof c._pageLayout === 'object') {
+              store.setPageLayout({
+                ...DEFAULT_PAGE_LAYOUT,
+                ...(c._pageLayout as Record<string, unknown>),
+              })
+            }
+          }
+        }
+
+        setDocumentTitle(scriptResp.meta.title)
+        useEditorStore.getState().setSaveStatus('idle')
+        lastSavedJsonRef.current = ''
+        requestAnimationFrame(() => updateScenes())
+        // Snapshot the script we just opened; see handleOpenFile. History mode
+        // is read-only and must never write a backup of an old version.
+        if (!isHistoryMode) useBackupStatusStore.getState().noteDocumentOpened()
+      } catch (err) {
+        console.error('Failed to load script:', err)
+        const errMsg = err instanceof Error ? err.message : String(err)
+        // If the script doesn't exist (404), redirect to the project view
+        if (errMsg.includes('404') && urlProjectId) {
+          showToast(
+            'Script not found. It may have been removed by a version restore.',
+            'error',
+          )
+          navigate(`/project/${urlProjectId}`, { replace: true })
+        } else {
+          showToast(`Failed to load script: ${errMsg}`, 'error')
+        }
+      } finally {
+        scriptSwitchingRef.current = false
+      }
+    })()
+  }, [
+    editor,
+    urlProjectId,
+    urlScriptId,
+    urlCommitHash,
+    isHistoryMode,
+    collabMode,
+    collabUserName,
+    currentScriptId,
+    switchCollabDocument,
+    setCurrentProject,
+    setCurrentScriptId,
+    setDocumentTitle,
+    updateScenes,
+    scriptReloadKey,
+    navigate,
+    buildSaveContent,
+  ])
+
+  // --- Sync orphaned marks: runs ONCE after editor is ready, not on every doc change ---
+  const orphanSyncDone = useRef(false)
+  useEffect(() => {
+    if (!editor || orphanSyncDone.current) return
+    const timer = setTimeout(() => {
+      orphanSyncDone.current = true
+      const store = useEditorStore.getState()
+      const noteMarkType = editor.schema.marks.scriptNote
+      const tagMarkType = editor.schema.marks.productionTag
+      const noteIds = new Set(store.notes.map((n) => n.id))
+      const tagIds = new Set(store.tags.map((t) => t.id))
+      const orphanedNotes: {
+        noteId: string
+        text: string
+        elementType: string
+      }[] = []
+      const orphanedTags: {
+        tagId: string
+        categoryId: string
+        color: string
+        text: string
+        elementType: string
+      }[] = []
+
+      editor.state.doc.descendants((node) => {
+        if (!node.isText) return
+        for (const mark of node.marks) {
+          if (noteMarkType && mark.type === noteMarkType) {
+            const id = mark.attrs.noteId as string
+            if (id && !noteIds.has(id)) {
+              orphanedNotes.push({
+                noteId: id,
+                text: node.textContent.slice(0, 80),
+                elementType: 'action',
+              })
+              noteIds.add(id)
+            }
+          }
+          if (tagMarkType && mark.type === tagMarkType) {
+            const id = mark.attrs.tagId as string
+            if (id && !tagIds.has(id)) {
+              orphanedTags.push({
+                tagId: id,
+                categoryId: (mark.attrs.categoryId as string) || 'props',
+                color: (mark.attrs.color as string) || '#9370DB',
+                text: node.textContent.slice(0, 80),
+                elementType: 'action',
+              })
+              tagIds.add(id)
+            }
+          }
+        }
+      })
+
+      if (orphanedNotes.length > 0) {
+        store.setNotes([
+          ...store.notes,
+          ...orphanedNotes.map((o) => ({
+            id: o.noteId,
+            content: '',
+            anchorText: o.text,
+            elementType: o.elementType,
+            contextLabel: '',
+            color: 'Yellow' as const,
+            createdAt: new Date().toISOString(),
+            sceneId: null,
+          })),
+        ])
+      }
+      if (orphanedTags.length > 0) {
+        store.setTags([
+          ...store.tags,
+          ...orphanedTags.map((o) => ({
+            id: o.tagId,
+            categoryId: o.categoryId,
+            name: o.text,
+            text: o.text,
+            notes: '',
+            sceneId: null,
+            elementType: o.elementType,
+            createdAt: new Date().toISOString(),
+          })),
+        ])
+      }
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [editor])
+
+  // --- Scroll → current page tracking ---
+  // ov.top is in the page's unscaled coordinate system; pageRect/containerRect
+  // are in viewport (scaled) space, so ov.top must be multiplied by the zoom
+  // scale before mixing with rect deltas.
+  const handleScroll = useCallback(() => {
+    if (!editorMainRef.current || !pageRef.current) return
+    const containerTop = editorMainRef.current.getBoundingClientRect().top
+    const pageTop = pageRef.current.getBoundingClientRect().top
+    const scale = (zoomLevelRef.current || 100) / 100
+    let page = 1
+    for (const ov of overlays) {
+      if (pageTop + ov.top * scale - containerTop < 50) page = ov.pageNumber
+    }
+    setCurrentPage(page)
+  }, [overlays, setCurrentPage])
+
+  useEffect(() => {
+    const el = editorMainRef.current
+    if (!el) return
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
+
+  // --- Go to page ---
+  // Jump instantly: smooth-scrolling thousands of pixels on a long screenplay
+  // takes seconds. ov.top is unscaled, so multiply by zoom scale to land on
+  // the correct page when zoom != 100%. ov.top sits at the top of the page
+  // separator block (previous page's bottom margin + gap + new page's top
+  // margin). Skip past the previous-page bottom margin and the 40px visual
+  // gap so the new page (with its header line at the top) lands flush with
+  // the viewport top — not flush with the start of the body content, which
+  // would hide the page header and look like we'd overshot.
+  const handleGoToPage = useCallback(
+    (page: number) => {
+      if (!editorMainRef.current || !pageRef.current) return
+      if (page <= 1) {
+        editorMainRef.current.scrollTo({ top: 0, behavior: 'auto' })
+        return
+      }
+      const ov = overlays.find((o) => o.pageNumber === page)
+      if (ov) {
+        const pageRect = pageRef.current.getBoundingClientRect()
+        const containerRect = editorMainRef.current.getBoundingClientRect()
+        const scale = (zoomLevelRef.current || 100) / 100
+        const layout = pageLayoutRef.current
+        const bottomMarginPx = (layout.bottomMargin / 72) * 96
+        const pageTopOffset = ov.top + bottomMarginPx + 40 // 40 = page-sep-gap
+        const scrollTo =
+          editorMainRef.current.scrollTop +
+          (pageRect.top + pageTopOffset * scale - containerRect.top)
+        editorMainRef.current.scrollTo({ top: scrollTo, behavior: 'auto' })
+      }
+    },
+    [overlays],
+  )
+
+  // Wire up the picker trigger
+  showPickerRef.current = useCallback(
+    (defaultType: ElementType, availableTypes?: ElementType[]) => {
+      if (!editor) return
+      // Use requestAnimationFrame so the DOM has settled after the split
+      requestAnimationFrame(() => {
+        if (!editor.view) return
+        const { from } = editor.state.selection
+        const coords = editor.view.coordsAtPos(from)
+        setPickerState({
+          visible: true,
+          position: { top: coords.bottom + 4, left: coords.left },
+          defaultType,
+          availableTypes,
+        })
+      })
+    },
+    [editor],
+  )
+
+  // Bridge: let the AvKeymap extension surface the same element picker, but
+  // restricted to the cell-valid types (avPara/avShot/avDirection).
+  React.useEffect(() => {
+    registerAvCellPicker((defaultType, types) => {
+      showPickerRef.current(
+        defaultType as ElementType,
+        types as readonly ElementType[] as ElementType[],
+      )
+    })
+    return () => registerAvCellPicker(null)
+  }, [])
+
+  const handlePickerSelect = useCallback(
+    (type: ElementType) => {
+      if (!editor) return
+      // setNode works for any real schema node (built-in screenplay elements as
+      // well as the AV inner types avPara/avShot/avDirection). Custom-id elements
+      // declared only in template rules go through the customElement wrapper.
+      if (editor.schema.nodes[type]) {
+        editor.chain().focus().setNode(type).run()
+      } else {
+        const tpl = useFormattingTemplateStore.getState().getActiveTemplate()
+        const rule = tpl.rules[type]
+        if (rule) {
+          editor
+            .chain()
+            .focus()
+            .setNode('customElement', {
+              customTypeId: type,
+              customLabel: rule.label,
+            })
+            .run()
+        }
+      }
+      setPickerState((s) => ({ ...s, visible: false }))
+    },
+    [editor],
+  )
+
+  const handlePickerDismiss = useCallback(() => {
+    setPickerState((s) => ({ ...s, visible: false }))
+    // Re-focus editor
+    editor?.commands.focus()
+  }, [editor])
+
+  const handleOpenFile = useCallback(
+    async (
+      projectId: string,
+      project: import('@/services/api').ProjectInfo,
+      scriptId: string,
+      scriptTitle: string,
+      source: OpenSource = 'local',
+    ) => {
+      if (!editor) {
+        console.error('Editor not available')
+        return
+      }
+      setOpenFileOpen(false)
+      // Cloud files must be tagged before the load so scriptApi routes reads
+      // and subsequent saves to cloudApi rather than the local SQLite.
+      if (source === 'cloud') markCloudScript(projectId, scriptId)
+
+      // Host switching documents during collab
+      if (collabMode && isCollabHost) {
+        await switchCollabDocument(projectId, scriptId)
+        return
+      }
+
+      clearTrackChanges()
+      scriptSwitchingRef.current = true
+      try {
+        // Flush unsaved changes to the CURRENT script before switching
+        if (currentProject && currentScriptId) {
+          const pendingContent = buildSaveContent()
+          if (pendingContent) {
+            const pendingJson = JSON.stringify(pendingContent)
+            if (pendingJson !== lastSavedJsonRef.current) {
+              lastSavedJsonRef.current = pendingJson
+              try {
+                await scriptApi.saveScript(currentProject.id, currentScriptId, {
+                  content: pendingContent,
+                })
+              } catch {}
+            }
+          }
+        }
+
+        const scriptResp = await scriptApi.getScript(projectId, scriptId)
+        const content = scriptResp.content as Record<string, unknown> | null
+
+        // Switch the project context first so the dictionary-words save effect
+        // sees the new project before any spellChecker.setProjectWords() fires.
+        setCurrentProject(project)
+        setCurrentScriptId(scriptId)
+        // Opening a project script clears any prior "imported file" notice.
+        useEditorStore.getState().setImportedSource(null)
+
+        try {
+          if (
+            content &&
+            typeof content === 'object' &&
+            'type' in content &&
+            content.type === 'doc'
+          ) {
+            const {
+              _notes,
+              _generalNotes: _gn2,
+              _tags,
+              _tagCategories,
+              _characterProfiles,
+              _characterRelationships,
+              _beats,
+              _beatColumns,
+              _beatArrangeMode: _bam,
+              _templateId: _tpl2,
+              _ignoredWords: _iw2,
+              _ignoredOnce: _io2,
+              _customDictWords: _cdw2,
+              _enabledGlobalDicts: _egd2,
+              _projectDictEnabled: _pde2,
+              _enabledLanguages: _elx2,
+              _ignoredGrammarRules: _igr2,
+              _ignoredGrammarOnce: _igo2,
+              _spellCheckEnabled: _sce2,
+              _grammarCheckEnabled: _gce2,
+              _sceneNumbersVisible: _snv2,
+              _sceneNumbersLocked: _snl2,
+              _pageLayout: _pl2,
+              ...pmDoc
+            } = content as any
+            editor.commands.setContent(pmDoc)
+          } else if (
+            content &&
+            typeof content === 'object' &&
+            Object.keys(content).length > 0
+          ) {
+            editor.commands.setContent(content)
+          } else {
+            editor.commands.setContent({
+              type: 'doc',
+              content: [{ type: 'action', content: [] }],
+            })
+          }
+        } catch (setErr) {
+          console.error('setContent failed, using blank doc:', setErr)
+          showToast(
+            `Failed to render content: ${setErr instanceof Error ? setErr.message : String(setErr)}`,
+            'error',
+          )
+          editor.commands.setContent({
+            type: 'doc',
+            content: [{ type: 'action', content: [] }],
+          })
+        }
+        clearEditorHistory(editor)
+
+        // Restore metadata from top-level content keys
+        const store = useEditorStore.getState()
+        // Clear all per-file metadata first
+        store.setCharacterProfiles([])
+        store.setCharacterRelationships([])
+        store.setNotes([])
+        store.setGeneralNotes([])
+        store.setTags([])
+        store.setTagCategories([...DEFAULT_TAG_CATEGORIES])
+        store.setBeats([])
+        store.setBeatColumns([])
+        store.setPageLayout({ ...DEFAULT_PAGE_LAYOUT })
+        // Default per-doc spell/grammar to off; the block below overrides
+        // from the loaded content if the user had enabled them previously.
+        store.setSpellCheckEnabled(false)
+        store.setGrammarCheckEnabled(false)
+        const parseAttr2 = (val: unknown): unknown[] => {
+          if (typeof val === 'string') {
+            try {
+              const p = JSON.parse(val)
+              return Array.isArray(p) ? p : []
+            } catch {
+              return []
+            }
+          }
+          if (Array.isArray(val)) return val
+          return []
+        }
+        if (content) {
+          const c = content as Record<string, unknown>
+          const notes2 = parseAttr2(c._notes)
+          if (notes2.length > 0)
+            store.setNotes(notes2 as import('@/stores/editorStore').NoteInfo[])
+          const gNotes2 = parseAttr2(c._generalNotes)
+          if (gNotes2.length > 0)
+            store.setGeneralNotes(
+              gNotes2 as import('@/stores/editorStore').GeneralNote[],
+            )
+          const tags2 = parseAttr2(c._tags)
+          if (tags2.length > 0)
+            store.setTags(tags2 as import('@/stores/editorStore').TagItem[])
+          const tagCats2 = parseAttr2(c._tagCategories)
+          if (tagCats2.length > 0)
+            store.setTagCategories(
+              tagCats2 as import('@/stores/editorStore').TagCategory[],
+            )
+          const profiles2 = parseAttr2(c._characterProfiles)
+          if (profiles2.length > 0) {
+            for (const prof of profiles2 as Record<string, unknown>[]) {
+              if (prof.name && typeof prof.name === 'string') {
+                store.upsertCharacterProfile(prof.name, {
+                  description: (prof.description as string) || '',
+                  color: (prof.color as string) || '',
+                  highlighted: (prof.highlighted as boolean) || false,
+                  gender: (prof.gender as string) || '',
+                  age: (prof.age as string) || '',
+                  role: (prof.role as string) || '',
+                  backstory: (prof.backstory as string) || '',
+                  arc: (prof.arc as string) || '',
+                  speechPattern: (prof.speechPattern as string) || '',
+                  vocabulary: (prof.vocabulary as string) || '',
+                  verbalTics: (prof.verbalTics as string) || '',
+                  sampleDialogue: (prof.sampleDialogue as string) || '',
+                  images: Array.isArray(prof.images)
+                    ? (prof.images as string[])
+                    : [],
+                })
+              }
+            }
+          }
+          const rels2 = parseAttr2(c._characterRelationships)
+          if (rels2.length > 0) {
+            store.setCharacterRelationships(
+              rels2 as import('@/stores/editorStore').CharacterRelationship[],
+            )
+          }
+          const beatsArr2 = parseAttr2(c._beats)
+          store.setBeats(beatsArr2 as import('@/stores/editorStore').BeatInfo[])
+          const beatCols2 = parseAttr2(c._beatColumns)
+          store.setBeatColumns(
+            beatCols2 as import('@/stores/editorStore').BeatColumn[],
+          )
+          // Restore per-document template
+          if (c._templateId && typeof c._templateId === 'string') {
+            useFormattingTemplateStore
+              .getState()
+              .setActiveTemplateId(c._templateId)
+          } else {
+            useFormattingTemplateStore.getState().setActiveTemplateId(null)
+          }
+          // Restore per-document page layout (header/footer, margins)
+          if (c._pageLayout && typeof c._pageLayout === 'object') {
+            store.setPageLayout({
+              ...DEFAULT_PAGE_LAYOUT,
+              ...(c._pageLayout as Record<string, unknown>),
+            })
+          }
+          // Restore per-document spell/grammar check toggles
+          store.setSpellCheckEnabled(c._spellCheckEnabled === true)
+          store.setGrammarCheckEnabled(c._grammarCheckEnabled === true)
+          // Per-script project-dictionary toggle (default on).
+          spellChecker.setProjectDictionaryEnabled(
+            typeof c._projectDictEnabled === 'boolean'
+              ? c._projectDictEnabled
+              : true,
+          )
+          // Per-script enabled-languages (default: built-in only).
+          const langs2 = parseAttr2(c._enabledLanguages)
+          spellChecker.setEnabledLanguages(
+            langs2.length > 0 ? (langs2 as string[]) : [BUILTIN_LANGUAGE],
+          )
+          // Enabled global dictionaries.
+          if (c._enabledGlobalDicts === undefined) {
+            const lib = useEditorStore.getState().customDictionaries
+            spellChecker.setEnabledGlobalDicts(
+              lib['Personal'] ? ['Personal'] : [],
+            )
+          } else {
+            const enabledGlobals2 = parseAttr2(c._enabledGlobalDicts)
+            spellChecker.setEnabledGlobalDicts(enabledGlobals2 as string[])
+          }
+          // Ignored-words / ignored-once carry per document.
+          spellChecker.setIgnoredWords(parseAttr2(c._ignoredWords) as string[])
+          spellChecker.setIgnoredOnce(parseAttr2(c._ignoredOnce) as string[])
+          // Project dictionary: project entity is source of truth; merge with
+          // legacy per-script `_customDictWords` for back-compat.
+          const scriptDict2 = (parseAttr2(c._customDictWords) as string[]).map(
+            String,
+          )
+          const projDict2 = (
+            (project.properties?.dictionary_words ?? []) as string[]
+          ).map(String)
+          const merged2 = new Set<string>()
+          for (const w of projDict2)
+            if (typeof w === 'string') merged2.add(w.toLowerCase())
+          for (const w of scriptDict2)
+            if (typeof w === 'string') merged2.add(w.toLowerCase())
+          const mergedArr2 = [...merged2].sort()
+          spellChecker.setProjectWords(mergedArr2)
+          const needsMigration2 =
+            scriptDict2.length > 0 &&
+            JSON.stringify(mergedArr2) !== JSON.stringify([...projDict2].sort())
+          if (needsMigration2) {
+            try {
+              const updated = await projectApi.updateProject(project.id, {
+                properties: {
+                  ...project.properties,
+                  dictionary_words: mergedArr2,
+                } as any,
+              })
+              setCurrentProject(updated)
+            } catch (err) {
+              console.warn(
+                'Project dictionary migration save failed (open-file path)',
+                err,
+              )
+            }
+          }
+        }
+        setDocumentTitle(scriptTitle)
+        requestAnimationFrame(() => updateScenes())
+        // Back the newly opened script up right away rather than leaving it
+        // unprotected until the next interval tick.
+        useBackupStatusStore.getState().noteDocumentOpened()
+      } catch (err) {
+        console.error('Failed to open script:', err)
+        showToast(
+          'Failed to open script. Make sure the backend server is running on port 8000.',
+          'error',
+        )
+      } finally {
+        scriptSwitchingRef.current = false
+      }
+    },
+    [
+      editor,
+      collabMode,
+      collabUserName,
+      switchCollabDocument,
+      setOpenFileOpen,
+      setCurrentProject,
+      setCurrentScriptId,
+      setDocumentTitle,
+      updateScenes,
+      currentProject,
+      currentScriptId,
+      buildSaveContent,
+      markCloudScript,
+    ],
+  )
+
+  const handleWelcomeChoice = useCallback(
+    async (choice: WelcomeChoice) => {
+      setShowWelcome(false)
+      localStorage.setItem('opendraft:welcomed', 'true')
+
+      if (choice === 'sample') {
+        editor?.commands.setContent(SAMPLE_CONTENT, true)
+        if (editor) clearEditorHistory(editor)
+      } else if (choice === 'import') {
+        if (!editor) return
+        const { openTextFile } = await import('@/utils/fileOps')
+        const result = await openTextFile([
+          { name: 'Screenplay', extensions: ['fountain', 'fdx', 'txt'] },
+        ])
+        if (!result) return
+
+        const { name, content: text } = result
+        const ext = name.split('.').pop()?.toLowerCase()
+        let doc
+        if (ext === 'fdx') {
+          const parsed = parseFDXFull(text)
+          doc = parsed.doc
+          if (parsed.pageLayout) {
+            useEditorStore.getState().setPageLayout({
+              ...useEditorStore.getState().pageLayout,
+              ...parsed.pageLayout,
+            })
+          }
+          if (parsed.beats.length > 0) {
+            const store = useEditorStore.getState()
+            store.setBeats(parsed.beats)
+            if (parsed.beatColumns.length > 0) {
+              store.setBeatColumns(parsed.beatColumns)
+            }
+          }
+          if (
+            parsed.castList.length > 0 ||
+            parsed.characterHighlighting.length > 0
+          ) {
+            const store = useEditorStore.getState()
+            const highlightMap = new Map(
+              parsed.characterHighlighting.map((h) => [
+                h.name.toUpperCase(),
+                h,
+              ]),
+            )
+            for (const member of parsed.castList) {
+              const hl = highlightMap.get(member.name.toUpperCase())
+              store.upsertCharacterProfile(member.name, {
+                description: member.description,
+                color: hl?.color || '',
+                highlighted: hl?.highlighted || false,
+              })
+              highlightMap.delete(member.name.toUpperCase())
+            }
+            for (const [, hl] of highlightMap) {
+              store.upsertCharacterProfile(hl.name, {
+                color: hl.color,
+                highlighted: hl.highlighted,
+              })
+            }
+          }
+        } else {
+          doc = parseFountain(text)
+        }
+        editor.commands.setContent(doc, true)
+        clearEditorHistory(editor)
+        const scriptTitle = name.replace(/\.\w+$/, '') || 'Untitled'
+        useEditorStore.getState().setDocumentTitle(scriptTitle)
+        const fmtLabel =
+          ext === 'fdx'
+            ? 'Final Draft (.fdx)'
+            : ext === 'fountain'
+              ? 'Fountain (.fountain)'
+              : ext
+                ? `.${ext}`
+                : 'imported file'
+        useEditorStore.getState().setImportedSource({ name, format: fmtLabel })
+      }
+      // 'blank' — editor already has empty content, nothing to do
+    },
+    [editor],
+  )
+
+  // ── File association: open files passed by the OS ──────────────────────
+  const handleExternalFile = useCallback(
+    async (filePath: string) => {
+      if (!editor) {
+        console.warn('[file-assoc] editor not ready, ignoring:', filePath)
+        showToast('Editor not ready — please try again', 'error')
+        return
+      }
+      console.log('[file-assoc] opening:', filePath)
+      try {
+        const { invoke } = await import('@tauri-apps/api/core')
+
+        let text: string
+        let filename: string
+
+        if (filePath.startsWith('content://')) {
+          // Android content URI — read via ContentResolver (JNI)
+          console.log('[file-assoc] reading content URI via JNI...')
+          const result = await invoke<{ content: string; filename: string }>(
+            'read_content_uri',
+            { uri: filePath },
+          )
+          text = result.content
+          filename = result.filename
+          if (!text && text !== '') {
+            throw new Error(
+              `ContentResolver returned empty content for ${filename}`,
+            )
+          }
+          console.log(
+            '[file-assoc] content URI read',
+            text.length,
+            'chars, filename:',
+            filename,
+          )
+        } else {
+          console.log('[file-assoc] reading file path via read_text_file...')
+          text = await invoke<string>('read_text_file', { path: filePath })
+          filename = filePath.replace(/^.*[\\/]/, '') || 'Untitled'
+          console.log('[file-assoc] read', text.length, 'chars from', filePath)
+        }
+
+        const ext = filename.split('.').pop()?.toLowerCase()
+        const title = filename.replace(/\.\w+$/, '')
+
+        let doc: any
+        if (ext === 'fdx') {
+          const parsed = parseFDXFull(text)
+          doc = parsed.doc
+          if (parsed.pageLayout) {
+            useEditorStore.getState().setPageLayout({
+              ...useEditorStore.getState().pageLayout,
+              ...parsed.pageLayout,
+            })
+          }
+          if (parsed.beats.length > 0) {
+            const store = useEditorStore.getState()
+            store.setBeats(parsed.beats)
+            if (parsed.beatColumns.length > 0)
+              store.setBeatColumns(parsed.beatColumns)
+          }
+          if (
+            parsed.castList.length > 0 ||
+            parsed.characterHighlighting.length > 0
+          ) {
+            const store = useEditorStore.getState()
+            const highlightMap = new Map(
+              parsed.characterHighlighting.map((h) => [
+                h.name.toUpperCase(),
+                h,
+              ]),
+            )
+            for (const member of parsed.castList) {
+              const hl = highlightMap.get(member.name.toUpperCase())
+              store.upsertCharacterProfile(member.name, {
+                description: member.description,
+                color: hl?.color || '',
+                highlighted: hl?.highlighted || false,
+              })
+              highlightMap.delete(member.name.toUpperCase())
+            }
+            for (const [, hl] of highlightMap) {
+              store.upsertCharacterProfile(hl.name, {
+                color: hl.color,
+                highlighted: hl.highlighted,
+              })
+            }
+          }
+        } else if (ext === 'odraft') {
+          const parsed = parseOdraft(text)
+          doc = parsed.content
+          // Bring back notes, tags, beats, character profiles and layout. Without
+          // this an imported .odraft — including a restored backup — came back as
+          // bare text with all of that silently dropped.
+          hydrateEditorStoresFromContent(parsed.content)
+          if (parsed.meta.title) {
+            setDocumentTitle(parsed.meta.title)
+            setShowWelcome(false)
+            setCurrentProject(null)
+            setCurrentScriptId(null)
+            editor.commands.setContent(doc, true)
+            clearEditorHistory(editor)
+            return
+          }
+        } else {
+          // .fountain, .txt — parse as Fountain
+          doc = parseFountain(text)
+        }
+
+        editor.commands.setContent(doc, true)
+        clearEditorHistory(editor)
+        setDocumentTitle(title)
+        setShowWelcome(false)
+        // Clear project context — this is a standalone opened file
+        setCurrentProject(null)
+        setCurrentScriptId(null)
+        // Mark as imported so Save As shows the "saved to OpenDraft library" notice.
+        const fmtLabel =
+          ext === 'fdx'
+            ? 'Final Draft (.fdx)'
+            : ext === 'fountain'
+              ? 'Fountain (.fountain)'
+              : ext === 'odraft'
+                ? 'OpenDraft (.odraft)'
+                : ext
+                  ? `.${ext}`
+                  : 'imported file'
+        useEditorStore
+          .getState()
+          .setImportedSource({ name: filename, format: fmtLabel })
+        // A file opened from disk has no library copy at all, so it is the one
+        // that most needs an immediate snapshot.
+        useBackupStatusStore.getState().noteDocumentOpened()
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : String(err)
+        console.error('Failed to open external file:', filePath, detail, err)
+        showToast(`Failed to open file: ${detail}`, 'error')
+      }
+    },
+    [editor, setDocumentTitle, setCurrentProject, setCurrentScriptId],
+  )
+
+  useEffect(() => {
+    if (!editor) return
+
+    let cancelled = false
+    let unlistenFn: (() => void) | null = null
+    let handledPath: string | null = null
+    let pollTimer: ReturnType<typeof setTimeout> | null = null
+    let invokeRef: ((cmd: string) => Promise<string | null>) | null = null
+
+    ;(async () => {
+      const { isTauri } = await import('@/services/platform')
+      if (!isTauri() || cancelled) return
+
+      const { invoke } = await import('@tauri-apps/api/core')
+      invokeRef = (cmd: string) => invoke<string | null>(cmd)
+
+      // Set up event listener FIRST to catch re-emitted events from Rust.
+      // Use window-scoped listener so emit_to(label) only reaches THIS window
+      // and doesn't replace content in other open windows.
+      try {
+        const { getCurrentWebviewWindow } =
+          await import('@tauri-apps/api/webviewWindow')
+        const currentWindow = getCurrentWebviewWindow()
+        const unlisten = await currentWindow.listen<string>(
+          'open-file',
+          (event) => {
+            if (!cancelled && event.payload !== handledPath) {
+              console.log('[file-assoc] open-file event:', event.payload)
+              handledPath = event.payload
+              handleExternalFile(event.payload)
+            }
+          },
+        )
+        if (cancelled) {
+          unlisten()
+        } else {
+          unlistenFn = unlisten
+        }
+      } catch (err) {
+        console.error('Failed to listen for open-file events:', err)
+      }
+
+      // Check for a file passed at launch — poll a few times because
+      // on cold start RunEvent::Opened may fire after the WebView loads
+      const pollPending = async (attempt: number) => {
+        if (cancelled || handledPath) return
+        try {
+          const pending = await invoke<string | null>('get_opened_file')
+          if (pending && !cancelled && pending !== handledPath) {
+            console.log(
+              `[file-assoc] pending file (attempt ${attempt}):`,
+              pending,
+            )
+            handledPath = pending
+            handleExternalFile(pending)
+            return
+          }
+        } catch (err) {
+          console.error('get_opened_file failed:', err)
+        }
+        // Retry up to 5 times over ~3 seconds for cold-start timing
+        if (attempt < 5 && !cancelled && !handledPath) {
+          pollTimer = setTimeout(() => pollPending(attempt + 1), 600)
+        }
+      }
+      pollPending(1)
+    })()
+
+    // On iOS/Android warm start, RunEvent::Opened fires in Rust but the
+    // Tauri JS event may not reach the listener reliably. When the app
+    // returns to foreground, re-check the pending file state.
+    const onVisibilityChange = async () => {
+      if (document.visibilityState !== 'visible' || cancelled || !invokeRef)
+        return
+      try {
+        // On Android, check for warm-start "Open with" intents first.
+        // onNewIntent() stores the URI in a companion-object field.
+        const { getOS } = await import('@/services/platform')
+        if (getOS() === 'android') {
+          try {
+            const newIntent = await invokeRef('android_check_new_intent')
+            if (newIntent && newIntent !== handledPath) {
+              console.log('[file-assoc] Android new intent:', newIntent)
+              handledPath = newIntent
+              handleExternalFile(newIntent)
+              return
+            }
+          } catch (err) {
+            console.error('[file-assoc] android_check_new_intent failed:', err)
+            showToast(
+              `Open with failed: ${err instanceof Error ? err.message : String(err)}`,
+              'error',
+            )
+          }
+        }
+        // Fallback: check pending file state (works on all platforms)
+        const pending = await invokeRef('get_opened_file')
+        if (pending && pending !== handledPath) {
+          console.log(
+            '[file-assoc] foreground check found pending file:',
+            pending,
+          )
+          handledPath = pending
+          handleExternalFile(pending)
+        }
+      } catch (err) {
+        console.error('[file-assoc] foreground check failed:', err)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      cancelled = true
+      unlistenFn?.()
+      if (pollTimer) clearTimeout(pollTimer)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [editor, handleExternalFile])
+
+  // ── Drag-and-drop file import ─────────────────────────────────────────
+  const IMPORTABLE_EXTENSIONS = ['fdx', 'fountain', 'odraft', 'txt']
+
+  const hasUnsavedChanges = useCallback((): boolean => {
+    if (!editor || !currentProject || !currentScriptId) return false
+    const content = buildSaveContent()
+    if (!content) return false
+    const json = JSON.stringify(content)
+    return json !== lastSavedJsonRef.current && lastSavedJsonRef.current !== ''
+  }, [editor, currentProject, currentScriptId, buildSaveContent])
+
+  const importDroppedFile = useCallback(
+    async (file: File) => {
+      if (!editor) return
+      try {
+        const text = await file.text()
+        const ext = file.name.split('.').pop()?.toLowerCase()
+        const title = file.name.replace(/\.\w+$/, '') || 'Untitled'
+
+        let doc: any
+        if (ext === 'fdx') {
+          const parsed = parseFDXFull(text)
+          doc = parsed.doc
+          if (parsed.pageLayout) {
+            useEditorStore.getState().setPageLayout({
+              ...useEditorStore.getState().pageLayout,
+              ...parsed.pageLayout,
+            })
+          }
+          if (parsed.beats.length > 0) {
+            const store = useEditorStore.getState()
+            store.setBeats(parsed.beats)
+            if (parsed.beatColumns.length > 0)
+              store.setBeatColumns(parsed.beatColumns)
+          }
+          if (
+            parsed.castList.length > 0 ||
+            parsed.characterHighlighting.length > 0
+          ) {
+            const store = useEditorStore.getState()
+            const highlightMap = new Map(
+              parsed.characterHighlighting.map((h) => [
+                h.name.toUpperCase(),
+                h,
+              ]),
+            )
+            for (const member of parsed.castList) {
+              const hl = highlightMap.get(member.name.toUpperCase())
+              store.upsertCharacterProfile(member.name, {
+                description: member.description,
+                color: hl?.color || '',
+                highlighted: hl?.highlighted || false,
+              })
+              highlightMap.delete(member.name.toUpperCase())
+            }
+            for (const [, hl] of highlightMap) {
+              store.upsertCharacterProfile(hl.name, {
+                color: hl.color,
+                highlighted: hl.highlighted,
+              })
+            }
+          }
+        } else if (ext === 'odraft') {
+          const parsed = parseOdraft(text)
+          doc = parsed.content
+          // Bring back notes, tags, beats, character profiles and layout. Without
+          // this an imported .odraft — including a restored backup — came back as
+          // bare text with all of that silently dropped.
+          hydrateEditorStoresFromContent(parsed.content)
+          if (parsed.meta.title) {
+            setDocumentTitle(parsed.meta.title)
+            setCurrentProject(null)
+            setCurrentScriptId(null)
+            editor.commands.setContent(doc, true)
+            clearEditorHistory(editor)
+            setShowWelcome(false)
+            return
+          }
+        } else {
+          doc = parseFountain(text)
+        }
+
+        editor.commands.setContent(doc, true)
+        clearEditorHistory(editor)
+        setDocumentTitle(title)
+        setCurrentProject(null)
+        setCurrentScriptId(null)
+        setShowWelcome(false)
+        const fmtLabel =
+          ext === 'fdx'
+            ? 'Final Draft (.fdx)'
+            : ext === 'fountain'
+              ? 'Fountain (.fountain)'
+              : ext === 'odraft'
+                ? 'OpenDraft (.odraft)'
+                : ext
+                  ? `.${ext}`
+                  : 'imported file'
+        useEditorStore
+          .getState()
+          .setImportedSource({ name: file.name, format: fmtLabel })
+        useBackupStatusStore.getState().noteDocumentOpened()
+      } catch (err) {
+        console.error('Failed to import dropped file:', err)
+        showToast(
+          `Failed to import file: ${err instanceof Error ? err.message : String(err)}`,
+          'error',
+        )
+      }
+    },
+    [editor, setDocumentTitle, setCurrentProject, setCurrentScriptId],
+  )
+
+  const handleEditorDragOver = useCallback((e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes('Files')) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    setDragOverEditor(true)
+  }, [])
+
+  const handleEditorDragLeave = useCallback((e: React.DragEvent) => {
+    // Only close if leaving the editor-main container itself
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return
+    setDragOverEditor(false)
+  }, [])
+
+  const handleEditorDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setDragOverEditor(false)
+
+      const file = e.dataTransfer.files[0]
+      if (!file) return
+
+      const ext = file.name.split('.').pop()?.toLowerCase()
+      if (!ext || !IMPORTABLE_EXTENSIONS.includes(ext)) {
+        showToast(
+          'Unsupported file type. Drop a .fdx, .fountain, .odraft, or .txt file.',
+          'error',
+        )
+        return
+      }
+
+      if (hasUnsavedChanges()) {
+        setPendingDropFile(file)
+        setDropConfirmOpen(true)
+      } else {
+        importDroppedFile(file)
+      }
+    },
+    [hasUnsavedChanges, importDroppedFile],
+  )
+
+  const handleDropConfirmSave = useCallback(async () => {
+    // Save current content first, then import
+    if (editor && currentProject && currentScriptId) {
+      const content = buildSaveContent()
+      if (content) {
+        try {
+          await scriptApi.saveScript(currentProject.id, currentScriptId, {
+            content,
+          })
+          lastSavedJsonRef.current = JSON.stringify(content)
+        } catch (err) {
+          if (!(err as any)?.handled) {
+            showToast(
+              `Save failed: ${err instanceof Error ? err.message : String(err)}`,
+              'error',
+            )
+          }
+        }
+      }
+    }
+    setDropConfirmOpen(false)
+    if (pendingDropFile) {
+      importDroppedFile(pendingDropFile)
+      setPendingDropFile(null)
+    }
+  }, [
+    editor,
+    currentProject,
+    currentScriptId,
+    buildSaveContent,
+    pendingDropFile,
+    importDroppedFile,
+  ])
+
+  const handleDropConfirmDiscard = useCallback(() => {
+    setDropConfirmOpen(false)
+    if (pendingDropFile) {
+      importDroppedFile(pendingDropFile)
+      setPendingDropFile(null)
+    }
+  }, [pendingDropFile, importDroppedFile])
+
+  const handleDropConfirmCancel = useCallback(() => {
+    setDropConfirmOpen(false)
+    setPendingDropFile(null)
+  }, [])
+
+  // ── Tauri native drag-and-drop handler ──
+  // On desktop Tauri, the webview intercepts OS file drops at the native level,
+  // so the browser's drop event may not include the actual files. We listen for
+  // Tauri's onDragDropEvent which provides file paths directly.
+  const pendingDropPathRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!editor) return
+    let cancelled = false
+    let unlistenFn: (() => void) | null = null
+
+    ;(async () => {
+      const { isTauri } = await import('@/services/platform')
+      if (!isTauri() || cancelled) return
+
+      try {
+        const { getCurrentWebview } = await import('@tauri-apps/api/webview')
+        const { invoke } = await import('@tauri-apps/api/core')
+        const webview = getCurrentWebview()
+
+        const unlisten = await webview.onDragDropEvent((event) => {
+          if (cancelled) return
+          const payload = event.payload
+
+          if (payload.type === 'enter' || payload.type === 'over') {
+            setDragOverEditor(true)
+          } else if (payload.type === 'leave') {
+            setDragOverEditor(false)
+          } else if (payload.type === 'drop') {
+            setDragOverEditor(false)
+            // If drop is over the asset manager, forward file paths for upload
+            const pos = payload.position
+            if (pos) {
+              const el = document.elementFromPoint(pos.x, pos.y)
+              if (el?.closest('.asset-manager')) {
+                const paths = payload.paths
+                if (paths && paths.length > 0) {
+                  window.dispatchEvent(
+                    new CustomEvent('tauri-asset-drop', { detail: { paths } }),
+                  )
+                }
+                return
+              }
+            }
+            const paths = payload.paths
+            if (!paths || paths.length === 0) return
+            const filePath = paths[0]
+            const ext = filePath.split('.').pop()?.toLowerCase()
+            if (!ext || !IMPORTABLE_EXTENSIONS.includes(ext)) {
+              showToast(
+                'Unsupported file type. Drop a .fdx, .fountain, .odraft, or .txt file.',
+                'error',
+              )
+              return
+            }
+
+            // Read the file using Tauri's read_text_file command and import it
+            const importTauriFile = async (path: string) => {
+              try {
+                const text = await invoke<string>('read_text_file', { path })
+                const filename = path.replace(/^.*[\\/]/, '') || 'Untitled'
+                const file = new File([text], filename, { type: 'text/plain' })
+
+                if (hasUnsavedChanges()) {
+                  pendingDropPathRef.current = path
+                  setPendingDropFile(file)
+                  setDropConfirmOpen(true)
+                } else {
+                  importDroppedFile(file)
+                }
+              } catch (err) {
+                console.error('Failed to read dropped file:', err)
+                showToast(
+                  `Failed to read file: ${err instanceof Error ? err.message : String(err)}`,
+                  'error',
+                )
+              }
+            }
+            importTauriFile(filePath)
+          }
+        })
+
+        if (cancelled) {
+          unlisten()
+        } else {
+          unlistenFn = unlisten
+        }
+      } catch (err) {
+        console.error('Failed to set up Tauri drag-drop listener:', err)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+      unlistenFn?.()
+    }
+  }, [editor, hasUnsavedChanges, importDroppedFile])
+
+  const handleSaveAsComplete = useCallback(
+    async (
+      projectId: string,
+      _projectName: string,
+      scriptId: string,
+      scriptTitle: string,
+      destination: 'local' | 'cloud',
+    ) => {
+      setSaveAsOpen(false)
+      // Check if there's a deferred action (e.g. "New Screenplay") waiting
+      const store = useEditorStore.getState()
+      const hasDeferredAction = !!store.postSaveAction
+
+      // Use the same backend the SaveAsDialog wrote to. Without this branch
+      // a cloud-saved script would 404 against the local SQLite getProject
+      // and the editor would never finish wiring up to the new file.
+      const client = destination === 'cloud' ? cloudApi : api
+
+      try {
+        const project = await client.getProject(projectId)
+        if (destination === 'cloud') {
+          // Mark BOTH the project and the script as cloud-routed. The script
+          // marker keeps subsequent saves dispatching to cloudApi; the
+          // project marker makes the project show up under the "Cloud" tab
+          // of the project list and routes ProjectView's reads correctly.
+          const ps = useProjectStore.getState()
+          ps.markCloudProject(projectId)
+          ps.markCloudScript(projectId, scriptId)
+        }
+        setCurrentProject(project)
+        setCurrentScriptId(scriptId)
+        setDocumentTitle(scriptTitle)
+        // Save-as resolved an imported document into a real project script —
+        // the "imported file" notice is no longer relevant.
+        store.setImportedSource(null)
+        const scripts = await client.listScripts(projectId)
+        useProjectStore.getState().setScripts(scripts)
+        // Only navigate to the project route if there's no deferred action
+        // that will reset the editor state (e.g. New Screenplay)
+        if (!hasDeferredAction) {
+          navigate(`/project/${projectId}/edit/${scriptId}`, { replace: true })
+        }
+        showToast(
+          destination === 'cloud' ? 'Saved to cloud' : 'Saved',
+          'success',
+        )
+      } catch (err) {
+        console.error('Failed to finalize save:', err)
+      }
+      // Run deferred action (e.g. New Screenplay, Import) that was waiting for save-as
+      if (hasDeferredAction) {
+        const action = store.postSaveAction
+        store.setPostSaveAction(null)
+        if (action) action()
+      }
+    },
+    [
+      setSaveAsOpen,
+      setCurrentProject,
+      setCurrentScriptId,
+      setDocumentTitle,
+      navigate,
+    ],
+  )
+
+  // ── Compare with Version picker callback ──
+  const handleCompareVersionSelect = useCallback(
+    async (version: VersionInfo) => {
+      if (!editor || !currentProject || !currentScriptId) return
+      setCompareVersionOpen(false)
+      try {
+        const scriptResp = await api.getScriptAtVersion(
+          currentProject.id,
+          version.hash,
+          currentScriptId,
+        )
+        setTrackChangesEnabled(true)
+        setTrackChangesLabel(version.short_hash)
+        const { tr } = editor.state
+        tr.setMeta(trackChangesPluginKey, {
+          enabled: true,
+          baseline: scriptResp.content,
+        })
+        editor.view.dispatch(tr)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : ''
+        if (msg.includes('404')) {
+          showToast('This script did not exist in that version', 'info')
+        } else {
+          showToast('Failed to load version for comparison', 'error')
+        }
+      }
+    },
+    [
+      editor,
+      currentProject,
+      currentScriptId,
+      setCompareVersionOpen,
+      setTrackChangesEnabled,
+      setTrackChangesLabel,
+    ],
+  )
+
+  const handleCharAutoSelect = useCallback(
+    (name: string) => {
+      if (!editor) return
+      // Replace the current character block text with the selected name
+      const { $from } = editor.state.selection
+      const start = $from.start()
+      const end = $from.end()
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.insertText(name, start, end)
+          return true
+        })
+        .run()
+      setCharAutoState((s) => ({ ...s, visible: false }))
+    },
+    [editor],
+  )
+
+  const handleCharAutoDismiss = useCallback(() => {
+    setCharAutoState((s) => ({ ...s, visible: false }))
+    charAutoDismissedRef.current = true
+  }, [])
+
+  // --- Click on script note highlight → auto-filter notes panel ---
+  // Only opens the panel when note highlights are visible (notesVisible).
+  // When highlights are off, clicks pass through as normal editing.
+  useEffect(() => {
+    if (!editor) return
+    const handleClick = (e: MouseEvent) => {
+      const store = useEditorStore.getState()
+      // Only intercept clicks when highlights are visible
+      if (!store.notesVisible) return
+
+      const target = e.target as HTMLElement
+      const noteEl = target.closest(
+        '.script-note-highlight',
+      ) as HTMLElement | null
+      if (!noteEl) return
+
+      const noteId = noteEl.getAttribute('data-note-id')
+      if (!noteId) return
+
+      const note = store.notes.find((n) => n.id === noteId)
+      if (!note) return
+
+      // Filter to this specific note
+      store.setNoteFilter({
+        elementType: null,
+        contextLabel: null,
+        color: null,
+        noteId: noteId,
+      })
+
+      // Open the notes panel if not already open
+      if (!store.scriptNotesOpen) store.toggleScriptNotes()
+    }
+
+    const editorEl = editor.view.dom
+    editorEl.addEventListener('click', handleClick)
+    return () => editorEl.removeEventListener('click', handleClick)
+  }, [editor])
+
+  // --- Click on character element → expand in character panel ---
+  useEffect(() => {
+    if (!editor) return
+    const handleCharClick = (e: MouseEvent) => {
+      const store = useEditorStore.getState()
+      if (!store.characterProfilesOpen) return
+
+      const pos = editor.view.posAtCoords({ left: e.clientX, top: e.clientY })
+      if (!pos) return
+
+      const resolved = editor.state.doc.resolve(pos.pos)
+      const node = resolved.parent
+
+      if (node.type.name === 'character') {
+        const base = characterKey(node.textContent)
+        if (base) {
+          store.setSelectedCharacter(base)
+        }
+      }
+    }
+
+    const editorEl = editor.view.dom
+    editorEl.addEventListener('click', handleCharClick)
+    return () => editorEl.removeEventListener('click', handleCharClick)
+  }, [editor])
+
+  // --- Script context menu (right-click) ---
+  useEffect(() => {
+    if (!editor) return
+    const isTouchDevice = navigator.maxTouchPoints > 0
+    const handleContextMenu = (e: MouseEvent) => {
+      const editorDom = editor.view.dom
+      if (!editorDom.contains(e.target as Node)) return
+      e.preventDefault()
+      // No context menu on touch devices — use 3-finger touch instead
+      if (isTouchDevice) return
+
+      // Move cursor to click position only if no text is selected,
+      // or if the click is outside the current selection
+      const pos = editor.view.posAtCoords({ left: e.clientX, top: e.clientY })
+      if (pos) {
+        const { from, to } = editor.state.selection
+        const clickInSelection = pos.pos >= from && pos.pos <= to && from !== to
+        if (!clickInSelection) {
+          editor.commands.setTextSelection(pos.pos)
+        }
+      }
+
+      // Check if clicked on a misspelled word
+      let spellInfo: {
+        word: string
+        from: number
+        to: number
+        suggestions: string[]
+      } | null = null
+      const target = e.target as HTMLElement
+      if (
+        target.classList.contains('spell-error') ||
+        target.closest('.spell-error')
+      ) {
+        const spellEl = target.classList.contains('spell-error')
+          ? target
+          : target.closest('.spell-error')
+        if (spellEl && pos) {
+          // Find the decoration range by examining the spell error text
+          const pluginState = spellCheckPluginKey.getState(editor.state) as
+            | {
+                decorations: import('@tiptap/pm/view').DecorationSet
+                enabled: boolean
+              }
+            | undefined
+          if (pluginState?.enabled) {
+            const decos = pluginState.decorations.find(pos.pos, pos.pos)
+            if (decos.length > 0) {
+              const deco = decos[0]
+              const word = editor.state.doc.textBetween(deco.from, deco.to)
+              spellInfo = {
+                word,
+                from: deco.from,
+                to: deco.to,
+                suggestions: spellChecker.suggest(word),
+              }
+            }
+          }
+        }
+      }
+
+      // Check if clicked on a grammar issue.
+      let grammarInfo: {
+        from: number
+        to: number
+        ruleId: string
+        message: string
+        severity: 'style' | 'grammar'
+        suggestions: string[]
+      } | null = null
+      if (
+        pos &&
+        (target.classList.contains('grammar-issue') ||
+          target.closest('.grammar-issue'))
+      ) {
+        const ps = grammarPluginKey.getState(editor.state) as
+          | {
+              enabled: boolean
+              issues: import('@/plugins/registry').GrammarIssue[]
+            }
+          | undefined
+        if (ps?.enabled && Array.isArray(ps.issues)) {
+          const hit = ps.issues.find(
+            (i) => pos.pos >= i.from && pos.pos <= i.to,
+          )
+          if (hit) {
+            grammarInfo = {
+              from: hit.from,
+              to: hit.to,
+              ruleId: hit.ruleId,
+              message: hit.message,
+              severity: hit.severity,
+              suggestions: hit.suggestions ?? [],
+            }
+          }
+        }
+      }
+
+      setCtxMenuState({
+        visible: true,
+        position: { x: e.clientX, y: e.clientY },
+        spellInfo,
+        grammarInfo,
+      })
+    }
+
+    // Attach to the editor's parent to catch all right-clicks in the editor area
+    const editorEl = editor.view.dom.parentElement
+    if (editorEl) {
+      editorEl.addEventListener('contextmenu', handleContextMenu)
+      return () =>
+        editorEl.removeEventListener('contextmenu', handleContextMenu)
+    }
+  }, [editor])
+
+  const handleCtxMenuClose = useCallback(() => {
+    setCtxMenuState((s) => ({ ...s, visible: false }))
+  }, [])
+
+  // --- Spell check: open modal when toggled on (or from menu) ---
+  // The modal is opened via the Tools menu or spellCheckEnabled toggle.
+
+  const zoomScale = zoomLevel / 100
+
+  // Compute last-page footer position so the last page shows its full extent
+  const lastPageEnd = useMemo(() => {
+    const m = getPageMetrics(pageLayout)
+    if (overlays.length > 0) {
+      const lastOverlay = overlays[overlays.length - 1]
+      return lastOverlay.top + m.sepHeightPx + m.pageContentPx
+    }
+    // Single page: content starts after top padding
+    const topMarginPx = (pageLayout.topMargin / 72) * 96
+    return topMarginPx + m.pageContentPx
+  }, [overlays, pageLayout])
+
+  // Show loading screen while collab session is being set up
+  if (collabLoading) {
+    return (
+      <div
+        className="flex flex-col h-dvh overflow-hidden app-container"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+        }}
+      >
+        <div
+          style={{
+            textAlign: 'center',
+            color: 'var(--fd-text-secondary, #888)',
+          }}
+        >
+          <div style={{ fontSize: 18, marginBottom: 8 }}>
+            Joining collaboration session...
+          </div>
+          <div style={{ fontSize: 13 }}>Loading document</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className={`app-container flex flex-col h-dvh overflow-hidden${isHistoryMode ? ' history-mode' : ''}`}
+    >
+      {isHistoryMode && (
+        <div className="z-4000 flex justify-center items-center gap-2.5 bg-linear-to-br from-[#b8860b] to-[#8b6914] shadow-[0_2px_8px_rgba(0,0,0,.3)] px-5 py-2.5 font-medium text-[13px] text-white tracking-[0.3px] select-none history-banner shrink-0">
+          <span className="text-base">&#128337;</span>
+          <span className="shrink-0 [&_strong]:font-mono [&_strong]:text-xs [&_strong]:bg-(--fd-input-bg) [&_strong]:py-px [&_strong]:px-1.5 [&_strong]:rounded-[3px]">
+            Viewing version <strong>{historyVersionLabel}</strong> — Read Only
+          </span>
+          <button
+            className="bg-white/15 hover:bg-white/25 ml-4 px-3.5 py-1 border border-white/30 hover:border-white/50 rounded font-medium text-white text-xs transition-all duration-150 cursor-pointer"
+            onClick={() => {
+              if (urlProjectId && urlScriptId) {
+                navigate(`/project/${urlProjectId}/edit/${urlScriptId}`)
+              } else {
+                navigate(-1)
+              }
+            }}
+          >
+            Back to Current Version
+          </button>
+        </div>
+      )}
+      {collabMode && (
+        <div className="collab-banner">
+          <span
+            className={`collab-dot${collabConnectionState === 'disconnected' ? ' collab-dot-disconnected' : collabConnectionState === 'connecting' || collabConnectionState === 'connected' ? ' collab-dot-connecting' : ''}`}
+          />
+          <span className="collab-banner-text">
+            Live Collaboration
+            {collabConnectionState === 'synced'
+              ? ''
+              : collabConnectionState === 'disconnected'
+                ? ' — Reconnecting\u2026'
+                : ' — Connecting\u2026'}
+            {collabConnectionState === 'synced' && (
+              <>
+                {' '}
+                — {collabRole === 'viewer' ? 'Read Only' : 'Editing'} as{' '}
+                <strong>{collabUserName}</strong>
+              </>
+            )}
+            {collabConnectionState === 'synced' &&
+              collabUsers.length > 0 &&
+              ` — ${collabUsers.length} user${collabUsers.length !== 1 ? 's' : ''} connected`}
+          </span>
+          <div className="collab-avatars">
+            {collabUsers.map((u, i) => (
+              <span
+                key={i}
+                className="collab-avatar"
+                style={{ backgroundColor: u.color, cursor: 'pointer' }}
+                title={`Click to jump to ${u.name}'s cursor`}
+                onClick={() => {
+                  // Find the collaboration cursor label matching this user and scroll to it
+                  const labels = document.querySelectorAll(
+                    '.collaboration-cursor__label',
+                  )
+                  for (const label of labels) {
+                    if (label.textContent === u.name) {
+                      const caret = label.closest(
+                        '.collaboration-cursor__caret',
+                      )
+                      if (caret) {
+                        caret.scrollIntoView({
+                          behavior: 'auto',
+                          block: 'center',
+                        })
+                      }
+                      return
+                    }
+                  }
+                }}
+              >
+                {u.name.charAt(0).toUpperCase()}
+              </span>
+            ))}
+          </div>
+          {isCollabHost && (
+            <button
+              className="collab-banner-btn"
+              onClick={() => {
+                // Close any stale login dialog before reopening share dialog
+                setCollabLoginOpen(false)
+                if (!isCollabAuthenticated()) {
+                  setCollabLoginOpen(true)
+                  return
+                }
+                setShareDialogOpen(true)
+              }}
+            >
+              Invite
+            </button>
+          )}
+          <div className="collab-activity-wrapper">
+            <button
+              className="collab-banner-btn collab-activity-btn"
+              onClick={() => setCollabActivityOpen((v) => !v)}
+              title="Activity Log"
+            >
+              <span className="collab-activity-label">Activity</span>
+              <svg
+                className="collab-activity-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </button>
+            {collabActivityOpen && (
+              <div className="collab-activity-dropdown">
+                <div className="collab-activity-header">
+                  <strong>Activity Log</strong>
+                  <button
+                    className="collab-activity-close"
+                    onClick={() => setCollabActivityOpen(false)}
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="collab-activity-list">
+                  {collabActivityLog.length === 0 && (
+                    <div className="collab-activity-empty">No events yet</div>
+                  )}
+                  {[...collabActivityLog].reverse().map((entry, i) => (
+                    <div key={i} className="collab-activity-item">
+                      <span className="collab-activity-time">
+                        {entry.time.toLocaleTimeString()}
+                      </span>
+                      <span className="collab-activity-msg">
+                        {entry.message}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <button
+            className="collab-banner-btn collab-banner-btn-stop"
+            onClick={handleStopCollab}
+          >
+            {isCollabHost ? 'End Session' : 'Disconnect'}
+          </button>
+        </div>
+      )}
+      {saveStatus === 'error' && currentProject && currentScriptId && (
+        <div className="flex items-center gap-2.5 bg-linear-to-r from-[#3a1a1a] to-[#3a2a1a] px-4 py-1.5 border-[#7a3a3a] border-b min-h-8 text-[#e0a0a0] text-[13px] save-failure-banner shrink-0">
+          <span className="text-[#ef4444] text-base shrink-0">&#9888;</span>
+          <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+            Auto-save failed{saveError ? `: ${saveError}` : ''}. Your changes
+            may not be saved.
+          </span>
+          <button
+            className="bg-transparent hover:bg-[#4a2a2a] px-2.5 py-0.75 border border-[#7a3a3a] rounded text-[#e0a0a0] text-xs whitespace-nowrap cursor-pointer save-failure-btn"
+            onClick={() => {
+              const content = buildSaveContent()
+              if (!content || !currentProject || !currentScriptId) return
+              setSaveStatus('saving')
+              scriptApi
+                .saveScript(currentProject.id, currentScriptId, { content })
+                .then(() => {
+                  lastSavedJsonRef.current = JSON.stringify(content)
+                  setSaveStatus('saved')
+                  showToast('Saved successfully', 'success')
+                })
+                .catch((err) => {
+                  const msg = err instanceof Error ? err.message : String(err)
+                  setSaveStatus('error', msg)
+                })
+            }}
+          >
+            Retry
+          </button>
+          <button
+            className="bg-transparent hover:bg-[#4a2a2a] px-2.5 py-0.75 border border-[#7a3a3a] rounded text-[#e0a0a0] text-xs whitespace-nowrap cursor-pointer save-failure-btn"
+            onClick={() => {
+              useEditorStore.getState().setSaveAsOpen(true)
+            }}
+          >
+            Save As
+          </button>
+          <button
+            className="bg-transparent hover:bg-[#4a2a2a] px-2.5 py-0.75 border border-[#7a3a3a] rounded text-[#e0a0a0] text-xs whitespace-nowrap cursor-pointer save-failure-btn"
+            onClick={() => {
+              // Goes through downloadOdraft so the file gets the .odraft envelope
+              // and OpenDraft can actually reopen it. The previous version wrote a
+              // bare payload via a raw anchor, which parseOdraft rejected — the
+              // emergency backup could not be imported — and which on desktop
+              // dropped silently into Downloads with no dialog.
+              const content = buildSaveContent()
+              if (!content) return
+              const store = useEditorStore.getState()
+              const title = store.documentTitle || 'Untitled'
+              downloadOdraft(
+                {
+                  id: '',
+                  title,
+                  author: '',
+                  format: 'json',
+                  created_at: '',
+                  updated_at: '',
+                  page_count: store.pageCount,
+                  size_bytes: 0,
+                  color: '',
+                  pinned: false,
+                  sort_order: 0,
+                  preview: '',
+                },
+                content,
+                {
+                  backupKind: 'crash',
+                  projectId: currentProject?.id ?? null,
+                  scriptId: currentScriptId ?? null,
+                },
+              )
+                .then(() => showToast('Backup exported', 'success'))
+                .catch((err) =>
+                  showToast(
+                    `Backup export failed: ${err instanceof Error ? err.message : String(err)}`,
+                    'error',
+                  ),
+                )
+            }}
+          >
+            Export Backup
+          </button>
+          <button
+            className="bg-transparent px-1 py-0 border-none text-[#e0a0a0] text-base leading-none cursor-pointer save-failure-dismiss"
+            onClick={() => setSaveStatus('unsaved')}
+          >
+            &times;
+          </button>
+        </div>
+      )}
+      {!isHistoryMode && (
+        <MenuBar
+          editor={editor}
+          onCollaborate={() => {
+            if (!currentProject || !currentScriptId) {
+              showToast(
+                'Save your screenplay to a project first — opening Save As...',
+                'info',
+              )
+              useEditorStore.getState().setSaveAsOpen(true)
+              return
+            }
+            // Check if user is authenticated to the collab server (also clears expired tokens)
+            if (!isCollabAuthenticated()) {
+              setCollabLoginOpen(true)
+              return
+            }
+            setShareDialogOpen(true)
+          }}
+          onJoinCollab={() => setJoinCollabOpen(true)}
+          isCollabActive={collabMode}
+          isCollabGuest={collabMode && !isCollabHost}
+        />
+      )}
+      {!isHistoryMode && <Toolbar editor={editor} />}
+      <div className="flex flex-1 overflow-hidden editor-layout">
+        {!isHistoryMode && (
+          <SceneNavigator
+            editor={editor}
+            scrollContainer={editorMainRef.current}
+            style={{ width: navWidth, minWidth: navWidth }}
+          />
+        )}
+        {!isHistoryMode && navigatorOpen && (
+          <div
+            className="panel-resize-handle w-1 cursor-col-resize bg-(--fd-bg) shrink-0 relative z-10 hover:bg-(--fd-accent) hover:opacity-50 active:bg-(--fd-accent) active:opacity-50"
+            onPointerDown={(e) => handleResizePointerDown('left', e)}
+            style={{ touchAction: 'none' }}
+          />
+        )}
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden editor-center">
+          {!isHistoryMode && (
+            <IndexCards
+              editor={editor}
+              scrollContainer={editorMainRef.current}
+            />
+          )}
+          {!isHistoryMode && statisticsOpen && editor ? (
+            <ScriptStatistics editor={editor} />
+          ) : !isHistoryMode && beatBoardOpen ? (
+            <BeatBoard />
+          ) : (
+            <div
+              className="editor-main flex-1 overflow-y-auto overflow-x-auto bg-(--fd-bg) flex justify-center pt-[30px] pb-[60px]"
+              ref={editorMainRef}
+              onDragOver={handleEditorDragOver}
+              onDragLeave={handleEditorDragLeave}
+              onDrop={handleEditorDrop}
+            >
+              <div
+                className="page-sizer"
+                style={{
+                  width: `calc(${pageLayout.pageWidth}in * ${zoomScale})`,
+                  minWidth: `calc(${pageLayout.pageWidth}in * ${zoomScale})`,
+                }}
+              >
+                <div
+                  className="page-container"
+                  style={{
+                    transform: `scale(${zoomScale})`,
+                    transformOrigin: 'top left',
+                    width: `${pageLayout.pageWidth}in`,
+                    minWidth: `${pageLayout.pageWidth}in`,
+                    maxWidth: `${pageLayout.pageWidth}in`,
+                  }}
+                >
+                  <div
+                    className={`page${!tagsVisible ? ' tags-hidden' : ''}${!notesVisible ? ' notes-hidden' : ''}${isHistoryMode ? ' history-readonly' : ''}${sceneNumbersVisible ? ' show-scene-numbers' : ''}`}
+                    ref={pageRef}
+                    style={{
+                      fontFamily: `'${fontFamily}', 'Courier New', Courier, monospace`,
+                      fontSize: `${fontSize}pt`,
+                      width: `${pageLayout.pageWidth}in`,
+                      minHeight: `${lastPageEnd + (pageLayout.bottomMargin / 72) * 96}px`,
+                      paddingTop: `${pageLayout.topMargin}pt`,
+                      paddingBottom: `${pageLayout.bottomMargin}pt`,
+                      paddingLeft: `${pageLayout.leftMargin}in`,
+                      paddingRight: `${pageLayout.rightMargin}in`,
+                      // CSS variables for element padding calculations
+                      ...({
+                        '--pl': `${pageLayout.leftMargin}in`,
+                      } as React.CSSProperties),
+                      ...({
+                        '--pr': `${pageLayout.rightMargin}in`,
+                      } as React.CSSProperties),
+                      ...({
+                        '--pw': `${pageLayout.pageWidth}in`,
+                      } as React.CSSProperties),
+                    }}
+                  >
+                    {/* Page break separators — absolutely positioned, full page width */}
+                    {overlays.map((ov) => {
+                      const hContent =
+                        pageLayout.headerContent || DEFAULT_HEADER_CONTENT
+                      const fContent =
+                        pageLayout.footerContent || DEFAULT_FOOTER_CONTENT
+                      const hStart = pageLayout.headerStartPage ?? 2
+                      const fStart = pageLayout.footerStartPage ?? 1
+                      const {
+                        documentTitle: docTitle,
+                        revisionColor: revColor,
+                        pageCount: totalPages,
+                      } = useEditorStore.getState()
+                      const showHeader =
+                        ov.pageNumber >= hStart && !ov.isTitlePage
+                      // The footer belongs to the page BEFORE this break (ov.pageNumber - 1).
+                      // For the title-page break that previous page IS the title page, which
+                      // is unnumbered and carries no header/footer.
+                      const footerPage = ov.pageNumber - 1
+                      const showFooterForPrev =
+                        footerPage >= fStart && !ov.isTitlePage
+                      return (
+                        <div
+                          key={ov.pageNumber}
+                          className="page-sep"
+                          style={{ top: `${ov.top}px` }}
+                        >
+                          <div
+                            className="page-sep-bottom"
+                            style={{
+                              height: `${pageLayout.bottomMargin}pt`,
+                              position: 'relative',
+                            }}
+                          >
+                            {ov.isDialogueSplit &&
+                              moresContds.dialogueBreakContd && (
+                                <div className="page-sep-more">
+                                  {moresContds.moreText}
+                                </div>
+                              )}
+                            {showFooterForPrev &&
+                              (fContent.left ||
+                                fContent.center ||
+                                fContent.right) && (
+                                <div className="page-sep-footer">
+                                  <span className="page-sep-hf-left">
+                                    {resolveHFFields(
+                                      fContent.left,
+                                      footerPage,
+                                      totalPages,
+                                      docTitle,
+                                      revColor,
+                                    )}
+                                  </span>
+                                  <span className="page-sep-hf-center">
+                                    {resolveHFFields(
+                                      fContent.center,
+                                      footerPage,
+                                      totalPages,
+                                      docTitle,
+                                      revColor,
+                                    )}
+                                  </span>
+                                  <span className="page-sep-hf-right">
+                                    {resolveHFFields(
+                                      fContent.right,
+                                      footerPage,
+                                      totalPages,
+                                      docTitle,
+                                      revColor,
+                                    )}
+                                  </span>
+                                </div>
+                              )}
+                          </div>
+                          <div className="page-sep-gap" />
+                          <div
+                            className="page-sep-top"
+                            style={{ height: `${pageLayout.topMargin}pt` }}
+                          >
+                            {showHeader && (
+                              <div className="page-sep-header">
+                                <span className="page-sep-hf-left">
+                                  {resolveHFFields(
+                                    hContent.left,
+                                    ov.pageNumber,
+                                    totalPages,
+                                    docTitle,
+                                    revColor,
+                                  )}
+                                </span>
+                                <span className="page-sep-hf-center">
+                                  {resolveHFFields(
+                                    hContent.center,
+                                    ov.pageNumber,
+                                    totalPages,
+                                    docTitle,
+                                    revColor,
+                                  )}
+                                </span>
+                                <span className="page-sep-hf-right">
+                                  {resolveHFFields(
+                                    hContent.right,
+                                    ov.pageNumber,
+                                    totalPages,
+                                    docTitle,
+                                    revColor,
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {ov.isDialogueSplit &&
+                            ov.characterName &&
+                            moresContds.dialogueBreakContd && (
+                              <div className="page-sep-contd">
+                                {ov.characterName}{' '}
+                                <span style={{ textTransform: 'none' }}>
+                                  {moresContds.contdText}
+                                </span>
+                              </div>
+                            )}
+                        </div>
+                      )
+                    })}
+
+                    {/* Last page footer — no page break follows the last page, so render its footer separately */}
+                    {(() => {
+                      const fContent =
+                        pageLayout.footerContent || DEFAULT_FOOTER_CONTENT
+                      const fStart = pageLayout.footerStartPage ?? 1
+                      const {
+                        documentTitle: docTitle,
+                        revisionColor: revColor,
+                        pageCount: totalPages,
+                      } = useEditorStore.getState()
+                      const lastPage =
+                        overlays.length > 0
+                          ? overlays[overlays.length - 1].pageNumber
+                          : 1
+                      const showFooter =
+                        lastPage >= fStart &&
+                        (fContent.left || fContent.center || fContent.right)
+                      if (!showFooter) return null
+                      return (
+                        <div
+                          className="page-sep"
+                          style={{ top: `${lastPageEnd}px` }}
+                        >
+                          <div
+                            className="page-sep-bottom"
+                            style={{
+                              height: `${pageLayout.bottomMargin}pt`,
+                              position: 'relative',
+                            }}
+                          >
+                            <div className="page-sep-footer">
+                              <span className="page-sep-hf-left">
+                                {resolveHFFields(
+                                  fContent.left,
+                                  lastPage,
+                                  totalPages,
+                                  docTitle,
+                                  revColor,
+                                )}
+                              </span>
+                              <span className="page-sep-hf-center">
+                                {resolveHFFields(
+                                  fContent.center,
+                                  lastPage,
+                                  totalPages,
+                                  docTitle,
+                                  revColor,
+                                )}
+                              </span>
+                              <span className="page-sep-hf-right">
+                                {resolveHFFields(
+                                  fContent.right,
+                                  lastPage,
+                                  totalPages,
+                                  docTitle,
+                                  revColor,
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    <EditorContent editor={editor} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        {!isHistoryMode && rightPanelVisible && (
+          <div
+            className="panel-resize-handle bg-(--fd-bg) w-1 cursor-col-resize  shrink-0 relative z-10 hover:bg-(--fd-accent) hover:opacity-50 active:bg-(--fd-accent) active:opacity-50"
+            onPointerDown={(e) => handleResizePointerDown('right', e)}
+            style={{ touchAction: 'none' }}
+          />
+        )}
+        {!isHistoryMode && (
+          <ScriptNotes
+            editor={editor}
+            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
+          />
+        )}
+        {!isHistoryMode && (
+          <CharacterProfiles
+            editor={editor}
+            projectId={currentProject?.id || ''}
+            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
+          />
+        )}
+        {!isHistoryMode && (
+          <TagsPanel
+            editor={editor}
+            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
+          />
+        )}
+        {!isHistoryMode && (
+          <LocationDatabase
+            editor={editor}
+            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
+          />
+        )}
+        {!isHistoryMode &&
+          pluginRegistry
+            .getPanels('right-sidebar')
+            .map((p) => <p.component key={p.id} editor={editor} />)}
+      </div>
+      {!isHistoryMode && (
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <StatusBar editorDoc={editor?.getJSON()} />
+          {pluginRegistry.getPanels('status-bar').map((p) => (
+            <p.component key={p.id} />
+          ))}
+        </div>
+      )}
+      {!isHistoryMode && <SearchReplace editor={editor} />}
+      {!isHistoryMode && <GoToPage onGoToPage={handleGoToPage} />}
+      <ZoomPanel />
+      {!isHistoryMode && pickerState.visible && (
+        <ElementPicker
+          position={pickerState.position}
+          defaultType={pickerState.defaultType}
+          availableTypes={pickerState.availableTypes}
+          onSelect={handlePickerSelect}
+          onDismiss={handlePickerDismiss}
+        />
+      )}
+      {!isHistoryMode && charAutoState.visible && !pickerState.visible && (
+        <CharacterAutocomplete
+          position={charAutoState.position}
+          suggestions={charAutoState.suggestions}
+          onSelect={handleCharAutoSelect}
+          onDismiss={handleCharAutoDismiss}
+        />
+      )}
+      {/* Context menu on mobile: 3-finger touch only */}
+      {!isHistoryMode && ctxMenuState.visible && editor && (
+        <ScriptContextMenu
+          editor={editor}
+          position={ctxMenuState.position}
+          spellInfo={ctxMenuState.spellInfo}
+          grammarInfo={ctxMenuState.grammarInfo}
+          onClose={handleCtxMenuClose}
+          onOpenFormatPanel={() => {
+            // Block opening if element disallows all format overrides
+            if (editor) {
+              const tpl = useFormattingTemplateStore
+                .getState()
+                .getActiveTemplate()
+              if (tpl.mode === 'enforce') {
+                const rule = getCurrentElementRule(editor, tpl)
+                if (rule && !rule.allowFormatOverride) return
+              }
+            }
+            setFormatPanelOpen(true)
+          }}
+          overrideSelection={ctxMenuState.savedSelection}
+        />
+      )}
+      {!isHistoryMode && formatPanelOpen && editor && (
+        <FormatPanel
+          editor={editor}
+          onClose={() => setFormatPanelOpen(false)}
+        />
+      )}
+      {!isHistoryMode && spellModalOpen && editor && (
+        <SpellCheckModal
+          editor={editor}
+          onClose={() => setSpellModalOpen(false)}
+        />
+      )}
+      {!isHistoryMode && grammarModalOpen && editor && (
+        <WritingSuggestionsModal
+          editor={editor}
+          onClose={() => setGrammarModalOpen(false)}
+        />
+      )}
+      {!isHistoryMode && grammarRulesPanelOpen && (
+        <GrammarRulesPanel onClose={() => setGrammarRulesPanelOpen(false)} />
+      )}
+      {!isHistoryMode && <VersionHistory />}
+      {!isHistoryMode && currentProject && (
+        <AssetManager projectId={currentProject.id} />
+      )}
+      {!isHistoryMode && openFileOpen && (
+        <OpenFile
+          onOpen={handleOpenFile}
+          onClose={() => setOpenFileOpen(false)}
+        />
+      )}
+      {!isHistoryMode && showWelcome && (
+        <WelcomeDialog onChoice={handleWelcomeChoice} />
+      )}
+      {!isHistoryMode && saveAsOpen && (
+        <SaveAsDialog
+          defaultProjectName={currentProject?.name || 'My Project'}
+          defaultFileName={
+            useEditorStore.getState().documentTitle || 'First Draft'
+          }
+          defaultDestination={
+            currentProject &&
+            useProjectStore.getState().isCloudProject(currentProject.id)
+              ? 'cloud'
+              : 'local'
+          }
+          onSaved={handleSaveAsComplete}
+          onClose={() => setSaveAsOpen(false)}
+          buildContent={buildSaveContent}
+        />
+      )}
+      {!isHistoryMode && compareVersionOpen && (
+        <CompareVersionPicker
+          onSelect={handleCompareVersionSelect}
+          onClose={() => setCompareVersionOpen(false)}
+        />
+      )}
+      {!isHistoryMode && titlePageEditorOpen && editor && (
+        <TitlePageEditor
+          editor={editor}
+          onClose={() => setTitlePageEditorOpen(false)}
+        />
+      )}
+      {!isHistoryMode && moresContdsOpen && (
+        <MoresContdsDialog onClose={() => setMoresContdsOpen(false)} />
+      )}
+      <input
+        ref={imageFileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleImageFileChange}
+      />
+      {!isHistoryMode &&
+        shareDialogOpen &&
+        currentProject &&
+        currentScriptId && (
+          <ShareDialog
+            projectId={currentProject.id}
+            scriptId={currentScriptId}
+            scriptTitle={useEditorStore.getState().documentTitle}
+            isCollabActive={collabMode}
+            onStartCollab={handleStartCollab}
+            onClose={() => setShareDialogOpen(false)}
+          />
+        )}
+      {collabLoginOpen && (
+        <CollabLoginDialog
+          onClose={() => setCollabLoginOpen(false)}
+          onSuccess={() => {
+            setCollabLoginOpen(false)
+            setShareDialogOpen(true)
+          }}
+        />
+      )}
+      {joinCollabOpen && (
+        <JoinCollabDialog
+          onJoin={handleJoinCollab}
+          onClose={() => setJoinCollabOpen(false)}
+        />
+      )}
+      {dragOverEditor && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(37,99,235,.15)',
+            border: '3px dashed var(--fd-accent, #2563eb)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--fd-bg)',
+              padding: '20px 32px',
+              borderRadius: 12,
+              boxShadow: '0 8px 32px rgba(0,0,0,.3)',
+              fontSize: 16,
+              fontWeight: 600,
+              color: 'var(--fd-text)',
+            }}
+          >
+            Drop screenplay file to open
+          </div>
+        </div>
+      )}
+      {dropConfirmOpen && (
+        <div
+          className="dialog-overlay fixed left-0 top-0 right-0 bg-black/50 z-3000 flex items-start justify-center h-(--vv-height,100dvh) pt-[5vh] px-4 pb-4 overflow-y-auto"
+          onClick={handleDropConfirmCancel}
+        >
+          <div
+            className="dialog-box bg-(--fd-dropdown-bg) border border-(--fd-border) rounded-lg shadow-[0_8px_32px_rgba(0,0,0,.6)] min-w-80 max-w-100 max-h-[calc(var(--vv-height,100dvh)-48px)] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="dialog-header py-3.5 px-5 border-b border-(--fd-border) font-semibold text-base shrink-0">
+              Unsaved Changes
+            </div>
+            <div className="flex-1 p-5 overflow-y-auto dialog-body">
+              <p style={{ margin: 0, fontSize: 14, color: 'var(--fd-text)' }}>
+                You have unsaved changes. Would you like to save before opening
+                the new file?
+              </p>
+            </div>
+            <div className="dialog-actions flex justify-end gap-2 py-3.5 px-5 border-t border-(--fd-border) shrink-0 [&_button]:h-8.5 [&_button]:px-4.5 [&_button]:bg-(--fd-toolbar-bg) [&_button]:text-(--fd-text) [&_button]:border [&_button]:border-(--fd-border) [&_button]:rounded [&_button]:cursor-pointer [&_button]:text-sm [&_button:hover]:bg-(--fd-menu-hover)">
+              <button onClick={handleDropConfirmCancel}>Cancel</button>
+              <button onClick={handleDropConfirmDiscard}>Discard</button>
+              <button
+                className="dialog-primary bg-(--fd-accent)! border-(--fd-accent)! text-white! hover:opacity-90"
+                onClick={handleDropConfirmSave}
+              >
+                Save &amp; Open
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default ScreenplayEditor

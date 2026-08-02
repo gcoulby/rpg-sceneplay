@@ -12,60 +12,64 @@
  * Failure handling is deliberately quiet — see backupStatusStore. A failed
  * backup is not data loss, so it never blocks the editor and never nags.
  */
-import { useEffect, useRef } from 'react';
-import { useSettingsStore } from '../stores/settingsStore';
-import { useBackupStatusStore, describeBackupError, BACKUP_FAILURE_LIMIT } from '../stores/backupStatusStore';
-import { writeSnapshot } from '../services/backupService';
-import { isDesktopTauri } from '../services/platform';
-import { docHasAnyText } from '../utils/docText';
-import { showToast } from '../components/Toast';
+import { useEffect, useRef } from 'react'
+import { useSettingsStore } from '../stores/settingsStore'
+import {
+  useBackupStatusStore,
+  describeBackupError,
+  BACKUP_FAILURE_LIMIT,
+} from '../stores/backupStatusStore'
+import { writeSnapshot } from '../services/backupService'
+import { isDesktopTauri } from '../services/platform'
+import { docHasAnyText } from '../utils/docText'
+import { showToast } from '@/components/open-draft/Toast'
 
 /** How many times the initial snapshot waits for the editor to finish loading. */
-const INITIAL_ATTEMPTS = 4;
-const INITIAL_RETRY_MS = 5_000;
+const INITIAL_ATTEMPTS = 4
+const INITIAL_RETRY_MS = 5_000
 
 export interface BackupSchedulerOptions {
   /** Builds the payload to snapshot; returns undefined when there's nothing. */
-  buildSaveContent: () => Record<string, unknown> | undefined;
-  documentTitle: string;
-  projectId?: string | null;
-  scriptId?: string | null;
-  projectTitle?: string;
+  buildSaveContent: () => Record<string, unknown> | undefined
+  documentTitle: string
+  projectId?: string | null
+  scriptId?: string | null
+  projectTitle?: string
   /** Shared with auto-save: true while the editor is swapping documents. */
-  scriptSwitchingRef: React.MutableRefObject<boolean>;
-  isCollabGuest: boolean;
-  isHistoryMode: boolean;
+  scriptSwitchingRef: React.MutableRefObject<boolean>
+  isCollabGuest: boolean
+  isHistoryMode: boolean
 }
 
 export function useBackupScheduler(opts: BackupSchedulerOptions): void {
-  const backupEnabled = useSettingsStore((s) => s.backupEnabled);
-  const backupFolder = useSettingsStore((s) => s.backupFolder);
-  const intervalMinutes = useSettingsStore((s) => s.backupIntervalMinutes);
-  const backupUnsavedDocs = useSettingsStore((s) => s.backupUnsavedDocs);
-  const pausedByError = useBackupStatusStore((s) => s.pausedByError);
+  const backupEnabled = useSettingsStore((s) => s.backupEnabled)
+  const backupFolder = useSettingsStore((s) => s.backupFolder)
+  const intervalMinutes = useSettingsStore((s) => s.backupIntervalMinutes)
+  const backupUnsavedDocs = useSettingsStore((s) => s.backupUnsavedDocs)
+  const pausedByError = useBackupStatusStore((s) => s.pausedByError)
   // Opening a document re-runs the effect below, which snapshots straight away.
-  const documentOpenSeq = useBackupStatusStore((s) => s.documentOpenSeq);
+  const documentOpenSeq = useBackupStatusStore((s) => s.documentOpenSeq)
 
   // Latest values, so the interval doesn't need re-creating on every keystroke.
-  const optsRef = useRef(opts);
-  optsRef.current = opts;
+  const optsRef = useRef(opts)
+  optsRef.current = opts
 
   /** Serialized payload of the last snapshot, to skip unchanged documents. */
-  const lastSnapshotKeyRef = useRef<string>('');
-  const isWritingRef = useRef(false);
+  const lastSnapshotKeyRef = useRef<string>('')
+  const isWritingRef = useRef(false)
 
   // Opening a document must always produce a snapshot for it, even when the
   // content happens to match what was last written (re-opening the same script,
   // or two scripts with identical bodies). Declared before the scheduling effect
   // so the key is already cleared by the time that effect's initial run fires.
   useEffect(() => {
-    lastSnapshotKeyRef.current = '';
-  }, [opts.scriptId, documentOpenSeq]);
+    lastSnapshotKeyRef.current = ''
+  }, [opts.scriptId, documentOpenSeq])
 
   useEffect(() => {
-    if (!isDesktopTauri()) return;
-    if (!backupEnabled || !backupFolder) return;
-    if (pausedByError) return;
+    if (!isDesktopTauri()) return
+    if (!backupEnabled || !backupFolder) return
+    if (pausedByError) return
 
     /**
      * Returns false only when this document could still become snapshottable
@@ -74,27 +78,27 @@ export function useBackupScheduler(opts: BackupSchedulerOptions): void {
      * as settled, so the initial retry below stops instead of hammering.
      */
     const tick = async (): Promise<boolean> => {
-      const current = optsRef.current;
-      if (current.isCollabGuest || current.isHistoryMode) return true;
-      if (current.scriptSwitchingRef.current) return false;
-      if (isWritingRef.current) return false;
+      const current = optsRef.current
+      if (current.isCollabGuest || current.isHistoryMode) return true
+      if (current.scriptSwitchingRef.current) return false
+      if (isWritingRef.current) return false
 
-      const content = current.buildSaveContent();
-      if (!content) return false;
+      const content = current.buildSaveContent()
+      if (!content) return false
 
       // Never snapshot a blank document — inherits the same editor-reset
       // protection the auto-save guard relies on. Also the state a freshly
       // mounted editor is in before its content arrives, hence "not settled".
-      if (!docHasAnyText(content)) return false;
+      if (!docHasAnyText(content)) return false
 
-      if (!current.scriptId && !backupUnsavedDocs) return true;
+      if (!current.scriptId && !backupUnsavedDocs) return true
 
       // Skip when nothing changed. Deliberately excludes assets, so unchanged
       // images never trigger an expensive re-pack.
-      const key = JSON.stringify(content);
-      if (key === lastSnapshotKeyRef.current) return true;
+      const key = JSON.stringify(content)
+      if (key === lastSnapshotKeyRef.current) return true
 
-      isWritingRef.current = true;
+      isWritingRef.current = true
       try {
         const result = await writeSnapshot({
           content,
@@ -103,27 +107,30 @@ export function useBackupScheduler(opts: BackupSchedulerOptions): void {
           scriptId: current.scriptId ?? null,
           projectTitle: current.projectTitle,
           kind: 'auto',
-        });
-        lastSnapshotKeyRef.current = key;
-        useBackupStatusStore.getState().noteSuccess(result.path);
+        })
+        lastSnapshotKeyRef.current = key
+        useBackupStatusStore.getState().noteSuccess(result.path)
       } catch (err) {
-        const raw = err instanceof Error ? err.message : String(err);
-        const reason = describeBackupError(raw);
-        const failures = useBackupStatusStore.getState().noteFailure(reason);
+        const raw = err instanceof Error ? err.message : String(err)
+        const reason = describeBackupError(raw)
+        const failures = useBackupStatusStore.getState().noteFailure(reason)
         // First failure gets one toast; the next are console-only; the last
         // says we've stopped. At most two toasts per broken session.
         if (failures === 1) {
-          showToast(`Backup failed — ${reason}`, 'error');
+          showToast(`Backup failed — ${reason}`, 'error')
         } else if (failures >= BACKUP_FAILURE_LIMIT) {
-          showToast(`Automatic backups paused — ${reason} Fix the folder in Settings to resume.`, 'error');
+          showToast(
+            `Automatic backups paused — ${reason} Fix the folder in Settings to resume.`,
+            'error',
+          )
         } else {
-          console.warn('[backup]', reason);
+          console.warn('[backup]', reason)
         }
       } finally {
-        isWritingRef.current = false;
+        isWritingRef.current = false
       }
-      return true;
-    };
+      return true
+    }
 
     // An initial snapshot the moment backups are switched on, a document is
     // opened, or the app launches with backups already on. Waiting a full
@@ -132,25 +139,38 @@ export function useBackupScheduler(opts: BackupSchedulerOptions): void {
     // looking in the folder to check it works.
     // Unchanged documents are deduped by lastSnapshotKeyRef, so this never
     // doubles up with the interval or with a settings tweak.
-    let cancelled = false;
-    let retryId: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false
+    let retryId: ReturnType<typeof setTimeout> | null = null
     const runInitial = async (attempt: number) => {
-      if (cancelled) return;
-      const settled = await tick();
+      if (cancelled) return
+      const settled = await tick()
       // On launch the editor is still loading its document, so the first
       // attempt usually finds a blank doc. Retry a few times, then leave it to
       // the interval.
       if (!settled && !cancelled && attempt + 1 < INITIAL_ATTEMPTS) {
-        retryId = setTimeout(() => void runInitial(attempt + 1), INITIAL_RETRY_MS);
+        retryId = setTimeout(
+          () => void runInitial(attempt + 1),
+          INITIAL_RETRY_MS,
+        )
       }
-    };
-    void runInitial(0);
+    }
+    void runInitial(0)
 
-    const id = setInterval(() => void tick(), Math.max(1, intervalMinutes) * 60_000);
+    const id = setInterval(
+      () => void tick(),
+      Math.max(1, intervalMinutes) * 60_000,
+    )
     return () => {
-      cancelled = true;
-      if (retryId) clearTimeout(retryId);
-      clearInterval(id);
-    };
-  }, [backupEnabled, backupFolder, intervalMinutes, backupUnsavedDocs, pausedByError, documentOpenSeq]);
+      cancelled = true
+      if (retryId) clearTimeout(retryId)
+      clearInterval(id)
+    }
+  }, [
+    backupEnabled,
+    backupFolder,
+    intervalMinutes,
+    backupUnsavedDocs,
+    pausedByError,
+    documentOpenSeq,
+  ])
 }
