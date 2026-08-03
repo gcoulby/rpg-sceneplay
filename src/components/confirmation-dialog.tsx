@@ -7,23 +7,27 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { Button } from './ui/button'
+import type { ConfirmationConfig } from '@/types'
 
-interface ConfirmationDialogProps {
+interface ConfirmationDialogProps extends ConfirmationConfig {
   open: boolean
-  title?: string
-  description?: string
-  confirmLabel?: string
-  cancelLabel?: string
   onConfirm: () => void
   onCancel: () => void
 }
 
+const DEFAULTS: Required<ConfirmationConfig> = {
+  title: 'Are you sure?',
+  description: 'This action cannot be undone.',
+  confirmLabel: 'Continue',
+  cancelLabel: 'Cancel',
+}
+
 export default function ConfirmationDialog({
   open,
-  title = 'Are you sure?',
+  title,
   description,
-  confirmLabel = 'Continue',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
 }: ConfirmationDialogProps) {
@@ -36,14 +40,18 @@ export default function ConfirmationDialog({
     >
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          <DialogTitle>{title ?? DEFAULTS.title}</DialogTitle>
+          <DialogDescription>
+            {description ?? DEFAULTS.description}
+          </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
-            {cancelLabel}
+            {cancelLabel ?? DEFAULTS.cancelLabel}
           </Button>
-          <Button onClick={onConfirm}>{confirmLabel}</Button>
+          <Button onClick={onConfirm}>
+            {confirmLabel ?? DEFAULTS.confirmLabel}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -14,7 +14,11 @@ import {
 import { Fragment, useState } from 'react'
 import { newScreenplay } from '@/actions/new-screenplay'
 import { useEditorStore } from '@/stores/editorStore'
-import { type HeaderMenuBarModel } from '@/types'
+import {
+  type HeaderMenuBarItem,
+  type HeaderMenuBarModel,
+  type PendingAction,
+} from '@/types'
 import {
   FaFileImport,
   FaPlus,
@@ -22,16 +26,18 @@ import {
   FaRegFileWord,
 } from 'react-icons/fa'
 import ConfirmationDialog from './confirmation-dialog'
+import { handleImport, handleImportDocx } from '@/actions/file-import'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
 
-  const runOrConfirm = (item: HeaderMenuBarModel['groups'][0]['items'][0]) => {
-    if (item.requireConfirmation) {
-      setPendingAction(() => item.action)
+  const runOrConfirm = (item: HeaderMenuBarItem) => {
+    if (!item.action) return
+    if (item.confirmation) {
+      setPendingAction({ run: item.action, config: item.confirmation })
     } else {
-      if (item.action) item.action()
+      item.action()
     }
   }
   const menus: Array<HeaderMenuBarModel> = [
@@ -44,7 +50,7 @@ export default function AppShell() {
               text: 'New Screenplay',
               icon: FaPlus,
               shortcut: '⌘N',
-              requireConfirmation: true,
+              confirmation: {},
               action: () => {
                 newScreenplay(editor)
               },
@@ -58,12 +64,41 @@ export default function AppShell() {
                     {
                       text: 'Final Draft / Open Draft / Fountain',
                       icon: FaRegFileCode,
-                      action: () => {},
+                      action: () => {
+                        handleImport(editor)
+                      },
                     },
                     {
                       text: 'Microsoft Word',
                       icon: FaRegFileWord,
-                      action: () => {},
+                      confirmation: {
+                        title: 'Notice',
+                        description: (
+                          <div className="flex flex-col gap-5">
+                            <p>
+                              OpenDraft will detect screenplay element types
+                              (scene heading, action, character, dialogue,
+                              parenthetical, transition, etc.) from the Word
+                              document's formatting.
+                            </p>
+                            <p>
+                              Detection is best-effort and depends on consistent
+                              formatting being applied throughout the document.
+                              Results will be accurate if you used:
+                            </p>
+                            <p>
+                              Final Draft, Fade In, Trelby, or Highland style
+                              names, OR Standard Final Draft indents (Action
+                              1.5", Character 3.5", Dialogue 2.5", Parenthetical
+                              3.0"), OR Conventional text patterns (INT./EXT.,
+                              ALL-CAPS character cues, "CUT TO:" transitions).
+                            </p>
+                          </div>
+                        ),
+                      },
+                      action: () => {
+                        handleImportDocx(editor)
+                      },
                     },
                   ],
                 },
@@ -145,9 +180,9 @@ export default function AppShell() {
       </Menubar>
       <ConfirmationDialog
         open={pendingAction !== null}
-        description="Any unsaved changes will be lost."
+        {...pendingAction?.config}
         onConfirm={() => {
-          pendingAction?.()
+          pendingAction?.run()
           setPendingAction(null)
         }}
         onCancel={() => setPendingAction(null)}

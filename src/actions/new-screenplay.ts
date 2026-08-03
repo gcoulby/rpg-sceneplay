@@ -7,10 +7,6 @@ import { clearSessionDoc } from '@/utils/sessionDoc'
 import { applyScriptFormat } from '@/utils/applyScriptFormat'
 import { clearTrackChanges } from './shared'
 
-type PickerMode = 'reset' | 'apply-only'
-
-/** Clears per-script session state for a fresh screenplay. Does NOT seed
- *  content — caller picks the format after this runs. */
 function resetForNewScreenplay(editor: Editor) {
   clearTrackChanges(editor)
   clearEditorHistory(editor)
@@ -39,61 +35,10 @@ function resetForNewScreenplay(editor: Editor) {
   }
 }
 
-/** Applies the chosen format. 'reset' clears project context first
- *  (top-level New Screenplay); 'apply-only' leaves it intact (in-project
- *  script creation, where the caller already set project context). */
-export function finishNewScreenplayWithFormat(
-  editor: Editor,
-  templateId: string,
-  mode: PickerMode = 'reset',
-) {
-  if (mode === 'reset') resetForNewScreenplay(editor)
-  applyScriptFormat(editor, templateId)
-}
-
-/** Decides whether to apply a format directly or prompt for one, based on
- *  how many script formats the user has enabled in Settings. */
-export function promptForNewScreenplayFormat(
-  editor: Editor | null,
-  mode: PickerMode,
-) {
-  if (!editor) return
-  const store = useEditorStore.getState()
-  store.setFormatPickerMode(mode)
-
-  const settings = useSettingsStore.getState()
-  const enabled = settings.enabledScriptFormats
-
-  if (!settings.formatPreferencesInitialized) {
-    store.setFormatPrefsOpen({
-      firstRun: true,
-      afterSave: 'apply-new-screenplay',
-    })
-    return
-  }
-
-  if (enabled.length === 0) {
-    store.setFormatPrefsOpen({
-      firstRun: false,
-      afterSave: 'apply-new-screenplay',
-    })
-    return
-  }
-
-  if (enabled.length === 1) {
-    console.log('HERE', enabled[0], mode)
-    finishNewScreenplayWithFormat(editor, enabled[0], mode)
-    return
-  }
-
-  store.setFormatPickerOpen(true)
-}
-
 /** The menu-bound action. */
 export function newScreenplay(editor: Editor | null) {
   const settings = useSettingsStore.getState()
   const enabled = settings.enabledScriptFormats
-  console.log('New', editor, enabled[0])
   if (editor) resetForNewScreenplay(editor)
   applyScriptFormat(editor, enabled[0])
 }

@@ -1,6 +1,7 @@
 import type { LucideProps } from 'lucide-react'
 import type { ForwardRefExoticComponent, RefAttributes } from 'react'
 import type { IconType } from 'react-icons/lib'
+import type { ConfirmationConfig } from './dialog-types'
 
 export interface HeaderMenuBarModel {
   title: string
@@ -20,6 +21,12 @@ export interface HeaderMenuBarItem {
     | IconType
   shortcut?: string
   requireConfirmation?: boolean
+  confirmation?: ConfirmationConfig
   action?: () => void
   groups?: Array<HeaderMenuBarGroup>
+}
+
+export interface PendingAction {
+  run: () => void
+  config: ConfirmationConfig
 }
