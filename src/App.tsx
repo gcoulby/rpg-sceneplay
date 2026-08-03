@@ -14,45 +14,50 @@ import VerifyEmailRoute from '@/components/open-draft/VerifyEmailRoute'
 import ResetPasswordRoute from '@/components/open-draft/ResetPasswordRoute'
 import { pluginRegistry } from './plugins/registry'
 import AppShell from './components/app-shell'
+import { EditorProvider } from './providers/editor-provider'
+import EditorInitialiser from './components/editor-initialiser'
 
 function App() {
   const pluginRoutes = pluginRegistry.getRoutes()
 
   return (
     <>
-      <AppShell />
-      {/* <DemoBanner /> */}
+      <EditorProvider>
+        <EditorInitialiser />
+        <AppShell />
+        {/* <DemoBanner /> */}
 
-      <Routes>
-        <Route path="/" element={<ScreenplayEditor />} />
-        <Route path="/verify" element={<VerifyEmailRoute />} />
-        <Route path="/reset-password" element={<ResetPasswordRoute />} />
-        <Route path="/projects" element={<ProjectList />} />
-        <Route path="/project/:projectId" element={<ProjectView />} />
-        <Route
-          path="/project/:projectId/edit/:scriptId"
-          element={<ScreenplayEditor />}
-        />
-        <Route
-          path="/project/:projectId/treatment/:scriptId"
-          element={<TreatmentEditor />}
-        />
-        <Route
-          path="/project/:projectId/history/:scriptId/:commitHash"
-          element={<ScreenplayEditor />}
-        />
-        <Route path="/collab/:collabToken" element={<ScreenplayEditor />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        {pluginRoutes.map((r) => (
-          <Route key={r.path} path={r.path} element={<r.component />} />
-        ))}
-      </Routes>
-      <Toast />
-      <AuthGate />
-      <AuthBootstrap />
-      <StorageFallbackDialog />
-      <SaveErrorDialog />
-      <OneDriveWarningDialog />
+        <Routes>
+          <Route path="/" element={<ScreenplayEditor />} />
+          <Route path="/verify" element={<VerifyEmailRoute />} />
+          <Route path="/reset-password" element={<ResetPasswordRoute />} />
+          <Route path="/projects" element={<ProjectList />} />
+          <Route path="/project/:projectId" element={<ProjectView />} />
+          <Route
+            path="/project/:projectId/edit/:scriptId"
+            element={<ScreenplayEditor />}
+          />
+          <Route
+            path="/project/:projectId/treatment/:scriptId"
+            element={<TreatmentEditor />}
+          />
+          <Route
+            path="/project/:projectId/history/:scriptId/:commitHash"
+            element={<ScreenplayEditor />}
+          />
+          <Route path="/collab/:collabToken" element={<ScreenplayEditor />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          {pluginRoutes.map((r) => (
+            <Route key={r.path} path={r.path} element={<r.component />} />
+          ))}
+        </Routes>
+        <Toast />
+        <AuthGate />
+        <AuthBootstrap />
+        <StorageFallbackDialog />
+        <SaveErrorDialog />
+        <OneDriveWarningDialog />
+      </EditorProvider>
     </>
   )
 }

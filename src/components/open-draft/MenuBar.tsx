@@ -872,6 +872,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
   const finishNewScreenplayWithFormat = useCallback(
     (templateId: string, mode: 'reset' | 'apply-only' = 'reset') => {
       if (mode === 'reset') resetForNewScreenplay()
+      console.log('TEMP', templateId)
       applyScriptFormat(editor, templateId)
     },
     [editor, resetForNewScreenplay],

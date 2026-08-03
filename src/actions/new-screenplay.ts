@@ -5,7 +5,7 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { clearEditorHistory } from '@/editor/clearHistory'
 import { clearSessionDoc } from '@/utils/sessionDoc'
 import { applyScriptFormat } from '@/utils/applyScriptFormat'
-import { confirmOrRun, clearTrackChanges } from './shared'
+import { clearTrackChanges } from './shared'
 
 type PickerMode = 'reset' | 'apply-only'
 
@@ -81,6 +81,7 @@ export function promptForNewScreenplayFormat(
   }
 
   if (enabled.length === 1) {
+    console.log('HERE', enabled[0], mode)
     finishNewScreenplayWithFormat(editor, enabled[0], mode)
     return
   }
@@ -90,5 +91,9 @@ export function promptForNewScreenplayFormat(
 
 /** The menu-bound action. */
 export function newScreenplay(editor: Editor | null) {
-  confirmOrRun(editor, () => promptForNewScreenplayFormat(editor, 'reset'))
+  const settings = useSettingsStore.getState()
+  const enabled = settings.enabledScriptFormats
+  console.log('New', editor, enabled[0])
+  if (editor) resetForNewScreenplay(editor)
+  applyScriptFormat(editor, enabled[0])
 }
