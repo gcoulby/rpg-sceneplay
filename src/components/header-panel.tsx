@@ -11,7 +11,7 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '@/components/ui/menubar'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { newScreenplay } from '@/actions/new-screenplay'
 import { useEditorStore } from '@/stores/editorStore'
 import { type HeaderMenuBarModel } from '@/types'
@@ -21,9 +21,19 @@ import {
   FaRegFileCode,
   FaRegFileWord,
 } from 'react-icons/fa'
+import ConfirmationDialog from './confirmation-dialog'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+
+  const runOrConfirm = (item: HeaderMenuBarModel['groups'][0]['items'][0]) => {
+    if (item.requireConfirmation) {
+      setPendingAction(() => item.action)
+    } else {
+      if (item.action) item.action()
+    }
+  }
   const menus: Array<HeaderMenuBarModel> = [
     {
       title: 'File',
@@ -34,6 +44,7 @@ export default function AppShell() {
               text: 'New Screenplay',
               icon: FaPlus,
               shortcut: '⌘N',
+              requireConfirmation: true,
               action: () => {
                 newScreenplay(editor)
               },
@@ -89,7 +100,9 @@ export default function AppShell() {
                                       {subGroup.items.map((subGroupItem, m) => (
                                         <Fragment key={m}>
                                           <MenubarItem
-                                            onClick={subGroupItem.action}
+                                            onClick={() =>
+                                              runOrConfirm(subGroupItem)
+                                            }
                                           >
                                             <subGroupItem.icon size={25} />{' '}
                                             {subGroupItem.text}{' '}
@@ -110,7 +123,7 @@ export default function AppShell() {
                               </MenubarSubContent>
                             </MenubarSub>
                           ) : (
-                            <MenubarItem onClick={item.action}>
+                            <MenubarItem onClick={() => runOrConfirm(item)}>
                               <item.icon size={25} /> {item.text}{' '}
                               {item.shortcut && (
                                 <MenubarShortcut>
@@ -130,6 +143,15 @@ export default function AppShell() {
           ))}
         </MenubarMenu>
       </Menubar>
+      <ConfirmationDialog
+        open={pendingAction !== null}
+        description="Any unsaved changes will be lost."
+        onConfirm={() => {
+          pendingAction?.()
+          setPendingAction(null)
+        }}
+        onCancel={() => setPendingAction(null)}
+      />
     </header>
   )
 }

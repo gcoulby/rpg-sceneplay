@@ -19,6 +19,7 @@ export interface HeaderMenuBarItem {
       >
     | IconType
   shortcut?: string
+  requireConfirmation?: boolean
   action?: () => void
   groups?: Array<HeaderMenuBarGroup>
 }
