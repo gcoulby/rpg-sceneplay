@@ -1,35 +1,45 @@
-import { Routes, Route } from 'react-router-dom';
-import ScreenplayEditor from './components/ScreenplayEditor';
-import TreatmentEditor from './components/TreatmentEditor';
-import ProjectList from './components/ProjectList';
-import ProjectView from './components/ProjectView';
-import SettingsPage from './components/SettingsPage';
-import Toast from './components/Toast';
-import DemoBanner from './components/DemoBanner';
-import AuthGate from './components/AuthGate';
-import AuthBootstrap from './components/AuthBootstrap';
-import StorageFallbackDialog from './components/StorageFallbackDialog';
-import SaveErrorDialog from './components/SaveErrorDialog';
-import OneDriveWarningDialog from './components/OneDriveWarningDialog';
-import VerifyEmailRoute from './components/VerifyEmailRoute';
-import ResetPasswordRoute from './components/ResetPasswordRoute';
-import { pluginRegistry } from './plugins/registry';
+import { Routes, Route } from 'react-router-dom'
+import ScreenplayEditor from '@/components/open-draft/ScreenplayEditor'
+import TreatmentEditor from '@/components/open-draft/TreatmentEditor'
+import ProjectList from '@/components/open-draft/ProjectList'
+import ProjectView from '@/components/open-draft/ProjectView'
+import SettingsPage from '@/components/open-draft/SettingsPage'
+import Toast from '@/components/open-draft/Toast'
+import AuthGate from '@/components/open-draft/AuthGate'
+import AuthBootstrap from '@/components/open-draft/AuthBootstrap'
+import StorageFallbackDialog from '@/components/open-draft/StorageFallbackDialog'
+import SaveErrorDialog from '@/components/open-draft/SaveErrorDialog'
+import OneDriveWarningDialog from '@/components/open-draft/OneDriveWarningDialog'
+import VerifyEmailRoute from '@/components/open-draft/VerifyEmailRoute'
+import ResetPasswordRoute from '@/components/open-draft/ResetPasswordRoute'
+import { pluginRegistry } from './plugins/registry'
+import AppShell from './components/app-shell'
 
 function App() {
-  const pluginRoutes = pluginRegistry.getRoutes();
+  const pluginRoutes = pluginRegistry.getRoutes()
 
   return (
     <>
-      <DemoBanner />
+      <AppShell />
+
       <Routes>
         <Route path="/" element={<ScreenplayEditor />} />
         <Route path="/verify" element={<VerifyEmailRoute />} />
         <Route path="/reset-password" element={<ResetPasswordRoute />} />
         <Route path="/projects" element={<ProjectList />} />
         <Route path="/project/:projectId" element={<ProjectView />} />
-        <Route path="/project/:projectId/edit/:scriptId" element={<ScreenplayEditor />} />
-        <Route path="/project/:projectId/treatment/:scriptId" element={<TreatmentEditor />} />
-        <Route path="/project/:projectId/history/:scriptId/:commitHash" element={<ScreenplayEditor />} />
+        <Route
+          path="/project/:projectId/edit/:scriptId"
+          element={<ScreenplayEditor />}
+        />
+        <Route
+          path="/project/:projectId/treatment/:scriptId"
+          element={<TreatmentEditor />}
+        />
+        <Route
+          path="/project/:projectId/history/:scriptId/:commitHash"
+          element={<ScreenplayEditor />}
+        />
         <Route path="/collab/:collabToken" element={<ScreenplayEditor />} />
         <Route path="/settings" element={<SettingsPage />} />
         {pluginRoutes.map((r) => (
@@ -43,7 +53,7 @@ function App() {
       <SaveErrorDialog />
       <OneDriveWarningDialog />
     </>
-  );
+  )
 }
 
-export default App;
+export default App
