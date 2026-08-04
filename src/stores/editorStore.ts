@@ -845,6 +845,8 @@ interface EditorState {
    *  don't wipe it). */
   formatPickerMode: 'reset' | 'apply-only'
   setFormatPickerMode: (mode: 'reset' | 'apply-only') => void
+  pageSetupOpen: boolean
+  setPageSetupOpen: (open: boolean) => void
 }
 
 const BEAT_UNDO_MAX = 50
@@ -1576,4 +1578,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setFormatPickerOpen: (open) => set({ formatPickerOpen: open }),
   formatPickerMode: 'reset',
   setFormatPickerMode: (mode) => set({ formatPickerMode: mode }),
+  pageSetupOpen: false,
+  setPageSetupOpen: (open) => set({ pageSetupOpen: open }),
 }))

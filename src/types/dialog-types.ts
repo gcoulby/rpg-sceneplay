@@ -6,3 +6,8 @@ export interface ConfirmationConfig {
   confirmLabel?: string
   cancelLabel?: string
 }
+
+export interface PageSetupDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
