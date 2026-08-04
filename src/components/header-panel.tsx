@@ -20,6 +20,8 @@ import {
   type PendingAction,
 } from '@/types'
 import {
+  FaCog,
+  FaFileExport,
   FaFileImport,
   FaPlus,
   FaRegFileCode,
@@ -27,9 +29,38 @@ import {
 } from 'react-icons/fa'
 import ConfirmationDialog from './confirmation-dialog'
 import { handleImport, handleImportDocx } from '@/actions/file-import'
+import {
+  handleExportDocx,
+  handleExportFDX,
+  handleExportFountain,
+  handleExportOdraft,
+  handleExportPDF,
+} from '@/actions/file-export'
+import PageSetupDialog from './page-setup-dialog'
+
+const docXImportNotice = (
+  <div className="flex flex-col gap-5">
+    <p>
+      OpenDraft will detect screenplay element types (scene heading, action,
+      character, dialogue, parenthetical, transition, etc.) from the Word
+      document's formatting.
+    </p>
+    <p>
+      Detection is best-effort and depends on consistent formatting being
+      applied throughout the document. Results will be accurate if you used:
+    </p>
+    <p>
+      Final Draft, Fade In, Trelby, or Highland style names, OR Standard Final
+      Draft indents (Action 1.5", Character 3.5", Dialogue 2.5", Parenthetical
+      3.0"), OR Conventional text patterns (INT./EXT., ALL-CAPS character cues,
+      "CUT TO:" transitions).
+    </p>
+  </div>
+)
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
+  const [pageSetupOpen, setPageSetupOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
 
   const runOrConfirm = (item: HeaderMenuBarItem) => {
@@ -55,6 +86,10 @@ export default function AppShell() {
                 newScreenplay(editor)
               },
             },
+          ],
+        },
+        {
+          items: [
             {
               text: 'Import',
               icon: FaFileImport,
@@ -73,28 +108,7 @@ export default function AppShell() {
                       icon: FaRegFileWord,
                       confirmation: {
                         title: 'Notice',
-                        description: (
-                          <div className="flex flex-col gap-5">
-                            <p>
-                              OpenDraft will detect screenplay element types
-                              (scene heading, action, character, dialogue,
-                              parenthetical, transition, etc.) from the Word
-                              document's formatting.
-                            </p>
-                            <p>
-                              Detection is best-effort and depends on consistent
-                              formatting being applied throughout the document.
-                              Results will be accurate if you used:
-                            </p>
-                            <p>
-                              Final Draft, Fade In, Trelby, or Highland style
-                              names, OR Standard Final Draft indents (Action
-                              1.5", Character 3.5", Dialogue 2.5", Parenthetical
-                              3.0"), OR Conventional text patterns (INT./EXT.,
-                              ALL-CAPS character cues, "CUT TO:" transitions).
-                            </p>
-                          </div>
-                        ),
+                        description: docXImportNotice,
                       },
                       action: () => {
                         handleImportDocx(editor)
@@ -103,6 +117,60 @@ export default function AppShell() {
                   ],
                 },
               ],
+            },
+            {
+              text: 'Export',
+              icon: FaFileExport,
+              groups: [
+                {
+                  items: [
+                    {
+                      text: 'Final Draft (.fdx)',
+                      icon: FaRegFileCode,
+                      action: () => {
+                        handleExportFDX(editor)
+                      },
+                    },
+                    {
+                      text: 'Fountain (.fountain)',
+                      icon: FaRegFileCode,
+                      action: () => {
+                        handleExportFountain(editor)
+                      },
+                    },
+                    {
+                      text: 'PDF',
+                      icon: FaRegFileCode,
+                      action: () => {
+                        handleExportPDF(editor)
+                      },
+                    },
+                    {
+                      text: 'Microsoft Word',
+                      icon: FaRegFileWord,
+                      action: () => {
+                        handleExportDocx(editor)
+                      },
+                    },
+                    {
+                      text: 'OpenDraft (.odraft)',
+                      icon: FaRegFileCode,
+                      action: () => {
+                        handleExportOdraft(editor)
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          items: [
+            {
+              text: 'Page Setup…',
+              icon: FaCog, // or whatever icon
+              action: () => setPageSetupOpen(true),
             },
           ],
         },
@@ -187,6 +255,7 @@ export default function AppShell() {
         }}
         onCancel={() => setPendingAction(null)}
       />
+      <PageSetupDialog open={pageSetupOpen} onOpenChange={setPageSetupOpen} />
     </header>
   )
 }
