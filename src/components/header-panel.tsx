@@ -26,6 +26,7 @@ import {
   FaRedo,
   FaRegFileCode,
   FaRegFileWord,
+  FaSearch,
   FaUndo,
 } from 'react-icons/fa'
 import ConfirmationDialog from './confirmation-dialog'
@@ -37,8 +38,9 @@ import {
   handleExportOdraft,
   handleExportPDF,
 } from '@/actions/file-export'
-import PageSetupDialog from './page-setup-dialog'
+import PageSetupDialog from './plugins/page-setup-dialog'
 import { MenuItemRenderer } from './menu-item-renderer'
+import SearchReplace from './plugins/search-replace/search-replace-comp'
 
 const docXImportNotice = (
   <div className="flex flex-col gap-5">
@@ -62,6 +64,7 @@ const docXImportNotice = (
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
+  const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
   const [pageSetupOpen, setPageSetupOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
 
@@ -195,19 +198,39 @@ export default function AppShell() {
           icon: FaCut,
           label: 'Cut',
           shortcut: `${mod}X`,
-          action: () => document.execCommand('cut'),
+          action: async () => {
+            const selection = editor?.state.selection
+            if (!selection) return
+            const { from, to } = selection
+            if (from === to) return // nothing selected
+
+            const text = editor?.state.doc.textBetween(from, to, '\n')
+            await navigator.clipboard.writeText(text)
+
+            editor?.chain().focus().deleteRange({ from, to }).run()
+          },
         },
         {
           icon: FaCopy,
           label: 'Copy',
           shortcut: `${mod}C`,
-          action: () => document.execCommand('copy'),
+          action: async () => {
+            const selection = editor?.state.selection
+            if (!selection) return
+            const { from, to } = selection
+            const text = editor?.state.doc.textBetween(from, to, '\n')
+            await navigator.clipboard.writeText(text)
+          },
         },
         {
           icon: FaPaste,
           label: 'Paste',
           shortcut: `${mod}V`,
-          action: () => document.execCommand('paste'),
+          action: async () => {
+            if (!editor) return
+            const text = await navigator.clipboard.readText()
+            editor.chain().focus().insertContent(text).run()
+          },
         },
         {
           icon: FaMousePointer,
@@ -216,6 +239,12 @@ export default function AppShell() {
           action: () => editor?.chain().focus().selectAll().run(),
         },
         { separator: true, label: '' },
+        {
+          icon: FaSearch,
+          label: 'Find & Replace',
+          shortcut: `${mod}F`,
+          action: () => setSearchOpen(true),
+        },
       ],
     },
   ]
@@ -246,6 +275,7 @@ export default function AppShell() {
         onCancel={() => setPendingAction(null)}
       />
       <PageSetupDialog open={pageSetupOpen} onOpenChange={setPageSetupOpen} />
+      <SearchReplace editor={editor} />
     </header>
   )
 }

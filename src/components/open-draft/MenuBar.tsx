@@ -1374,7 +1374,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
           action: () => {
             try {
               editor?.chain().focus().undo().run()
-            } catch {}
+            } catch {
+              //
+            }
           },
         },
         {
