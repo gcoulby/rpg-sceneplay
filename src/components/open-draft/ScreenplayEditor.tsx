@@ -91,7 +91,8 @@ import TagsPanel from './TagsPanel'
 import LocationDatabase from './LocationDatabase'
 import FormatPanel from './FormatPanel'
 import StatusBar from './StatusBar'
-import SearchReplace, { createSearchPlugin } from './SearchReplace'
+import SearchReplace from './SearchReplace'
+
 import GoToPage from './GoToPage'
 import ElementPicker from './ElementPicker'
 import CharacterAutocomplete from './CharacterAutocomplete'
@@ -163,6 +164,10 @@ import {
   trackChangesPluginKey,
 } from '@/editor/trackChanges'
 import type { VersionInfo } from '@/services/api'
+
+//replacements
+import { createSearchPlugin } from '@/components/plugins/search-replace/search-replace-plugin'
+import { useGoToPage } from '@/components/plugins/goto-page/useGotoPage'
 
 // Vibrant dark colors for collaboration cursors and avatars
 const COLLAB_COLORS = [
@@ -3684,6 +3689,20 @@ const ScreenplayEditor: React.FC = () => {
     return () => el.removeEventListener('scroll', handleScroll)
   }, [handleScroll])
 
+  const handleGoToPage = useGoToPage({
+    editorMainRef,
+    pageRef,
+    overlays,
+    zoomLevelRef,
+    pageLayoutRef,
+  })
+
+  const setGoToPage = useEditorStore((s) => s.setGoToPage)
+
+  useEffect(() => {
+    setGoToPage(handleGoToPage)
+  }, [handleGoToPage, setGoToPage])
+
   // --- Go to page ---
   // Jump instantly: smooth-scrolling thousands of pixels on a long screenplay
   // takes seconds. ov.top is unscaled, so multiply by zoom scale to land on
@@ -3693,29 +3712,29 @@ const ScreenplayEditor: React.FC = () => {
   // gap so the new page (with its header line at the top) lands flush with
   // the viewport top — not flush with the start of the body content, which
   // would hide the page header and look like we'd overshot.
-  const handleGoToPage = useCallback(
-    (page: number) => {
-      if (!editorMainRef.current || !pageRef.current) return
-      if (page <= 1) {
-        editorMainRef.current.scrollTo({ top: 0, behavior: 'auto' })
-        return
-      }
-      const ov = overlays.find((o) => o.pageNumber === page)
-      if (ov) {
-        const pageRect = pageRef.current.getBoundingClientRect()
-        const containerRect = editorMainRef.current.getBoundingClientRect()
-        const scale = (zoomLevelRef.current || 100) / 100
-        const layout = pageLayoutRef.current
-        const bottomMarginPx = (layout.bottomMargin / 72) * 96
-        const pageTopOffset = ov.top + bottomMarginPx + 40 // 40 = page-sep-gap
-        const scrollTo =
-          editorMainRef.current.scrollTop +
-          (pageRect.top + pageTopOffset * scale - containerRect.top)
-        editorMainRef.current.scrollTo({ top: scrollTo, behavior: 'auto' })
-      }
-    },
-    [overlays],
-  )
+  // const handleGoToPage = useCallback(
+  //   (page: number) => {
+  //     if (!editorMainRef.current || !pageRef.current) return
+  //     if (page <= 1) {
+  //       editorMainRef.current.scrollTo({ top: 0, behavior: 'auto' })
+  //       return
+  //     }
+  //     const ov = overlays.find((o) => o.pageNumber === page)
+  //     if (ov) {
+  //       const pageRect = pageRef.current.getBoundingClientRect()
+  //       const containerRect = editorMainRef.current.getBoundingClientRect()
+  //       const scale = (zoomLevelRef.current || 100) / 100
+  //       const layout = pageLayoutRef.current
+  //       const bottomMarginPx = (layout.bottomMargin / 72) * 96
+  //       const pageTopOffset = ov.top + bottomMarginPx + 40 // 40 = page-sep-gap
+  //       const scrollTo =
+  //         editorMainRef.current.scrollTop +
+  //         (pageRect.top + pageTopOffset * scale - containerRect.top)
+  //       editorMainRef.current.scrollTo({ top: scrollTo, behavior: 'auto' })
+  //     }
+  //   },
+  //   [overlays],
+  // )
 
   // Wire up the picker trigger
   showPickerRef.current = useCallback(

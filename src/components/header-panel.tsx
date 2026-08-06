@@ -20,6 +20,7 @@ import {
   FaFile,
   FaFileExport,
   FaFileImport,
+  FaHashtag,
   FaMousePointer,
   FaPaste,
   FaPlus,
@@ -38,9 +39,10 @@ import {
   handleExportOdraft,
   handleExportPDF,
 } from '@/actions/file-export'
-import PageSetupDialog from './plugins/page-setup-dialog'
+import PageSetupDialog from './plugins/page-setup/page-setup-dialog'
 import { MenuItemRenderer } from './menu-item-renderer'
 import SearchReplace from './plugins/search-replace/search-replace-comp'
+import GoToPageDialog from './plugins/goto-page/goto-page-dialog'
 
 const docXImportNotice = (
   <div className="flex flex-col gap-5">
@@ -67,6 +69,8 @@ export default function AppShell() {
   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
   const [pageSetupOpen, setPageSetupOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
+  const [goToPageOpen, setGoToPageOpen] = useState(false)
+  const goToPage = useEditorStore((s) => s.goToPage)
 
   const mod = /mac|iphone|ipad|ipod/i.test(
     navigator.platform || navigator.userAgent,
@@ -245,6 +249,12 @@ export default function AppShell() {
           shortcut: `${mod}F`,
           action: () => setSearchOpen(true),
         },
+        {
+          icon: FaHashtag,
+          label: 'Go to Page',
+          shortcut: `${mod}G`,
+          action: () => setGoToPageOpen(true),
+        },
       ],
     },
   ]
@@ -276,6 +286,14 @@ export default function AppShell() {
       />
       <PageSetupDialog open={pageSetupOpen} onOpenChange={setPageSetupOpen} />
       <SearchReplace editor={editor} />
+      <GoToPageDialog
+        open={goToPageOpen}
+        onOpenChange={setGoToPageOpen}
+        onGoToPage={(page) => {
+          goToPage?.(page)
+          setGoToPageOpen(false)
+        }}
+      />
     </header>
   )
 }

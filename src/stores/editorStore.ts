@@ -785,6 +785,8 @@ interface EditorState {
   // Dialogs
   searchOpen: boolean
   setSearchOpen: (open: boolean) => void
+  goToPage: ((page: number) => void) | null
+  setGoToPage: (fn: (page: number) => void) => void
   goToPageOpen: boolean
   setGoToPageOpen: (open: boolean) => void
   titlePageEditorOpen: boolean
@@ -1547,6 +1549,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   searchOpen: false,
   setSearchOpen: (open) => set({ searchOpen: open }),
+  goToPage: null,
+  setGoToPage: (fn) => set({ goToPage: fn }),
   goToPageOpen: false,
   setGoToPageOpen: (open) => set({ goToPageOpen: open }),
   titlePageEditorOpen: false,

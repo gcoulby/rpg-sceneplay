@@ -87,32 +87,32 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
     document.addEventListener('mouseup', handleUp)
   }, [])
 
-  // Reset position when panel opens
-  useEffect(() => {
-    if (searchOpen) setPanelPos(null)
-  }, [searchOpen])
+  // // Reset position when panel opens
+  // useEffect(() => {
+  //   if (searchOpen) setPanelPos(null)
+  // }, [searchOpen])
 
-  // Focus input when panel opens
-  useEffect(() => {
-    if (searchOpen && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus()
-        inputRef.current?.select()
-      }, 0)
-    }
-  }, [searchOpen])
+  // // Focus input when panel opens
+  // useEffect(() => {
+  //   if (searchOpen && inputRef.current) {
+  //     setTimeout(() => {
+  //       inputRef.current?.focus()
+  //       inputRef.current?.select()
+  //     }, 0)
+  //   }
+  // }, [searchOpen])
 
-  // Clear highlights when panel closes
-  useEffect(() => {
-    if (!searchOpen && editor) {
-      clearDecorations()
-      setSearchTerm('')
-      setReplaceTerm('')
-      setMatches([])
-      setCurrentIndex(-1)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchOpen])
+  // // Clear highlights when panel closes
+  // useEffect(() => {
+  //   if (!searchOpen && editor) {
+  //     clearDecorations()
+  //     setSearchTerm('')
+  //     setReplaceTerm('')
+  //     setMatches([])
+  //     setCurrentIndex(-1)
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [searchOpen])
 
   const clearDecorations = useCallback(() => {
     if (!editor) return
@@ -293,47 +293,48 @@ const SearchReplace: React.FC<SearchReplaceProps> = ({ editor }) => {
     updateDecorations,
   ])
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl+F to open
-      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-        e.preventDefault()
-        setSearchOpen(true)
-        return
-      }
-      if (!searchOpen) return
-      // Escape to close
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        setSearchOpen(false)
-        editor?.commands.focus()
-        return
-      }
-      // Cmd/Ctrl+G or F3 — Find Next
-      if (
-        e.key === 'F3' ||
-        ((e.metaKey || e.ctrlKey) && e.key === 'g' && !e.shiftKey)
-      ) {
-        e.preventDefault()
-        findNext()
-        return
-      }
-      // Shift+F3 or Cmd/Ctrl+Shift+G — Find Previous
-      if (
-        (e.key === 'F3' && e.shiftKey) ||
-        ((e.metaKey || e.ctrlKey) && e.key === 'g' && e.shiftKey)
-      ) {
-        e.preventDefault()
-        findPrev()
-        return
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [searchOpen, setSearchOpen, editor, findNext, findPrev])
+  // // Keyboard shortcuts
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     // Cmd/Ctrl+F to open
+  //     if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+  //       e.preventDefault()
+  //       setSearchOpen(true)
+  //       return
+  //     }
+  //     if (!searchOpen) return
+  //     // Escape to close
+  //     if (e.key === 'Escape') {
+  //       e.preventDefault()
+  //       setSearchOpen(false)
+  //       editor?.commands.focus()
+  //       return
+  //     }
+  //     // Cmd/Ctrl+G or F3 — Find Next
+  //     if (
+  //       e.key === 'F3' ||
+  //       ((e.metaKey || e.ctrlKey) && e.key === 'g' && !e.shiftKey)
+  //     ) {
+  //       e.preventDefault()
+  //       findNext()
+  //       return
+  //     }
+  //     // Shift+F3 or Cmd/Ctrl+Shift+G — Find Previous
+  //     if (
+  //       (e.key === 'F3' && e.shiftKey) ||
+  //       ((e.metaKey || e.ctrlKey) && e.key === 'g' && e.shiftKey)
+  //     ) {
+  //       e.preventDefault()
+  //       findPrev()
+  //       return
+  //     }
+  //   }
+  //   document.addEventListener('keydown', handleKeyDown)
+  //   return () => document.removeEventListener('keydown', handleKeyDown)
+  // }, [searchOpen, setSearchOpen, editor, findNext, findPrev])
 
-  if (!searchOpen) return null
+  // if (!searchOpen)
+  return null
 
   const panelStyle: React.CSSProperties = panelPos
     ? { position: 'fixed', left: panelPos.x, top: panelPos.y, right: 'auto' }
