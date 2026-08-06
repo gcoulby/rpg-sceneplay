@@ -5254,14 +5254,3 @@ div[data-type='cast-list'].is-empty::before {
   float: left;
   height: 0;
 }
-
-.search-highlight {
-  background: #fde68a;
-  color: #000;
-  border-radius: 1px;
-}
-.search-highlight-current {
-  background: #f97316;
-  color: #fff;
-  border-radius: 1px;
-}

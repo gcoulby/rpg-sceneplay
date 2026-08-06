@@ -715,6 +715,8 @@ interface EditorState {
   // Spell check
   spellCheckEnabled: boolean
   toggleSpellCheck: () => void
+  spellCheckOpen: boolean
+  setSpellCheckOpen: (open: boolean) => void
   setSpellCheckEnabled: (v: boolean) => void
   spellModalOpen: boolean
   setSpellModalOpen: (open: boolean) => void
@@ -1584,4 +1586,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setFormatPickerMode: (mode) => set({ formatPickerMode: mode }),
   pageSetupOpen: false,
   setPageSetupOpen: (open) => set({ pageSetupOpen: open }),
+  spellCheckOpen: false,
+
+  setSpellCheckOpen: (open: boolean) => set({ spellCheckOpen: open }),
 }))

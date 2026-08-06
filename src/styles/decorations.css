@@ -1,0 +1,25 @@
+/* ============ SPELL CHECK ============ */
+
+.search-highlight {
+  background: #fde68a;
+  color: #000;
+  border-radius: 1px;
+}
+.search-highlight-current {
+  background: #f97316;
+  color: #fff;
+  border-radius: 1px;
+}
+
+/* ============ SPELL CHECK ============ */
+.spell-error {
+  text-decoration: underline wavy #e74c3c;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 2px;
+}
+/* Highlight the word currently being checked in the spell check modal */
+.spell-active {
+  background: rgba(255, 213, 79, 0.45);
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.5);
+}

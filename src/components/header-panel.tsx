@@ -28,6 +28,7 @@ import {
   FaRegFileCode,
   FaRegFileWord,
   FaSearch,
+  FaSpellCheck,
   FaUndo,
 } from 'react-icons/fa'
 import ConfirmationDialog from './confirmation-dialog'
@@ -43,6 +44,7 @@ import PageSetupDialog from './plugins/page-setup/page-setup-dialog'
 import { MenuItemRenderer } from './menu-item-renderer'
 import SearchReplace from './plugins/search-replace/search-replace-comp'
 import GoToPageDialog from './plugins/goto-page/goto-page-dialog'
+import SpellCheckPopover from './plugins/spell-check/spell-check-popover'
 
 const docXImportNotice = (
   <div className="flex flex-col gap-5">
@@ -71,6 +73,15 @@ export default function AppShell() {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [goToPageOpen, setGoToPageOpen] = useState(false)
   const goToPage = useEditorStore((s) => s.goToPage)
+  const {
+    spellCheckEnabled,
+    toggleSpellCheck,
+    grammarCheckEnabled,
+    toggleGrammarCheck,
+    setGrammarModalOpen,
+    setGrammarRulesPanelOpen,
+    setSpellCheckOpen,
+  } = useEditorStore()
 
   const mod = /mac|iphone|ipad|ipod/i.test(
     navigator.platform || navigator.userAgent,
@@ -255,6 +266,46 @@ export default function AppShell() {
           shortcut: `${mod}G`,
           action: () => setGoToPageOpen(true),
         },
+        { separator: true, label: '' },
+
+        {
+          icon: FaSpellCheck,
+          label: 'Spelling & Grammar',
+          items: [
+            {
+              icon: FaSpellCheck,
+              label: spellCheckEnabled
+                ? '\u2713 Auto Spell Check'
+                : 'Auto Spell Check',
+              action: toggleSpellCheck,
+            },
+            {
+              icon: FaSpellCheck,
+              label: 'Spell Check\u2026',
+              shortcut: 'F7',
+              action: () => setSpellCheckOpen(true),
+            },
+            { separator: true, label: '' },
+            {
+              icon: FaSpellCheck,
+              label: grammarCheckEnabled
+                ? '\u2713 Auto Writing Suggestions'
+                : 'Auto Writing Suggestions',
+              action: toggleGrammarCheck,
+            },
+            {
+              icon: FaSpellCheck,
+              label: 'Writing Suggestions\u2026',
+              shortcut: '\u21e7F7',
+              action: () => setGrammarModalOpen(true),
+            },
+            {
+              icon: FaSpellCheck,
+              label: 'Grammar & Spelling Settings\u2026',
+              action: () => setGrammarRulesPanelOpen(true),
+            },
+          ],
+        },
       ],
     },
   ]
@@ -294,6 +345,7 @@ export default function AppShell() {
           setGoToPageOpen(false)
         }}
       />
+      <SpellCheckPopover editor={editor} />
     </header>
   )
 }
