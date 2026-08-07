@@ -21,7 +21,7 @@ import {
 import { getLockedFormattingOption } from '@/utils/lockedFormatting'
 import { getActiveTemplate } from '@/utils/activeTemplate'
 import { getShortcutModifier } from '@/utils/shortcutModifier'
-import { docXImportNotice } from '@/components/docx-import-notice' // move this out too
+import { docXImportNotice } from '@/components/docx-import-notice'
 import {
   FaAlignCenter,
   FaAlignJustify,
@@ -57,7 +57,17 @@ import {
   FaUnderline,
   FaUndo,
 } from 'react-icons/fa'
-import type { Editor } from '@tiptap/react'
+import {
+  toggleBold,
+  setFormatType,
+  toggleItalic,
+  toggleUnderline,
+  toggleStrikethrough,
+  toggleSubscript,
+  toggleSuperscript,
+  setAlignment,
+  toggleDualDialogue,
+} from '@/actions/format-actions'
 
 interface UseHeaderMenusArgs {
   onOpenPageSetup: () => void
@@ -86,7 +96,7 @@ export function useHeaderMenus({
   const { rules: activeTemplateRules, name: activeTemplateName } =
     getActiveTemplate()
 
-  const getActiveTemplateRulesMenuItems = (editor: Editor | null) => {
+  const activeTemplateRulesMenuItems = useMemo(() => {
     return [
       ...Object.values(activeTemplateRules)
         .filter((r) => r.enabled)
@@ -104,11 +114,11 @@ export function useHeaderMenus({
           return {
             label: r.label,
             shortcut: shortcuts[r.id],
-            action: () => editor?.chain().focus().setNode(r.id).run(),
+            action: () => setFormatType(editor, r.id),
           }
         }),
     ]
-  }
+  }, [editor, activeTemplateRules, mod])
 
   return useMemo<HeaderMenuBarModel[]>(
     () => [
@@ -304,7 +314,7 @@ export function useHeaderMenus({
           {
             icon: FaListOl,
             label: 'Element',
-            items: getActiveTemplateRulesMenuItems(editor),
+            items: activeTemplateRulesMenuItems,
           },
           { separator: true, label: '' },
           {
@@ -315,70 +325,40 @@ export function useHeaderMenus({
                 icon: FaBold,
                 label: 'Bold',
                 shortcut: `${mod}B`,
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .toggleBold()
-                    .run(),
+                action: () => toggleBold(editor),
                 disabled: locked.bold,
               },
               {
                 icon: FaItalic,
                 label: 'Italic',
                 shortcut: `${mod}I`,
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .toggleItalic()
-                    .run(),
+                action: () => toggleItalic,
                 disabled: locked.italic,
               },
               {
                 icon: FaUnderline,
                 label: 'Underline',
                 shortcut: `${mod}U`,
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .toggleUnderline()
-                    .run(),
+                action: () => toggleUnderline,
                 disabled: locked.underline,
               },
               {
                 icon: FaStrikethrough,
                 label: 'Strikethrough',
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .toggleStrike()
-                    .run(),
+                action: () => toggleStrikethrough,
                 disabled: locked.strikethrough,
               },
               { separator: true, label: '' },
               {
                 icon: FaSubscript,
                 label: 'Subscript',
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .toggleSubscript()
-                    .run(),
+                action: () => toggleSubscript,
                 disabled: locked.subscript,
               },
               {
                 icon: FaSuperscript,
                 label: 'Superscript',
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .toggleSuperscript()
-                    .run(),
+                action: () => toggleSuperscript,
                 disabled: locked.superscript,
               },
             ],
@@ -390,45 +370,25 @@ export function useHeaderMenus({
               {
                 icon: FaAlignLeft,
                 label: 'Align Left',
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .setTextAlign('left')
-                    .run(),
+                action: () => setAlignment(editor, 'left'),
                 disabled: locked.textAlign,
               },
               {
                 icon: FaAlignCenter,
                 label: 'Align Center',
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .setTextAlign('center')
-                    .run(),
+                action: () => setAlignment(editor, 'center'),
                 disabled: locked.textAlign,
               },
               {
                 icon: FaAlignRight,
                 label: 'Align Right',
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .setTextAlign('right')
-                    .run(),
+                action: () => setAlignment(editor, 'right'),
                 disabled: locked.textAlign,
               },
               {
                 icon: FaAlignJustify,
                 label: 'Justify',
-                action: () =>
-                  editor
-                    ?.chain()
-                    .focus(undefined, { scrollIntoView: false })
-                    .setTextAlign('justify')
-                    .run(),
+                action: () => setAlignment(editor, 'justify'),
                 disabled: locked.textAlign,
               },
             ],
@@ -438,7 +398,7 @@ export function useHeaderMenus({
             icon: FaColumns,
             label: 'Dual Dialogue',
             shortcut: `${mod}D`,
-            action: () => editor?.commands?.toggleDualDialogue(),
+            action: () => toggleDualDialogue(editor),
           },
           { separator: true, label: '' },
           {
@@ -480,8 +440,15 @@ export function useHeaderMenus({
       grammarCheckEnabled,
       toggleGrammarCheck,
       onOpenGrammarPanel,
+      activeTemplateRulesMenuItems,
       editor,
-      locked,
+      locked.bold,
+      locked.italic,
+      locked.underline,
+      locked.strikethrough,
+      locked.subscript,
+      locked.superscript,
+      locked.textAlign,
       activeTemplateName,
       setSearchOpen,
       setSpellCheckOpen,
