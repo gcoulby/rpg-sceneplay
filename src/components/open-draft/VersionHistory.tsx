@@ -7,7 +7,7 @@ import type { VersionInfo } from '@/services/api'
 import DiffViewer from './DiffViewer'
 import ScriptDiffView from './ScriptDiffView'
 import { showToast } from './Toast'
-import { relativeTime } from '@/utils/relativeTime'
+import { relativeTime } from '@/utils/open-draft/relativeTime'
 
 const VersionHistory: React.FC = () => {
   const navigate = useNavigate()

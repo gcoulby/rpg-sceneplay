@@ -1,5 +1,5 @@
 import { useCallback, type RefObject } from 'react'
-import { calculatePageScrollTop } from '../../../utils/scrollCalculations'
+import { calculatePageScrollTop } from '../../../utils/open-draft/scrollCalculations'
 
 interface PageOverlay {
   pageNumber: number

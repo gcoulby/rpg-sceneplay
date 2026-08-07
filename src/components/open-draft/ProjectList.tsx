@@ -22,7 +22,7 @@ import { getApiBase } from '@/config'
 import { useProjectStore } from '@/stores/projectStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import type { ProjectInfo } from '@/services/api'
-import { importProjectFromZip } from '@/utils/zipImport'
+import { importProjectFromZip } from '@/utils/open-draft/zipImport'
 import { showToast } from './Toast'
 
 type ProjectSource = 'local' | 'cloud'
@@ -643,7 +643,8 @@ const ProjectList: React.FC = () => {
               className="h-9 px-5 bg-transparent! text-(--fd-text-muted)! border border-(--fd-border)! rounded-md text-[13px] font-semibold cursor-pointer transition-opacity duration-150 hover:bg-(--fd-menu-hover)! hover:text-(--fd-text)! max-md:flex-1 max-md:min-w-0 max-md:h-11 max-md:text-sm"
               onClick={async () => {
                 try {
-                  const { openBinaryFile } = await import('@/utils/fileOps')
+                  const { openBinaryFile } =
+                    await import('@/utils/open-draft/fileOps')
                   const result = await openBinaryFile([
                     { name: 'ZIP Archive', extensions: ['zip'] },
                   ])

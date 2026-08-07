@@ -14,24 +14,28 @@
  * here — spell/grammar preferences fall back to the current defaults on
  * import, which is the pre-existing behaviour.
  */
-import { useEditorStore, DEFAULT_TAG_CATEGORIES, DEFAULT_PAGE_LAYOUT } from '../stores/editorStore';
-import { useFormattingTemplateStore } from '../stores/formattingTemplateStore';
-import { hasSaveMetadata } from './saveContent';
+import {
+  useEditorStore,
+  DEFAULT_TAG_CATEGORIES,
+  DEFAULT_PAGE_LAYOUT,
+} from '@/stores/editorStore'
+import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
+import { hasSaveMetadata } from './saveContent'
 
 /**
  * Some payloads store these as JSON strings rather than arrays/objects,
  * depending on which backend wrote them.
  */
 function parseAttr<T>(value: unknown, fallback: T): T {
-  if (value === undefined || value === null) return fallback;
+  if (value === undefined || value === null) return fallback
   if (typeof value === 'string') {
     try {
-      return JSON.parse(value) as T;
+      return JSON.parse(value) as T
     } catch {
-      return fallback;
+      return fallback
     }
   }
-  return value as T;
+  return value as T
 }
 
 /**
@@ -44,39 +48,41 @@ function parseAttr<T>(value: unknown, fallback: T): T {
 export function hydrateEditorStoresFromContent(
   content: Record<string, unknown> | null | undefined,
 ): boolean {
-  if (!content || !hasSaveMetadata(content)) return false;
+  if (!content || !hasSaveMetadata(content)) return false
 
-  const store = useEditorStore.getState();
-  const c = content as Record<string, any>;
+  const store = useEditorStore.getState()
+  const c = content as Record<string, any>
 
-  store.setNotes(parseAttr(c._notes, []));
-  store.setGeneralNotes(parseAttr(c._generalNotes, []));
-  store.setTags(parseAttr(c._tags, []));
-  store.setTagCategories(parseAttr(c._tagCategories, DEFAULT_TAG_CATEGORIES));
-  store.setCharacterProfiles(parseAttr(c._characterProfiles, []));
-  store.setCharacterRelationships(parseAttr(c._characterRelationships, []));
-  store.setBeats(parseAttr(c._beats, []));
-  store.setBeatColumns(parseAttr(c._beatColumns, []));
+  store.setNotes(parseAttr(c._notes, []))
+  store.setGeneralNotes(parseAttr(c._generalNotes, []))
+  store.setTags(parseAttr(c._tags, []))
+  store.setTagCategories(parseAttr(c._tagCategories, DEFAULT_TAG_CATEGORIES))
+  store.setCharacterProfiles(parseAttr(c._characterProfiles, []))
+  store.setCharacterRelationships(parseAttr(c._characterRelationships, []))
+  store.setBeats(parseAttr(c._beats, []))
+  store.setBeatColumns(parseAttr(c._beatColumns, []))
   if (c._beatArrangeMode !== undefined) {
-    store.setBeatArrangeMode(parseAttr<'auto' | 'custom'>(c._beatArrangeMode, 'auto'));
+    store.setBeatArrangeMode(
+      parseAttr<'auto' | 'custom'>(c._beatArrangeMode, 'auto'),
+    )
   }
   if (c._sceneNumbersVisible !== undefined) {
-    store.setSceneNumbersVisible(c._sceneNumbersVisible === true);
+    store.setSceneNumbersVisible(c._sceneNumbersVisible === true)
   }
   if (c._sceneNumbersLocked !== undefined) {
-    store.setSceneNumbersLocked(c._sceneNumbersLocked === true);
+    store.setSceneNumbersLocked(c._sceneNumbersLocked === true)
   }
   if (c._pageLayout !== undefined) {
-    store.setPageLayout(parseAttr(c._pageLayout, DEFAULT_PAGE_LAYOUT));
+    store.setPageLayout(parseAttr(c._pageLayout, DEFAULT_PAGE_LAYOUT))
   }
 
   if (typeof c._templateId === 'string' && c._templateId) {
     try {
-      useFormattingTemplateStore.getState().setActiveTemplateId(c._templateId);
+      useFormattingTemplateStore.getState().setActiveTemplateId(c._templateId)
     } catch (err) {
-      console.warn('[import] could not apply template', c._templateId, err);
+      console.warn('[import] could not apply template', c._templateId, err)
     }
   }
 
-  return true;
+  return true
 }

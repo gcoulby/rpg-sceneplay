@@ -8,7 +8,7 @@ import {
   type CharacterRelationship,
 } from '@/stores/editorStore'
 import { useProjectStore } from '@/stores/projectStore'
-import { characterKey, singleLine } from '@/utils/nodeText'
+import { characterKey, singleLine } from '@/utils/open-draft/nodeText'
 import { useAssetStore } from '@/stores/assetStore'
 import { api } from '@/services/api'
 import { showToast } from './Toast'

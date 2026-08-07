@@ -25,7 +25,7 @@ import {
 } from 'react-icons/fa'
 import { useEditorStore, NOTE_COLORS } from '@/stores/editorStore'
 import type { ElementType } from '@/stores/editorStore'
-import { singleLine } from '@/utils/nodeText'
+import { singleLine } from '@/utils/open-draft/nodeText'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import { BUILT_IN_ELEMENT_IDS } from '@/stores/formattingTypes'
 import {
@@ -34,12 +34,12 @@ import {
   toggleBoldOverride,
   toggleItalicOverride,
   toggleUnderlineOverride,
-} from '@/utils/effectiveFormatting'
-import type { LockedFormatting } from '@/utils/effectiveFormatting'
+} from '@/utils/open-draft/effectiveFormatting'
+import type { LockedFormatting } from '@/utils/open-draft/effectiveFormatting'
 import FontPicker from './FontPicker'
 import ColorPicker from './ColorPicker'
 import LanguageSelector from './LanguageSelector'
-import { FONT_REGISTRY, loadFont } from '@/utils/fonts'
+import { FONT_REGISTRY, loadFont } from '@/utils/open-draft/fonts'
 
 interface ToolbarProps {
   editor: Editor | null

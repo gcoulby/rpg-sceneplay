@@ -14,8 +14,8 @@
  * - Link preview uses a Tauri command (Rust-side HTTP fetch)
  */
 
-import { getDb, simpleHash } from './db';
-import { isDestructiveEmptyOverwrite } from '../utils/docText';
+import { getDb, simpleHash } from './db'
+import { isDestructiveEmptyOverwrite } from '../utils/open-draft/docText'
 import {
   mkdir,
   writeFile,
@@ -23,10 +23,10 @@ import {
   remove,
   exists,
   BaseDirectory,
-} from '@tauri-apps/plugin-fs';
-import { convertFileSrc } from '@tauri-apps/api/core';
-import { appDataDir } from '@tauri-apps/api/path';
-import { getCollabWsUrl } from '../config';
+} from '@tauri-apps/plugin-fs'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { appDataDir } from '@tauri-apps/api/path'
+import { getCollabWsUrl } from '../config'
 import type {
   ProjectInfo,
   ProjectProperties,
@@ -36,49 +36,71 @@ import type {
   DiffResponse,
   CollabSession,
   LinkPreview,
-} from './api';
+} from './api'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function uuid(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    try { return crypto.randomUUID(); } catch { /* secure context required */ }
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
+    try {
+      return crypto.randomUUID()
+    } catch {
+      /* secure context required */
+    }
   }
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  bytes[6] = (bytes[6] & 0x0f) | 0x40
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
 }
 
 function now(): string {
-  return new Date().toISOString();
+  return new Date().toISOString()
 }
 
 function shortHash(id: string): string {
-  return id.slice(0, 7);
+  return id.slice(0, 7)
 }
 
 const EMPTY_PROPS: ProjectProperties = {
-  genre: '', logline: '', synopsis: '', author: '', contact: '',
-  copyright: '', draft: '', language: 'en', format: 'screenplay',
-  production_company: '', director: '', producer: '', status: '',
-  target_length: '', notes: '',
-  wga_registration: '', wga_registration_date: '',
-  copyright_registration: '', copyright_year: '',
-  agent_name: '', agent_contact: '',
-  manager_name: '', manager_contact: '',
+  genre: '',
+  logline: '',
+  synopsis: '',
+  author: '',
+  contact: '',
+  copyright: '',
+  draft: '',
+  language: 'en',
+  format: 'screenplay',
+  production_company: '',
+  director: '',
+  producer: '',
+  status: '',
+  target_length: '',
+  notes: '',
+  wga_registration: '',
+  wga_registration_date: '',
+  copyright_registration: '',
+  copyright_year: '',
+  agent_name: '',
+  agent_contact: '',
+  manager_name: '',
+  manager_contact: '',
   submissions: [],
-};
+}
 
 /** Ensure the assets directory exists for a project. */
 async function ensureAssetDir(projectId: string): Promise<string> {
-  const dir = `assets/${projectId}`;
+  const dir = `assets/${projectId}`
   if (!(await exists(dir, { baseDir: BaseDirectory.AppData }))) {
-    await mkdir(dir, { baseDir: BaseDirectory.AppData, recursive: true });
+    await mkdir(dir, { baseDir: BaseDirectory.AppData, recursive: true })
   }
-  return dir;
+  return dir
 }
 
 /**
@@ -86,42 +108,47 @@ async function ensureAssetDir(projectId: string): Promise<string> {
  * Converts ws:// → http://, wss:// → https://
  */
 function getCollabApiBase(): string {
-  const wsUrl = getCollabWsUrl();
-  return wsUrl.replace(/^ws(s?):\/\//, 'http$1://');
+  const wsUrl = getCollabWsUrl()
+  return wsUrl.replace(/^ws(s?):\/\//, 'http$1://')
 }
 
 /**
  * Make an authenticated request to the collab server.
  * Uses platformFetch to bypass WebView mixed-content restrictions on Tauri.
  */
-async function collabRequest<T>(path: string, options?: RequestInit): Promise<T> {
-  const { platformFetch } = await import('./platform');
-  const { useSettingsStore } = await import('../stores/settingsStore');
-  const base = getCollabApiBase();
-  const url = `${base}${path}`;
+async function collabRequest<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const { platformFetch } = await import('./platform')
+  const { useSettingsStore } = await import('../stores/settingsStore')
+  const base = getCollabApiBase()
+  const url = `${base}${path}`
 
   // Include auth token if available (collab server requires it for write operations)
-  const { collabAuth } = useSettingsStore.getState();
-  const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+  const { collabAuth } = useSettingsStore.getState()
+  const authHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
   if (collabAuth.accessToken) {
-    authHeaders['Authorization'] = `Bearer ${collabAuth.accessToken}`;
+    authHeaders['Authorization'] = `Bearer ${collabAuth.accessToken}`
   }
 
-  console.log(`[collabRequest] ${options?.method || 'GET'} ${url}`);
+  console.log(`[collabRequest] ${options?.method || 'GET'} ${url}`)
   const res = await platformFetch(url, {
     ...options,
     headers: { ...authHeaders, ...options?.headers },
-  });
+  })
   if (!res.ok) {
-    const detail = await res.text().catch(() => '');
-    console.error(`[collabRequest] ${url} → ${res.status}: ${detail}`);
+    const detail = await res.text().catch(() => '')
+    console.error(`[collabRequest] ${url} → ${res.status}: ${detail}`)
     // Clear stale auth on 401 so the UI prompts for re-login
     if (res.status === 401) {
-      useSettingsStore.getState().clearCollabAuth();
+      useSettingsStore.getState().clearCollabAuth()
     }
-    throw new Error(`Collab API error ${res.status}: ${detail}`);
+    throw new Error(`Collab API error ${res.status}: ${detail}`)
   }
-  return res.json();
+  return res.json()
 }
 
 // ── Public factory ───────────────────────────────────────────────────────────
@@ -131,21 +158,23 @@ async function collabRequest<T>(path: string, options?: RequestInit): Promise<T>
  * export in api.ts so it can be used as a drop-in replacement.
  */
 export async function createLocalStorage() {
-  const db = await getDb();
+  const db = await getDb()
 
   // Ensure the root assets directory exists
   if (!(await exists('assets', { baseDir: BaseDirectory.AppData }))) {
-    await mkdir('assets', { baseDir: BaseDirectory.AppData, recursive: true });
+    await mkdir('assets', { baseDir: BaseDirectory.AppData, recursive: true })
   }
 
   // Resolve the app data dir once for asset URLs
-  const baseDir = await appDataDir();
+  const baseDir = await appDataDir()
 
   // In-memory cache of asset ID → filename so getAssetUrl (sync) can resolve
   // the correct filename (with extension) even when only an asset ID is passed.
-  const assetFilenameCache: Record<string, string> = {};
-  const rows = await db.select<{ id: string; filename: string }[]>('SELECT id, filename FROM assets');
-  for (const r of rows) assetFilenameCache[r.id] = r.filename;
+  const assetFilenameCache: Record<string, string> = {}
+  const rows = await db.select<{ id: string; filename: string }[]>(
+    'SELECT id, filename FROM assets',
+  )
+  for (const r of rows) assetFilenameCache[r.id] = r.filename
 
   const storage = {
     // ── Projects ───────────────────────────────────────────────────────────
@@ -153,70 +182,109 @@ export async function createLocalStorage() {
     async listProjects(): Promise<ProjectInfo[]> {
       const rows = await db.select<any[]>(
         'SELECT * FROM projects ORDER BY updated_at DESC',
-      );
-      return rows.map(rowToProject);
+      )
+      return rows.map(rowToProject)
     },
 
     async createProject(name: string): Promise<ProjectInfo> {
-      const id = uuid();
-      const ts = now();
-      const props = JSON.stringify(EMPTY_PROPS);
+      const id = uuid()
+      const ts = now()
+      const props = JSON.stringify(EMPTY_PROPS)
       await db.execute(
         'INSERT INTO projects (id, name, properties, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)',
         [id, name, props, ts, ts],
-      );
-      return { id, name, created_at: ts, updated_at: ts, properties: { ...EMPTY_PROPS }, color: '', pinned: false, sort_order: 0 };
+      )
+      return {
+        id,
+        name,
+        created_at: ts,
+        updated_at: ts,
+        properties: { ...EMPTY_PROPS },
+        color: '',
+        pinned: false,
+        sort_order: 0,
+      }
     },
 
     async getProject(id: string): Promise<ProjectInfo> {
       const rows = await db.select<any[]>(
         'SELECT * FROM projects WHERE id = $1',
         [id],
-      );
-      if (!rows.length) throw new Error(`Project not found: ${id}`);
-      return rowToProject(rows[0]);
+      )
+      if (!rows.length) throw new Error(`Project not found: ${id}`)
+      return rowToProject(rows[0])
     },
 
     async updateProject(
       id: string,
-      data: { name?: string; properties?: Partial<ProjectProperties>; color?: string; pinned?: boolean; sort_order?: number },
+      data: {
+        name?: string
+        properties?: Partial<ProjectProperties>
+        color?: string
+        pinned?: boolean
+        sort_order?: number
+      },
     ): Promise<ProjectInfo> {
-      const existing = await storage.getProject(id);
-      const name = data.name ?? existing.name;
+      const existing = await storage.getProject(id)
+      const name = data.name ?? existing.name
       const props = data.properties
         ? { ...existing.properties, ...data.properties }
-        : existing.properties;
-      const color = data.color ?? existing.color;
-      const pinned = data.pinned ?? existing.pinned;
-      const sort_order = data.sort_order ?? existing.sort_order;
-      const ts = now();
+        : existing.properties
+      const color = data.color ?? existing.color
+      const pinned = data.pinned ?? existing.pinned
+      const sort_order = data.sort_order ?? existing.sort_order
+      const ts = now()
       await db.execute(
         'UPDATE projects SET name = $1, properties = $2, updated_at = $3, color = $4, pinned = $5, sort_order = $6 WHERE id = $7',
-        [name, JSON.stringify(props), ts, color, pinned ? 1 : 0, sort_order, id],
-      );
-      return { ...existing, name, properties: props, color, pinned, sort_order, updated_at: ts };
+        [
+          name,
+          JSON.stringify(props),
+          ts,
+          color,
+          pinned ? 1 : 0,
+          sort_order,
+          id,
+        ],
+      )
+      return {
+        ...existing,
+        name,
+        properties: props,
+        color,
+        pinned,
+        sort_order,
+        updated_at: ts,
+      }
     },
 
     async deleteProject(id: string): Promise<{ message: string }> {
-      await db.execute('DELETE FROM script_content WHERE script_id IN (SELECT id FROM scripts WHERE project_id = $1)', [id]);
-      await db.execute('DELETE FROM scripts WHERE project_id = $1', [id]);
-      await db.execute('DELETE FROM version_scripts WHERE commit_id IN (SELECT id FROM version_commits WHERE project_id = $1)', [id]);
-      await db.execute('DELETE FROM version_commits WHERE project_id = $1', [id]);
-      await db.execute('DELETE FROM assets WHERE project_id = $1', [id]);
-      await db.execute('DELETE FROM projects WHERE id = $1', [id]);
-      return { message: 'deleted' };
+      await db.execute(
+        'DELETE FROM script_content WHERE script_id IN (SELECT id FROM scripts WHERE project_id = $1)',
+        [id],
+      )
+      await db.execute('DELETE FROM scripts WHERE project_id = $1', [id])
+      await db.execute(
+        'DELETE FROM version_scripts WHERE commit_id IN (SELECT id FROM version_commits WHERE project_id = $1)',
+        [id],
+      )
+      await db.execute('DELETE FROM version_commits WHERE project_id = $1', [
+        id,
+      ])
+      await db.execute('DELETE FROM assets WHERE project_id = $1', [id])
+      await db.execute('DELETE FROM projects WHERE id = $1', [id])
+      return { message: 'deleted' }
     },
 
     async reorderProjects(
       items: Array<{ id: string; sort_order: number }>,
     ): Promise<{ message: string }> {
       for (const item of items) {
-        await db.execute(
-          'UPDATE projects SET sort_order = $1 WHERE id = $2',
-          [item.sort_order, item.id],
-        );
+        await db.execute('UPDATE projects SET sort_order = $1 WHERE id = $2', [
+          item.sort_order,
+          item.id,
+        ])
       }
-      return { message: 'ok' };
+      return { message: 'ok' }
     },
 
     // ── Scripts ────────────────────────────────────────────────────────────
@@ -227,100 +295,129 @@ export async function createLocalStorage() {
                 color, pinned, sort_order
          FROM scripts WHERE project_id = $1 ORDER BY created_at`,
         [projectId],
-      );
-      return rows.map(rowToScriptMeta);
+      )
+      return rows.map(rowToScriptMeta)
     },
 
     async createScript(
       projectId: string,
       data: { title: string; content?: any },
     ): Promise<ScriptResponse> {
-      const id = uuid();
-      const ts = now();
-      const contentStr = data.content ? JSON.stringify(data.content) : null;
-      const sizeBytes = contentStr ? new Blob([contentStr]).size : 0;
+      const id = uuid()
+      const ts = now()
+      const contentStr = data.content ? JSON.stringify(data.content) : null
+      const sizeBytes = contentStr ? new Blob([contentStr]).size : 0
       await db.execute(
         'INSERT INTO scripts (id, project_id, title, size_bytes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)',
         [id, projectId, data.title, sizeBytes, ts, ts],
-      );
+      )
       if (contentStr) {
         await db.execute(
           'INSERT INTO script_content (script_id, content) VALUES ($1, $2)',
           [id, contentStr],
-        );
+        )
       }
-      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [ts, projectId]);
+      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [
+        ts,
+        projectId,
+      ])
       return {
         meta: {
-          id, title: data.title, author: '', format: 'screenplay',
-          created_at: ts, updated_at: ts, page_count: 0, size_bytes: sizeBytes,
-          color: '', pinned: false, sort_order: 0, preview: '',
+          id,
+          title: data.title,
+          author: '',
+          format: 'screenplay',
+          created_at: ts,
+          updated_at: ts,
+          page_count: 0,
+          size_bytes: sizeBytes,
+          color: '',
+          pinned: false,
+          sort_order: 0,
+          preview: '',
         },
         content: data.content ?? null,
-      };
+      }
     },
 
-    async getScript(projectId: string, scriptId: string): Promise<ScriptResponse> {
+    async getScript(
+      projectId: string,
+      scriptId: string,
+    ): Promise<ScriptResponse> {
       const rows = await db.select<any[]>(
         `SELECT s.*, sc.content
          FROM scripts s
          LEFT JOIN script_content sc ON sc.script_id = s.id
          WHERE s.id = $1 AND s.project_id = $2`,
         [scriptId, projectId],
-      );
-      if (!rows.length) throw new Error(`Script not found: ${scriptId}`);
-      const r = rows[0];
+      )
+      if (!rows.length) throw new Error(`Script not found: ${scriptId}`)
+      const r = rows[0]
       return {
         meta: rowToScriptMeta(r),
         content: r.content ? JSON.parse(r.content) : null,
-      };
+      }
     },
 
     async saveScript(
       projectId: string,
       scriptId: string,
-      data: { title?: string; content?: Record<string, unknown>; color?: string; pinned?: boolean; sort_order?: number; allowEmptyBody?: boolean },
+      data: {
+        title?: string
+        content?: Record<string, unknown>
+        color?: string
+        pinned?: boolean
+        sort_order?: number
+        allowEmptyBody?: boolean
+      },
     ): Promise<ScriptResponse> {
-      const existing = await storage.getScript(projectId, scriptId);
-      const title = data.title ?? existing.meta.title;
-      const content = data.content ?? existing.content;
+      const existing = await storage.getScript(projectId, scriptId)
+      const title = data.title ?? existing.meta.title
+      const content = data.content ?? existing.content
 
       // Data-loss guard: refuse to overwrite a script that has real (textful)
       // content with an empty/textless body. This is the last line of defence
       // against the blank-document bug, where a reset editor auto-saves an empty
       // doc over a full screenplay. Callers that intentionally clear a document
       // must pass `allowEmptyBody: true`.
-      if (isDestructiveEmptyOverwrite(data.content, existing.content, data.allowEmptyBody)) {
+      if (
+        isDestructiveEmptyOverwrite(
+          data.content,
+          existing.content,
+          data.allowEmptyBody,
+        )
+      ) {
         throw new Error(
           `Refusing to overwrite "${title}" with an empty document — the saved script has content but the ` +
-          `incoming one has none. This guards against accidental data loss (the editor may have reset). ` +
-          `If you really meant to clear it, delete the script instead.`,
-        );
+            `incoming one has none. This guards against accidental data loss (the editor may have reset). ` +
+            `If you really meant to clear it, delete the script instead.`,
+        )
       }
-      const contentStr = content ? JSON.stringify(content) : null;
-      const sizeBytes = contentStr ? new Blob([contentStr]).size : 0;
-      const color = data.color ?? existing.meta.color;
-      const pinned = data.pinned ?? existing.meta.pinned;
-      const sort_order = data.sort_order ?? existing.meta.sort_order;
-      const ts = now();
+      const contentStr = content ? JSON.stringify(content) : null
+      const sizeBytes = contentStr ? new Blob([contentStr]).size : 0
+      const color = data.color ?? existing.meta.color
+      const pinned = data.pinned ?? existing.meta.pinned
+      const sort_order = data.sort_order ?? existing.meta.sort_order
+      const ts = now()
 
       // Write content FIRST, then metadata. tauri-plugin-sql's pool means we
       // can't safely BEGIN/COMMIT across execute() calls, so we order writes
       // so a content failure leaves scripts.updated_at at the old value --
       // never a half-saved state where metadata advances but content didn't.
       const existingContent = await db.select<any[]>(
-        'SELECT script_id FROM script_content WHERE script_id = $1', [scriptId]
-      );
+        'SELECT script_id FROM script_content WHERE script_id = $1',
+        [scriptId],
+      )
       if (existingContent.length > 0) {
         await db.execute(
           'UPDATE script_content SET content = $1 WHERE script_id = $2',
           [contentStr, scriptId],
-        );
+        )
       } else if (contentStr) {
         await db.execute(
           'INSERT INTO script_content (script_id, content) VALUES ($1, $2)',
           [scriptId, contentStr],
-        );
+        )
       }
 
       // Verify content actually persisted at the expected byte length. Catches
@@ -331,37 +428,56 @@ export async function createLocalStorage() {
         const verify = await db.select<any[]>(
           'SELECT LENGTH(CAST(content AS BLOB)) AS bytes FROM script_content WHERE script_id = $1',
           [scriptId],
-        );
-        const persistedBytes = Number(verify[0]?.bytes ?? 0);
+        )
+        const persistedBytes = Number(verify[0]?.bytes ?? 0)
         if (persistedBytes !== sizeBytes) {
           throw new Error(
             `Save verification failed: expected ${sizeBytes} bytes in script_content, found ${persistedBytes}. ` +
-            `Script "${title}" was NOT saved correctly. Try again, and if this persists please report the issue.`,
-          );
+              `Script "${title}" was NOT saved correctly. Try again, and if this persists please report the issue.`,
+          )
         }
       }
 
       await db.execute(
         'UPDATE scripts SET title = $1, size_bytes = $2, updated_at = $3, color = $4, pinned = $5, sort_order = $6 WHERE id = $7',
         [title, sizeBytes, ts, color, pinned ? 1 : 0, sort_order, scriptId],
-      );
+      )
 
-      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [ts, projectId]);
+      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [
+        ts,
+        projectId,
+      ])
 
       return {
-        meta: { ...existing.meta, title, size_bytes: sizeBytes, updated_at: ts, color, pinned, sort_order },
+        meta: {
+          ...existing.meta,
+          title,
+          size_bytes: sizeBytes,
+          updated_at: ts,
+          color,
+          pinned,
+          sort_order,
+        },
         content,
-      };
+      }
     },
 
     async deleteScript(
       projectId: string,
       scriptId: string,
     ): Promise<{ message: string }> {
-      await db.execute('DELETE FROM script_content WHERE script_id = $1', [scriptId]);
-      await db.execute('DELETE FROM scripts WHERE id = $1 AND project_id = $2', [scriptId, projectId]);
-      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [now(), projectId]);
-      return { message: 'deleted' };
+      await db.execute('DELETE FROM script_content WHERE script_id = $1', [
+        scriptId,
+      ])
+      await db.execute(
+        'DELETE FROM scripts WHERE id = $1 AND project_id = $2',
+        [scriptId, projectId],
+      )
+      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [
+        now(),
+        projectId,
+      ])
+      return { message: 'deleted' }
     },
 
     async reorderScripts(
@@ -372,42 +488,56 @@ export async function createLocalStorage() {
         await db.execute(
           'UPDATE scripts SET sort_order = $1 WHERE id = $2 AND project_id = $3',
           [item.sort_order, item.id, projectId],
-        );
+        )
       }
-      return { message: 'ok' };
+      return { message: 'ok' }
     },
 
     async duplicateScript(
       projectId: string,
       scriptId: string,
     ): Promise<ScriptResponse> {
-      const original = await storage.getScript(projectId, scriptId);
-      const id = uuid();
-      const ts = now();
-      const contentStr = original.content ? JSON.stringify(original.content) : null;
-      const sizeBytes = contentStr ? new Blob([contentStr]).size : 0;
-      const title = `${original.meta.title} (Copy)`;
+      const original = await storage.getScript(projectId, scriptId)
+      const id = uuid()
+      const ts = now()
+      const contentStr = original.content
+        ? JSON.stringify(original.content)
+        : null
+      const sizeBytes = contentStr ? new Blob([contentStr]).size : 0
+      const title = `${original.meta.title} (Copy)`
 
       await db.execute(
         'INSERT INTO scripts (id, project_id, title, size_bytes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)',
         [id, projectId, title, sizeBytes, ts, ts],
-      );
+      )
       if (contentStr) {
         await db.execute(
           'INSERT INTO script_content (script_id, content) VALUES ($1, $2)',
           [id, contentStr],
-        );
+        )
       }
-      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [ts, projectId]);
+      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [
+        ts,
+        projectId,
+      ])
 
       return {
         meta: {
-          id, title, author: '', format: 'screenplay',
-          created_at: ts, updated_at: ts, page_count: 0, size_bytes: sizeBytes,
-          color: '', pinned: false, sort_order: 0, preview: '',
+          id,
+          title,
+          author: '',
+          format: 'screenplay',
+          created_at: ts,
+          updated_at: ts,
+          page_count: 0,
+          size_bytes: sizeBytes,
+          color: '',
+          pinned: false,
+          sort_order: 0,
+          preview: '',
         },
         content: original.content,
-      };
+      }
     },
 
     // ── Versions (delta-based) ────────────────────────────────────────────
@@ -420,70 +550,86 @@ export async function createLocalStorage() {
          LEFT JOIN script_content sc ON sc.script_id = s.id
          WHERE s.project_id = $1`,
         [projectId],
-      );
+      )
 
       // Get the latest commit to compare against
       const lastCommits = await db.select<any[]>(
         `SELECT id FROM version_commits WHERE project_id = $1 ORDER BY created_at DESC LIMIT 1`,
         [projectId],
-      );
-      const lastCommitId = lastCommits.length > 0 ? lastCommits[0].id : null;
+      )
+      const lastCommitId = lastCommits.length > 0 ? lastCommits[0].id : null
 
       // Get previous script hashes if there's a previous commit
-      const prevHashes = new Map<string, string>();
+      const prevHashes = new Map<string, string>()
       if (lastCommitId) {
         const prevScripts = await db.select<any[]>(
           `SELECT script_id, content_hash FROM version_scripts WHERE commit_id = $1`,
           [lastCommitId],
-        );
+        )
         for (const ps of prevScripts) {
-          prevHashes.set(ps.script_id, ps.content_hash);
+          prevHashes.set(ps.script_id, ps.content_hash)
         }
       }
 
-      const commitId = uuid();
-      const ts = now();
+      const commitId = uuid()
+      const ts = now()
 
       await db.execute(
         'INSERT INTO version_commits (id, project_id, message, created_at) VALUES ($1, $2, $3, $4)',
         [commitId, projectId, message, ts],
-      );
+      )
 
       for (const s of scripts) {
-        const contentStr = s.content || '';
-        const hash = await simpleHash(contentStr);
-        const prevHash = prevHashes.get(s.id) || '';
-        const inherited = (prevHash === hash && lastCommitId) ? 1 : 0;
+        const contentStr = s.content || ''
+        const hash = await simpleHash(contentStr)
+        const prevHash = prevHashes.get(s.id) || ''
+        const inherited = prevHash === hash && lastCommitId ? 1 : 0
 
-        const vsId = uuid();
+        const vsId = uuid()
         await db.execute(
           `INSERT INTO version_scripts (id, commit_id, script_id, title, content, content_hash, inherited)
            VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [vsId, commitId, s.id, s.title, inherited ? null : contentStr, hash, inherited],
-        );
+          [
+            vsId,
+            commitId,
+            s.id,
+            s.title,
+            inherited ? null : contentStr,
+            hash,
+            inherited,
+          ],
+        )
       }
 
-      return { hash: commitId, short_hash: shortHash(commitId), message, date: ts };
+      return {
+        hash: commitId,
+        short_hash: shortHash(commitId),
+        message,
+        date: ts,
+      }
     },
 
-    async getVersions(projectId: string, scriptId?: string): Promise<VersionInfo[]> {
+    async getVersions(
+      projectId: string,
+      scriptId?: string,
+    ): Promise<VersionInfo[]> {
       const rows = await db.select<any[]>(
         'SELECT id, message, created_at FROM version_commits WHERE project_id = $1 ORDER BY created_at DESC',
         [projectId],
-      );
+      )
       const all: VersionInfo[] = rows.map((r: any) => ({
         hash: r.id,
         short_hash: shortHash(r.id),
         message: r.message,
         date: r.created_at,
-      }));
-      if (!scriptId) return all;
-      const filtered: VersionInfo[] = [];
+      }))
+      if (!scriptId) return all
+      const filtered: VersionInfo[] = []
       for (const v of all) {
-        const scripts = await storage._resolveVersionScripts(v.hash);
-        if (scripts.some((s) => s.script_id === scriptId)) filtered.push(v);
+        const scripts = await storage._resolveVersionScripts(v.hash)
+        if (scripts.some((s) => s.script_id === scriptId)) filtered.push(v)
       }
-      return filtered;
+      return filtered
     },
 
     async getVersionDiff(
@@ -495,38 +641,38 @@ export async function createLocalStorage() {
       const [fromScripts, toScripts] = await Promise.all([
         storage._resolveVersionScripts(fromHash),
         storage._resolveVersionScripts(toHash),
-      ]);
+      ])
 
-      const fromMap = new Map(fromScripts.map(s => [s.script_id, s]));
-      const toMap = new Map(toScripts.map(s => [s.script_id, s]));
-      const allIds = new Set([...fromMap.keys(), ...toMap.keys()]);
+      const fromMap = new Map(fromScripts.map((s) => [s.script_id, s]))
+      const toMap = new Map(toScripts.map((s) => [s.script_id, s]))
+      const allIds = new Set([...fromMap.keys(), ...toMap.keys()])
 
-      const lines: string[] = [];
+      const lines: string[] = []
 
       for (const sid of allIds) {
-        const from = fromMap.get(sid);
-        const to = toMap.get(sid);
-        const title = to?.title || from?.title || sid;
+        const from = fromMap.get(sid)
+        const to = toMap.get(sid)
+        const title = to?.title || from?.title || sid
 
         if (!from && to) {
-          lines.push(`+++ New script: ${title}`);
+          lines.push(`+++ New script: ${title}`)
         } else if (from && !to) {
-          lines.push(`--- Deleted script: ${title}`);
+          lines.push(`--- Deleted script: ${title}`)
         } else if (from && to && from.content_hash !== to.content_hash) {
-          lines.push(`--- ${title}`);
-          lines.push(`+++ ${title}`);
-          lines.push('@@ modified @@');
+          lines.push(`--- ${title}`)
+          lines.push(`+++ ${title}`)
+          lines.push('@@ modified @@')
 
           // Only do line diff if we have content
-          const fromContent = from.content || '';
-          const toContent = to.content || '';
-          const fLines = fromContent.split('\n');
-          const tLines = toContent.split('\n');
-          const maxLen = Math.max(fLines.length, tLines.length);
+          const fromContent = from.content || ''
+          const toContent = to.content || ''
+          const fLines = fromContent.split('\n')
+          const tLines = toContent.split('\n')
+          const maxLen = Math.max(fLines.length, tLines.length)
           for (let i = 0; i < maxLen; i++) {
             if (fLines[i] !== tLines[i]) {
-              if (fLines[i]) lines.push(`-${fLines[i]}`);
-              if (tLines[i]) lines.push(`+${tLines[i]}`);
+              if (fLines[i]) lines.push(`-${fLines[i]}`)
+              if (tLines[i]) lines.push(`+${tLines[i]}`)
             }
           }
         }
@@ -536,7 +682,7 @@ export async function createLocalStorage() {
         diff: lines.join('\n') || 'No differences found.',
         from_hash: fromHash,
         to_hash: toHash,
-      };
+      }
     },
 
     async getScriptAtVersion(
@@ -544,23 +690,37 @@ export async function createLocalStorage() {
       hash: string,
       scriptId: string,
     ): Promise<ScriptResponse> {
-      const scripts = await storage._resolveVersionScripts(hash);
-      const found = scripts.find(s => s.script_id === scriptId);
-      if (!found) throw new Error(`Script ${scriptId} not found in version ${hash}`);
+      const scripts = await storage._resolveVersionScripts(hash)
+      const found = scripts.find((s) => s.script_id === scriptId)
+      if (!found)
+        throw new Error(`Script ${scriptId} not found in version ${hash}`)
 
-      let content = null;
+      let content = null
       if (found.content) {
-        try { content = JSON.parse(found.content); } catch { /* invalid JSON */ }
+        try {
+          content = JSON.parse(found.content)
+        } catch {
+          /* invalid JSON */
+        }
       }
 
       return {
         meta: {
-          id: found.script_id, title: found.title, author: '', format: 'screenplay',
-          created_at: '', updated_at: '', page_count: 0, size_bytes: 0,
-          color: '', pinned: false, sort_order: 0, preview: '',
+          id: found.script_id,
+          title: found.title,
+          author: '',
+          format: 'screenplay',
+          created_at: '',
+          updated_at: '',
+          page_count: 0,
+          size_bytes: 0,
+          color: '',
+          pinned: false,
+          sort_order: 0,
+          preview: '',
         },
         content,
-      };
+      }
     },
 
     async restoreVersion(
@@ -571,61 +731,71 @@ export async function createLocalStorage() {
       const commits = await db.select<any[]>(
         'SELECT * FROM version_commits WHERE id = $1 AND project_id = $2',
         [hash, projectId],
-      );
-      if (!commits.length) throw new Error(`Version not found: ${hash}`);
+      )
+      if (!commits.length) throw new Error(`Version not found: ${hash}`)
 
       // Resolve all scripts at this version (handles inherited content)
-      const versionScripts = await storage._resolveVersionScripts(hash);
-      const ts = now();
+      const versionScripts = await storage._resolveVersionScripts(hash)
+      const ts = now()
 
       // Delete current scripts and content
       await db.execute(
         'DELETE FROM script_content WHERE script_id IN (SELECT id FROM scripts WHERE project_id = $1)',
         [projectId],
-      );
-      await db.execute('DELETE FROM scripts WHERE project_id = $1', [projectId]);
+      )
+      await db.execute('DELETE FROM scripts WHERE project_id = $1', [projectId])
 
       // Re-insert from version
       for (const s of versionScripts) {
-        const sizeBytes = s.content ? new Blob([s.content]).size : 0;
+        const sizeBytes = s.content ? new Blob([s.content]).size : 0
         await db.execute(
           'INSERT INTO scripts (id, project_id, title, size_bytes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)',
           [s.script_id, projectId, s.title, sizeBytes, ts, ts],
-        );
+        )
         if (s.content) {
           await db.execute(
             'INSERT INTO script_content (script_id, content) VALUES ($1, $2)',
             [s.script_id, s.content],
-          );
+          )
         }
       }
 
-      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [ts, projectId]);
+      await db.execute('UPDATE projects SET updated_at = $1 WHERE id = $2', [
+        ts,
+        projectId,
+      ])
 
       return {
         hash,
         short_hash: shortHash(hash),
         message: commits[0].message,
         date: commits[0].created_at,
-      };
+      }
     },
 
     /**
      * Internal: resolve all scripts at a given commit, walking back through
      * inherited references to find the actual content.
      */
-    async _resolveVersionScripts(commitId: string): Promise<Array<{
-      script_id: string;
-      title: string;
-      content: string;
-      content_hash: string;
-    }>> {
+    async _resolveVersionScripts(commitId: string): Promise<
+      Array<{
+        script_id: string
+        title: string
+        content: string
+        content_hash: string
+      }>
+    > {
       const vsRows = await db.select<any[]>(
         'SELECT * FROM version_scripts WHERE commit_id = $1',
         [commitId],
-      );
+      )
 
-      const result: Array<{ script_id: string; title: string; content: string; content_hash: string }> = [];
+      const result: Array<{
+        script_id: string
+        title: string
+        content: string
+        content_hash: string
+      }> = []
 
       for (const vs of vsRows) {
         if (!vs.inherited) {
@@ -635,35 +805,41 @@ export async function createLocalStorage() {
             title: vs.title,
             content: vs.content || '',
             content_hash: vs.content_hash,
-          });
+          })
         } else {
           // Walk backwards through commits to find the actual content
-          const content = await storage._resolveInheritedContent(vs.script_id, commitId);
+          const content = await storage._resolveInheritedContent(
+            vs.script_id,
+            commitId,
+          )
           result.push({
             script_id: vs.script_id,
             title: vs.title,
             content,
             content_hash: vs.content_hash,
-          });
+          })
         }
       }
 
-      return result;
+      return result
     },
 
     /**
      * Walk backwards through version commits to find the most recent
      * non-inherited content for a script.
      */
-    async _resolveInheritedContent(scriptId: string, beforeCommitId: string): Promise<string> {
+    async _resolveInheritedContent(
+      scriptId: string,
+      beforeCommitId: string,
+    ): Promise<string> {
       // Get the commit's created_at for ordering
       const commitRows = await db.select<any[]>(
         'SELECT project_id, created_at FROM version_commits WHERE id = $1',
         [beforeCommitId],
-      );
-      if (!commitRows.length) return '';
+      )
+      if (!commitRows.length) return ''
 
-      const { project_id, created_at } = commitRows[0];
+      const { project_id, created_at } = commitRows[0]
 
       // Find earlier commits with actual content for this script
       const rows = await db.select<any[]>(
@@ -676,9 +852,9 @@ export async function createLocalStorage() {
          ORDER BY vc.created_at DESC
          LIMIT 1`,
         [scriptId, project_id, created_at],
-      );
+      )
 
-      return rows.length > 0 ? (rows[0].content || '') : '';
+      return rows.length > 0 ? rows[0].content || '' : ''
     },
 
     // ── Collaboration (via remote collab server) ──────────────────────────
@@ -701,23 +877,37 @@ export async function createLocalStorage() {
           expires_in_hours: expiresInHours,
           session_nonce: sessionNonce,
         }),
-      });
+      })
     },
 
     async validateCollabSession(token: string): Promise<CollabSession> {
-      return collabRequest<CollabSession>(`/api/collab/session/${token}`);
+      return collabRequest<CollabSession>(`/api/collab/session/${token}`)
     },
 
-    async listCollabSessions(projectId: string, scriptId: string): Promise<CollabSession[]> {
-      return collabRequest<CollabSession[]>(`/api/collab/sessions/${projectId}/${scriptId}`);
+    async listCollabSessions(
+      projectId: string,
+      scriptId: string,
+    ): Promise<CollabSession[]> {
+      return collabRequest<CollabSession[]>(
+        `/api/collab/sessions/${projectId}/${scriptId}`,
+      )
     },
 
     async revokeCollabSession(token: string): Promise<{ message: string }> {
-      return collabRequest<{ message: string }>(`/api/collab/session/${token}`, { method: 'DELETE' });
+      return collabRequest<{ message: string }>(
+        `/api/collab/session/${token}`,
+        { method: 'DELETE' },
+      )
     },
 
-    async revokeAllCollabSessions(projectId: string, scriptId: string): Promise<{ message: string }> {
-      return collabRequest<{ message: string }>(`/api/collab/sessions/${projectId}/${scriptId}`, { method: 'DELETE' });
+    async revokeAllCollabSessions(
+      projectId: string,
+      scriptId: string,
+    ): Promise<{ message: string }> {
+      return collabRequest<{ message: string }>(
+        `/api/collab/sessions/${projectId}/${scriptId}`,
+        { method: 'DELETE' },
+      )
     },
 
     // ── Assets ─────────────────────────────────────────────────────────────
@@ -726,7 +916,7 @@ export async function createLocalStorage() {
       const rows = await db.select<any[]>(
         'SELECT * FROM assets WHERE project_id = $1 ORDER BY created_at DESC',
         [projectId],
-      );
+      )
       return rows.map((r: any) => ({
         id: r.id,
         filename: r.filename,
@@ -735,7 +925,7 @@ export async function createLocalStorage() {
         size_bytes: r.size_bytes,
         tags: JSON.parse(r.tags || '[]'),
         created_at: r.created_at,
-      }));
+      }))
     },
 
     async uploadAsset(
@@ -743,23 +933,32 @@ export async function createLocalStorage() {
       file: File,
       tags: string[] = [],
     ): Promise<any> {
-      const id = uuid();
-      const ext = file.name.includes('.') ? file.name.split('.').pop() : '';
-      const filename = ext ? `${id}.${ext}` : id;
-      const ts = now();
+      const id = uuid()
+      const ext = file.name.includes('.') ? file.name.split('.').pop() : ''
+      const filename = ext ? `${id}.${ext}` : id
+      const ts = now()
 
-      const dir = await ensureAssetDir(projectId);
-      const buffer = new Uint8Array(await file.arrayBuffer());
+      const dir = await ensureAssetDir(projectId)
+      const buffer = new Uint8Array(await file.arrayBuffer())
       await writeFile(`${dir}/${filename}`, buffer, {
         baseDir: BaseDirectory.AppData,
-      });
+      })
 
       await db.execute(
         'INSERT INTO assets (id, project_id, filename, original_name, mime_type, size_bytes, tags, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-        [id, projectId, filename, file.name, file.type || 'application/octet-stream', file.size, JSON.stringify(tags), ts],
-      );
+        [
+          id,
+          projectId,
+          filename,
+          file.name,
+          file.type || 'application/octet-stream',
+          file.size,
+          JSON.stringify(tags),
+          ts,
+        ],
+      )
 
-      assetFilenameCache[id] = filename;
+      assetFilenameCache[id] = filename
 
       return {
         id,
@@ -769,7 +968,7 @@ export async function createLocalStorage() {
         size_bytes: file.size,
         tags,
         created_at: ts,
-      };
+      }
     },
 
     /**
@@ -782,40 +981,53 @@ export async function createLocalStorage() {
      */
     async importAsset(
       projectId: string,
-      asset: { id: string; filename: string; mime_type: string; bytes: Uint8Array },
+      asset: {
+        id: string
+        filename: string
+        mime_type: string
+        bytes: Uint8Array
+      },
     ): Promise<void> {
       const existing = await db.select<any[]>(
         'SELECT id FROM assets WHERE id = $1 AND project_id = $2',
         [asset.id, projectId],
-      );
+      )
 
-      const dir = await ensureAssetDir(projectId);
+      const dir = await ensureAssetDir(projectId)
       await writeFile(`${dir}/${asset.filename}`, asset.bytes, {
         baseDir: BaseDirectory.AppData,
-      });
+      })
 
       if (existing.length === 0) {
         await db.execute(
           'INSERT INTO assets (id, project_id, filename, original_name, mime_type, size_bytes, tags, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
           [
-            asset.id, projectId, asset.filename, asset.filename,
+            asset.id,
+            projectId,
+            asset.filename,
+            asset.filename,
             asset.mime_type || 'application/octet-stream',
-            asset.bytes.byteLength, '[]', now(),
+            asset.bytes.byteLength,
+            '[]',
+            now(),
           ],
-        );
+        )
       }
-      assetFilenameCache[asset.id] = asset.filename;
+      assetFilenameCache[asset.id] = asset.filename
     },
 
-    async getAssetBytes(projectId: string, assetId: string): Promise<Uint8Array> {
+    async getAssetBytes(
+      projectId: string,
+      assetId: string,
+    ): Promise<Uint8Array> {
       const rows = await db.select<any[]>(
         'SELECT filename FROM assets WHERE id = $1 AND project_id = $2',
         [assetId, projectId],
-      );
-      if (!rows.length) throw new Error(`Asset not found: ${assetId}`);
+      )
+      if (!rows.length) throw new Error(`Asset not found: ${assetId}`)
       return readFile(`assets/${projectId}/${rows[0].filename}`, {
         baseDir: BaseDirectory.AppData,
-      });
+      })
     },
 
     async updateAssetTags(
@@ -826,42 +1038,46 @@ export async function createLocalStorage() {
       await db.execute(
         'UPDATE assets SET tags = $1 WHERE id = $2 AND project_id = $3',
         [JSON.stringify(tags), assetId, projectId],
-      );
+      )
     },
 
-    getAssetUrl: (projectId: string, assetId: string, filename?: string): string => {
-      const fn = filename || assetFilenameCache[assetId] || assetId;
-      const filePath = `${baseDir}/assets/${projectId}/${fn}`;
-      return convertFileSrc(filePath);
+    getAssetUrl: (
+      projectId: string,
+      assetId: string,
+      filename?: string,
+    ): string => {
+      const fn = filename || assetFilenameCache[assetId] || assetId
+      const filePath = `${baseDir}/assets/${projectId}/${fn}`
+      return convertFileSrc(filePath)
     },
 
     async deleteAsset(projectId: string, assetId: string): Promise<void> {
       const rows = await db.select<any[]>(
         'SELECT filename FROM assets WHERE id = $1 AND project_id = $2',
         [assetId, projectId],
-      );
+      )
       if (rows.length) {
-        const path = `assets/${projectId}/${rows[0].filename}`;
+        const path = `assets/${projectId}/${rows[0].filename}`
         if (await exists(path, { baseDir: BaseDirectory.AppData })) {
-          await remove(path, { baseDir: BaseDirectory.AppData });
+          await remove(path, { baseDir: BaseDirectory.AppData })
         }
       }
-      await db.execute(
-        'DELETE FROM assets WHERE id = $1 AND project_id = $2',
-        [assetId, projectId],
-      );
-      delete assetFilenameCache[assetId];
+      await db.execute('DELETE FROM assets WHERE id = $1 AND project_id = $2', [
+        assetId,
+        projectId,
+      ])
+      delete assetFilenameCache[assetId]
     },
 
     // ── Link preview (via Tauri command) ──────────────────────────────────
 
     async fetchLinkPreview(url: string): Promise<LinkPreview> {
       try {
-        const { invoke } = await import('@tauri-apps/api/core');
-        return await invoke<LinkPreview>('fetch_link_preview', { url });
+        const { invoke } = await import('@tauri-apps/api/core')
+        return await invoke<LinkPreview>('fetch_link_preview', { url })
       } catch {
         // Fallback: return minimal preview with just the URL
-        return { url, title: '', description: '', image: '', site_name: '' };
+        return { url, title: '', description: '', image: '', site_name: '' }
       }
     },
 
@@ -870,7 +1086,7 @@ export async function createLocalStorage() {
     async listFormattingTemplates(): Promise<any[]> {
       const rows = await db.select<any[]>(
         `SELECT * FROM formatting_templates ORDER BY name`,
-      );
+      )
       return rows.map((r: any) => ({
         id: r.id,
         name: r.name,
@@ -879,7 +1095,7 @@ export async function createLocalStorage() {
         rules: JSON.parse(r.rules),
         createdAt: r.created_at,
         updatedAt: r.updated_at,
-      }));
+      }))
     },
 
     async createFormattingTemplate(template: any): Promise<void> {
@@ -895,18 +1111,25 @@ export async function createLocalStorage() {
           template.createdAt,
           template.updatedAt,
         ],
-      );
+      )
     },
 
     async updateFormattingTemplate(id: string, template: any): Promise<void> {
       await db.execute(
         `UPDATE formatting_templates SET name = $1, description = $2, mode = $3, rules = $4, updated_at = $5 WHERE id = $6`,
-        [template.name, template.description, template.mode, JSON.stringify(template.rules), template.updatedAt, id],
-      );
+        [
+          template.name,
+          template.description,
+          template.mode,
+          JSON.stringify(template.rules),
+          template.updatedAt,
+          id,
+        ],
+      )
     },
 
     async deleteFormattingTemplate(id: string): Promise<void> {
-      await db.execute(`DELETE FROM formatting_templates WHERE id = $1`, [id]);
+      await db.execute(`DELETE FROM formatting_templates WHERE id = $1`, [id])
     },
 
     // ── Recovery hook ─────────────────────────────────────────────────────
@@ -914,14 +1137,14 @@ export async function createLocalStorage() {
     // already had its file copied into place.  Not part of the public api
     // surface — flagged with `_` for that reason.
     async _registerImportedAsset(meta: {
-      id: string;
-      project_id: string;
-      filename: string;
-      original_name: string;
-      mime_type: string;
-      size_bytes: number;
-      tags: string[];
-      created_at: string;
+      id: string
+      project_id: string
+      filename: string
+      original_name: string
+      mime_type: string
+      size_bytes: number
+      tags: string[]
+      created_at: string
     }): Promise<void> {
       await db.execute(
         'INSERT OR REPLACE INTO assets (id, project_id, filename, original_name, mime_type, size_bytes, tags, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
@@ -935,12 +1158,12 @@ export async function createLocalStorage() {
           JSON.stringify(meta.tags || []),
           meta.created_at,
         ],
-      );
-      assetFilenameCache[meta.id] = meta.filename;
+      )
+      assetFilenameCache[meta.id] = meta.filename
     },
-  };
+  }
 
-  return storage;
+  return storage
 }
 
 // ── Row mappers ──────────────────────────────────────────────────────────────
@@ -955,7 +1178,7 @@ function rowToProject(r: any): ProjectInfo {
     color: r.color || '',
     pinned: !!r.pinned,
     sort_order: r.sort_order ?? 0,
-  };
+  }
 }
 
 function rowToScriptMeta(r: any): ScriptMeta {
@@ -972,5 +1195,5 @@ function rowToScriptMeta(r: any): ScriptMeta {
     pinned: !!r.pinned,
     sort_order: r.sort_order ?? 0,
     preview: '',
-  };
+  }
 }

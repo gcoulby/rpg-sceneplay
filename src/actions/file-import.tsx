@@ -1,16 +1,16 @@
 import { DEFAULT_TAG_CATEGORIES, useEditorStore } from '@/stores/editorStore'
 import { clearTrackChanges } from './shared'
 import type { Editor } from '@tiptap/react'
-import { openBinaryFile, openTextFile } from '@/utils/fileOps'
-import { parseFDXFull } from '@/utils/fdxParser'
-import { parseOdraft } from '@/utils/odraftFormat'
-import { hydrateEditorStoresFromContent } from '@/utils/hydrateStores'
+import { openBinaryFile, openTextFile } from '@/utils/open-draft/fileOps'
+import { parseFDXFull } from '@/utils/open-draft/fdxParser'
+import { parseOdraft } from '@/utils/open-draft/odraftFormat'
+import { hydrateEditorStoresFromContent } from '@/utils/open-draft/hydrateStores'
 import { showToast } from '@/components/open-draft/Toast'
-import { parseFountain } from '@/utils/fountainParser'
+import { parseFountain } from '@/utils/open-draft/fountainParser'
 import { clearEditorHistory } from '@/editor/clearHistory'
 import { useBackupStatusStore } from '@/stores/backupStatusStore'
 import { useProjectStore } from '@/stores/projectStore'
-import { parseDocx } from '@/utils/docxImporter'
+import { parseDocx } from '@/utils/open-draft/docxImporter'
 
 function getStore(editor: Editor | null) {
   // Clear previous document state before importing

@@ -6,7 +6,7 @@ import {
   type ElementType,
 } from '@/stores/editorStore'
 import { useEditorStore } from '@/stores/editorStore'
-import { singleLine } from '@/utils/nodeText'
+import { singleLine } from '@/utils/open-draft/nodeText'
 import { spellChecker, PROJECT_DICT_TARGET } from '@/editor/spellchecker'
 import { spellCheckPluginKey } from '@/editor/extensions/SpellCheck'
 import { grammarPluginKey } from '@/editor/extensions/Grammar'
@@ -16,7 +16,7 @@ import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import {
   getCurrentElementRule,
   getLockedFormatting,
-} from '@/utils/effectiveFormatting'
+} from '@/utils/open-draft/effectiveFormatting'
 
 const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform)
 const mod = isMac ? '⌘' : 'Ctrl+'

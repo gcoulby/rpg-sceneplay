@@ -18,7 +18,7 @@
  * pathological anyway. Its normalized name still participates in continuation
  * matching, so `JOHN<br>SMITH` and `JOHN SMITH` are recognized as one speaker.
  */
-import { characterKey, singleLine } from '../utils/nodeText'
+import { characterKey, singleLine } from '../utils/open-draft/nodeText'
 
 /** Elements that mark a new scene — they break dialogue continuation. */
 export const CONTD_RESET_TYPES = new Set([

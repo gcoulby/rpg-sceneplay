@@ -41,6 +41,7 @@ import {
   FaRegFileWord,
   FaSearch,
   FaSpellCheck,
+  FaStrikethrough,
   FaSubscript,
   FaSuperscript,
   FaUnderline,
@@ -71,6 +72,7 @@ import {
   handleUndo,
 } from '@/actions/edit-actions'
 import { getLockedFormattingOption } from '@/utils/lockedFormatting'
+import { getActiveTemplate } from '@/utils/activeTemplate'
 
 const docXImportNotice = (
   <div className="flex flex-col gap-5">
@@ -117,6 +119,8 @@ export default function AppShell() {
     : 'Ctrl+'
 
   const locked = getLockedFormattingOption(editor)
+  const { rules: activeTemplateRules, name: activeTemplateName } =
+    getActiveTemplate()
 
   const runOrConfirm = (item: HeaderMenuBarItem) => {
     if (!item.action) return
@@ -321,7 +325,7 @@ export default function AppShell() {
           icon: FaListOl,
           label: 'Element',
           items: [
-            ...Object.values(activeTemplate.rules)
+            ...Object.values(activeTemplateRules)
               .filter((r) => r.enabled)
               .map((r) => {
                 const shortcuts: Record<string, string> = {
@@ -337,7 +341,7 @@ export default function AppShell() {
                 return {
                   label: r.label,
                   shortcut: shortcuts[r.id],
-                  action: () => setElement(r.id as any),
+                  action: () => editor?.chain().focus().setNode(r.id).run(),
                 }
               }),
           ],
@@ -474,7 +478,7 @@ export default function AppShell() {
           icon: FaColumns,
           label: 'Dual Dialogue',
           shortcut: `${mod}D`,
-          action: () => (editor as any)?.commands?.toggleDualDialogue(),
+          action: () => editor?.commands?.toggleDualDialogue(),
         },
         { separator: true, label: '' },
         {
@@ -495,14 +499,13 @@ export default function AppShell() {
         },
         {
           icon: FaFileAlt,
-          label: `Formatting Template (${activeTemplate.name})...`,
-          action: () => setTemplateSelectOpen(true),
+          label: `Formatting Template (${activeTemplateName})...`,
+          //   action: () => setTemplateSelectOpen(true),
         },
         {
           icon: FaFileAlt,
           label: 'Script Format Preferences...',
-          action: () =>
-            setFormatPrefsOpen({ firstRun: false, afterSave: null }),
+          //   action: () =>            setFormatPrefsOpen({ firstRun: false, afterSave: null }),
         },
       ],
     },

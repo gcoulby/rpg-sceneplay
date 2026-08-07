@@ -10,8 +10,8 @@ import type { Editor } from '@tiptap/react'
 import {
   SYSTEM_TEMPLATES,
   useFormattingTemplateStore,
-} from '../stores/formattingTemplateStore'
-import { INDUSTRY_STANDARD_ID } from '../stores/formattingTypes'
+} from '@/stores/formattingTemplateStore'
+import { INDUSTRY_STANDARD_ID } from '@/stores/formattingTypes'
 
 const DEFAULT_DOC = {
   type: 'doc',

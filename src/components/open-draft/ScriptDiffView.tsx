@@ -4,7 +4,7 @@ import {
   computeScriptDiff,
   type DiffBlock,
   type WordDiff,
-} from '@/utils/scriptDiff'
+} from '@/utils/open-draft/scriptDiff'
 
 interface Props {
   docA: JSONContent

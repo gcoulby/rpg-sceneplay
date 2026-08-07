@@ -5,7 +5,7 @@ import { useProjectStore } from '@/stores/projectStore'
 import { api, type LocationEntry } from '@/services/api'
 import { showToast } from './Toast'
 import { useDelayedUnmount, useSwipeDismiss } from '@/hooks/useTouch'
-import { blockContentRange, singleLine } from '@/utils/nodeText'
+import { blockContentRange, singleLine } from '@/utils/open-draft/nodeText'
 
 interface Props {
   editor: Editor | null

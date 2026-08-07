@@ -21,7 +21,7 @@ import {
 } from '../stores/backupStatusStore'
 import { writeSnapshot } from '../services/backupService'
 import { isDesktopTauri } from '../services/platform'
-import { docHasAnyText } from '../utils/docText'
+import { docHasAnyText } from '../utils/open-draft/docText'
 import { showToast } from '@/components/open-draft/Toast'
 
 /** How many times the initial snapshot waits for the editor to finish loading. */

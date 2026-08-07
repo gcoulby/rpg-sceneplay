@@ -2,7 +2,7 @@ import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import {
   getCurrentElementRule,
   getLockedFormatting,
-} from './effectiveFormatting'
+} from './open-draft/effectiveFormatting'
 import type { Editor } from '@tiptap/core'
 
 export const getLockedFormattingOption = (editor: Editor | null) => {

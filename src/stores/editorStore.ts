@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { uuid } from '../utils/uuid'
+import { uuid } from '../utils/open-draft/uuid'
 import { spellChecker, PROJECT_DICT_TARGET } from '../editor/spellchecker'
 import { findLanguage, urlsFor } from '../editor/languageCatalog'
 import type { Editor } from '@tiptap/core'

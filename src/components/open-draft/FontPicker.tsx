@@ -4,8 +4,8 @@ import {
   FONT_CATEGORIES,
   loadFont,
   getFontsByCategory,
-} from '@/utils/fonts'
-import type { FontEntry } from '@/utils/fonts'
+} from '@/utils/open-draft/fonts'
+import type { FontEntry } from '@/utils/open-draft/fonts'
 
 interface FontPickerProps {
   value: string

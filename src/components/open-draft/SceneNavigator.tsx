@@ -12,15 +12,19 @@ import {
   computeSceneTiming,
   formatSceneDuration,
   getTimingColor,
-} from '@/utils/scriptTiming'
+} from '@/utils/open-draft/scriptTiming'
 import {
   computeScriptStructure,
   sceneActLabel,
   type ScriptStructure,
-} from '@/utils/scriptStructure'
+} from '@/utils/open-draft/scriptStructure'
 import SynopsisModal from './SynopsisModal'
 import { showToast } from './Toast'
-import { blockContentRange, characterKey, singleLine } from '@/utils/nodeText'
+import {
+  blockContentRange,
+  characterKey,
+  singleLine,
+} from '@/utils/open-draft/nodeText'
 
 interface SceneNavigatorProps {
   editor: Editor | null
