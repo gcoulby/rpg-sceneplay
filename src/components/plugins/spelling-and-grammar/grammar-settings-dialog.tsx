@@ -60,12 +60,12 @@ export default function GrammarRulesPanel({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Grammar & Spelling Settings</DialogTitle>
           </DialogHeader>
 
-          <div className="flex gap-1 -mx-6 px-6 border-b max-h-[65vh] overflow-scroll">
+          <div className="flex gap-1 -mx-6 px-6 border-b">
             {TABS.map((t) => {
               const active = t.id === activeTab
               return (

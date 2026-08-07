@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useEditorStore } from '@/stores/editorStore'
 import type { RuleSection } from '@/types'
 
@@ -9,7 +10,7 @@ export function RuleList({ section }: { section: RuleSection }) {
   const isOn = (id: string) => grammarRulesEnabled[id] !== false
 
   return (
-    <div className="space-y-3 max-h-[65vh] overflow-scroll">
+    <ScrollArea className="rounded-md w-full h-[65vh]">
       <p className="text-muted-foreground text-xs">{section.blurb}</p>
       <div className="space-y-1.5">
         {section.ids.map((id) => {
@@ -45,6 +46,6 @@ export function RuleList({ section }: { section: RuleSection }) {
           )
         })}
       </div>
-    </div>
+    </ScrollArea>
   )
 }

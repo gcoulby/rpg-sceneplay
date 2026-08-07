@@ -75,6 +75,8 @@ interface UseHeaderMenusArgs {
   onOpenGrammarPanel: () => void
   onOpenSetMoresAndContdsOpen: () => void
   onTitlePageEditorOpen: () => void
+  onScriptFormatEditorOpen: () => void
+  onTemplateSelectOpen: () => void
 }
 
 export function useHeaderMenus({
@@ -83,6 +85,7 @@ export function useHeaderMenus({
   onOpenGrammarPanel,
   onOpenSetMoresAndContdsOpen,
   onTitlePageEditorOpen,
+  onTemplateSelectOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
@@ -424,6 +427,7 @@ export function useHeaderMenus({
           {
             icon: FaFileAlt,
             label: `Formatting Template (${activeTemplateName})...`,
+            action: onTemplateSelectOpen,
             //   action: () => setTemplateSelectOpen(true),
           },
           {
@@ -444,7 +448,6 @@ export function useHeaderMenus({
       toggleGrammarCheck,
       onOpenGrammarPanel,
       activeTemplateRulesMenuItems,
-      editor,
       locked.bold,
       locked.italic,
       locked.underline,
@@ -452,7 +455,11 @@ export function useHeaderMenus({
       locked.subscript,
       locked.superscript,
       locked.textAlign,
+      onOpenSetMoresAndContdsOpen,
+      onTitlePageEditorOpen,
       activeTemplateName,
+      onTemplateSelectOpen,
+      editor,
       setSearchOpen,
       setSpellCheckOpen,
       setWritingSuggestionsOpen,

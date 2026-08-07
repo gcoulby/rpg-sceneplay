@@ -12,6 +12,7 @@ import { useEditorStore } from '@/stores/editorStore'
 import { spellChecker } from '@/editor/spellchecker'
 import { CATALOG } from '@/editor/languageCatalog'
 import { useSpellCheckerVersion } from '@/hooks/useSpellCheckerVersion'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface LanguageInstallerDialogProps {
   open: boolean
@@ -94,129 +95,132 @@ export default function LanguageInstallerDialog({
           <DialogTitle>Add Language</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-2.5 max-h-[65vh] overflow-scroll">
-          <div className="text-muted-foreground text-xs">
-            Languages are downloaded from jsdelivr (wooorm/dictionaries) or the
-            LibreOffice dictionaries repo on GitHub, and cached locally. A
-            network connection is required for the first install.
-          </div>
-          <Input
-            type="text"
-            placeholder="Search languages…"
-            className="h-8 text-sm"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          />
-          {error && (
-            <div className="bg-[rgba(192,57,43,0.12)] px-2.5 py-1.5 rounded text-[#c0392b] text-xs">
-              {error}
+        <ScrollArea className="rounded-md w-full max-h-[65vh]">
+          <div className="flex flex-col gap-2.5">
+            <div className="text-muted-foreground text-xs">
+              Languages are downloaded from jsdelivr (wooorm/dictionaries) or
+              the LibreOffice dictionaries repo on GitHub, and cached locally. A
+              network connection is required for the first install.
             </div>
-          )}
-          <div className="border rounded-md min-h-60 max-h-90 overflow-y-auto">
-            {filtered.length === 0 && (
-              <div className="p-3 text-muted-foreground text-xs">
-                No matches.
+            <Input
+              type="text"
+              placeholder="Search languages…"
+              className="h-8 text-sm"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            {error && (
+              <div className="bg-[rgba(192,57,43,0.12)] px-2.5 py-1.5 rounded text-[#c0392b] text-xs">
+                {error}
               </div>
             )}
-            {filtered.map((lang) => {
-              const isInstalled =
-                loadedCodes.has(lang.code) ||
-                installedLanguages.includes(lang.code)
-              const isBusy = busy === lang.code
-              return (
-                <div
-                  key={lang.code}
-                  className="flex items-center gap-2 px-3 py-2 border-b last:border-b-0 text-[13px]"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="truncate">{lang.label}</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {lang.code} ·{' '}
-                      {lang.source.kind === 'jsdelivr'
-                        ? lang.source.npm
-                        : lang.source.kind === 'libreoffice'
-                          ? `LibreOffice/${lang.source.folder}`
-                          : `OpenDraft/${lang.source.path}`}
-                    </div>
+            <ScrollArea className="rounded-md w-full min-h-60 max-h-90">
+              <div className="border rounded-md">
+                {filtered.length === 0 && (
+                  <div className="p-3 text-muted-foreground text-xs">
+                    No matches.
                   </div>
-                  {lang.sample && (
-                    <div className="px-2 text-muted-foreground text-base">
-                      {lang.sample}
+                )}
+                {filtered.map((lang) => {
+                  const isInstalled =
+                    loadedCodes.has(lang.code) ||
+                    installedLanguages.includes(lang.code)
+                  const isBusy = busy === lang.code
+                  return (
+                    <div
+                      key={lang.code}
+                      className="flex items-center gap-2 px-3 py-2 border-b last:border-b-0 text-[13px]"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate">{lang.label}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {lang.code} ·{' '}
+                          {lang.source.kind === 'jsdelivr'
+                            ? lang.source.npm
+                            : lang.source.kind === 'libreoffice'
+                              ? `LibreOffice/${lang.source.folder}`
+                              : `OpenDraft/${lang.source.path}`}
+                        </div>
+                      </div>
+                      {lang.sample && (
+                        <div className="px-2 text-muted-foreground text-base">
+                          {lang.sample}
+                        </div>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="min-w-22.5"
+                        disabled={isInstalled || isBusy}
+                        onClick={() => handleInstall(lang.code)}
+                      >
+                        {isInstalled
+                          ? 'Installed'
+                          : isBusy
+                            ? 'Installing…'
+                            : 'Install'}
+                      </Button>
                     </div>
-                  )}
+                  )
+                })}
+              </div>
+            </ScrollArea>
+            <div className="pt-2.5 border-t">
+              <Button
+                type="button"
+                onClick={() => setCustomOpen((v) => !v)}
+                className="w-full cursor-pointer"
+              >
+                {customOpen ? '▾' : '▸'} Install from custom URL (e.g. Hindi,
+                Tamil, etc.)
+              </Button>
+              {customOpen && (
+                <div className="flex flex-col gap-1.5 mt-2.5">
+                  <div className="text-muted-foreground text-xs">
+                    Paste links to a Hunspell `.aff` and `.dic` file. The pair
+                    will be downloaded and cached locally.
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Language code (e.g. hi_IN)"
+                    className="h-8 text-sm"
+                    value={customCode}
+                    onChange={(e) => setCustomCode(e.target.value)}
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Display name (e.g. Hindi)"
+                    className="h-8 text-sm"
+                    value={customLabel}
+                    onChange={(e) => setCustomLabel(e.target.value)}
+                  />
+                  <Input
+                    type="text"
+                    placeholder=".aff URL"
+                    className="h-8 text-sm"
+                    value={customAff}
+                    onChange={(e) => setCustomAff(e.target.value)}
+                  />
+                  <Input
+                    type="text"
+                    placeholder=".dic URL"
+                    className="h-8 text-sm"
+                    value={customDic}
+                    onChange={(e) => setCustomDic(e.target.value)}
+                  />
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="min-w-22.5"
-                    disabled={isInstalled || isBusy}
-                    onClick={() => handleInstall(lang.code)}
+                    className="self-end"
+                    disabled={busy === '__custom__'}
+                    onClick={handleInstallCustom}
                   >
-                    {isInstalled
-                      ? 'Installed'
-                      : isBusy
-                        ? 'Installing…'
-                        : 'Install'}
+                    {busy === '__custom__' ? 'Installing…' : 'Install'}
                   </Button>
                 </div>
-              )
-            })}
+              )}
+            </div>
           </div>
-          <div className="pt-2.5 border-t">
-            <Button
-              type="button"
-              onClick={() => setCustomOpen((v) => !v)}
-              className="w-full cursor-pointer"
-            >
-              {customOpen ? '▾' : '▸'} Install from custom URL (e.g. Hindi,
-              Tamil, etc.)
-            </Button>
-            {customOpen && (
-              <div className="flex flex-col gap-1.5 mt-2.5">
-                <div className="text-muted-foreground text-xs">
-                  Paste links to a Hunspell `.aff` and `.dic` file. The pair
-                  will be downloaded and cached locally.
-                </div>
-                <Input
-                  type="text"
-                  placeholder="Language code (e.g. hi_IN)"
-                  className="h-8 text-sm"
-                  value={customCode}
-                  onChange={(e) => setCustomCode(e.target.value)}
-                />
-                <Input
-                  type="text"
-                  placeholder="Display name (e.g. Hindi)"
-                  className="h-8 text-sm"
-                  value={customLabel}
-                  onChange={(e) => setCustomLabel(e.target.value)}
-                />
-                <Input
-                  type="text"
-                  placeholder=".aff URL"
-                  className="h-8 text-sm"
-                  value={customAff}
-                  onChange={(e) => setCustomAff(e.target.value)}
-                />
-                <Input
-                  type="text"
-                  placeholder=".dic URL"
-                  className="h-8 text-sm"
-                  value={customDic}
-                  onChange={(e) => setCustomDic(e.target.value)}
-                />
-                <Button
-                  size="sm"
-                  className="self-end"
-                  disabled={busy === '__custom__'}
-                  onClick={handleInstallCustom}
-                >
-                  {busy === '__custom__' ? 'Installing…' : 'Install'}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
+        </ScrollArea>
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>Done</Button>
         </DialogFooter>

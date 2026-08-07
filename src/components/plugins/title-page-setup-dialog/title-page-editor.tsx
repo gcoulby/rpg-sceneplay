@@ -34,6 +34,7 @@ import {
   titlePageRegionEnd,
   buildTitlePageBlocks,
 } from './title-page-utils'
+import { ScrollArea } from '@/components/ui/scroll-area'
 // import { error } from 'console'
 
 interface TitlePageEditorProps {
@@ -249,300 +250,309 @@ export default function TitlePageEditor({
         <DialogHeader>
           <DialogTitle>Title Page</DialogTitle>
         </DialogHeader>
+        <ScrollArea className="rounded-md w-full h-[65vh]">
+          <div className="gap-5 max-[720px]:gap-3.5 grid grid-cols-2 max-[720px]:grid-cols-1">
+            {/* Fields */}
+            <div className="content-start gap-x-4 gap-y-2.5 grid grid-cols-2 max-[720px]:grid-cols-1">
+              {showField('tpTitle') && (
+                <div className="space-y-1.5 col-span-full">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Title
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    value={data.tpTitle}
+                    onChange={(e) => setField('tpTitle', e.target.value)}
+                    placeholder="SCREENPLAY TITLE"
+                    autoFocus
+                  />
+                </div>
+              )}
+              {showField('tpTitle') && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Title Size
+                  </Label>
+                  <Select
+                    value={String(data.tpTitleFontSize)}
+                    onValueChange={(v) =>
+                      v &&
+                      setData((prev) => ({
+                        ...prev,
+                        tpTitleFontSize: Number(v),
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-full h-7.5 text-[13px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TITLE_FONT_SIZES.map((s) => (
+                        <SelectItem key={s} value={String(s)}>
+                          {s} pt
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {showField('tpWrittenBy') && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Written By
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    value={data.tpWrittenBy}
+                    onChange={(e) => setField('tpWrittenBy', e.target.value)}
+                    placeholder="Author Name"
+                  />
+                </div>
+              )}
+              {showField('tpBasedOn') && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Based On
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    value={data.tpBasedOn}
+                    onChange={(e) => setField('tpBasedOn', e.target.value)}
+                    placeholder="the novel by..."
+                  />
+                </div>
+              )}
+              {showField('tpDraft') && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Draft
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    value={data.tpDraft}
+                    onChange={(e) => setField('tpDraft', e.target.value)}
+                    placeholder="e.g. Second Draft"
+                  />
+                </div>
+              )}
+              {showField('tpDraftDate') && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Draft Date
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    type="date"
+                    value={data.tpDraftDate}
+                    onChange={(e) => setField('tpDraftDate', e.target.value)}
+                  />
+                </div>
+              )}
+              {showField('tpContact') && (
+                <div className="space-y-1.5 col-span-full">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Contact
+                  </Label>
+                  <Textarea
+                    className="text-[13px]"
+                    value={data.tpContact}
+                    onChange={(e) => setField('tpContact', e.target.value)}
+                    placeholder={
+                      'Name\nAgency\nemail@example.com\n(310) 555-0100'
+                    }
+                    rows={3}
+                  />
+                </div>
+              )}
+              {showField('tpCopyright') && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Copyright
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    value={data.tpCopyright}
+                    onChange={(e) => setField('tpCopyright', e.target.value)}
+                    placeholder="Copyright 2026 Author Name"
+                  />
+                </div>
+              )}
+              {showField('tpWgaRegistration') && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    WGA Registration #
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    value={data.tpWgaRegistration}
+                    onChange={(e) =>
+                      setField('tpWgaRegistration', e.target.value)
+                    }
+                    placeholder="WGAw #123456"
+                  />
+                </div>
+              )}
+              {showField('tpNotes') && (
+                <div className="space-y-1.5 col-span-full">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Notes
+                  </Label>
+                  <Input
+                    className="h-7.5 text-[13px]"
+                    value={data.tpNotes}
+                    onChange={(e) => setField('tpNotes', e.target.value)}
+                    placeholder="e.g. CONFIDENTIAL"
+                  />
+                </div>
+              )}
 
-        <div className="gap-5 max-[720px]:gap-3.5 grid grid-cols-2 max-[720px]:grid-cols-1">
-          {/* Fields */}
-          <div className="content-start gap-x-4 gap-y-2.5 grid grid-cols-2 max-[720px]:grid-cols-1">
-            {showField('tpTitle') && (
-              <div className="space-y-1.5 col-span-full">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Title
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  value={data.tpTitle}
-                  onChange={(e) => setField('tpTitle', e.target.value)}
-                  placeholder="SCREENPLAY TITLE"
-                  autoFocus
-                />
-              </div>
-            )}
-            {showField('tpTitle') && (
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Title Size
+              <Button
+                variant="outline"
+                className="col-span-full mt-1 border-dashed text-muted-foreground"
+                onClick={handleSyncFromProject}
+                type="button"
+              >
+                Sync Title from Project
+              </Button>
+
+              <div className="flex items-center gap-2 col-span-full">
+                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide shrink-0">
+                  Place image
                 </Label>
                 <Select
-                  value={String(data.tpTitleFontSize)}
+                  value={imagePosition}
                   onValueChange={(v) =>
-                    v &&
-                    setData((prev) => ({ ...prev, tpTitleFontSize: Number(v) }))
+                    v && setImagePosition(v as 'above' | 'below')
                   }
                 >
-                  <SelectTrigger className="w-full h-7.5 text-[13px]">
+                  <SelectTrigger
+                    className="flex-1 h-7.5 text-[13px]"
+                    title="Where the next image goes"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {TITLE_FONT_SIZES.map((s) => (
-                      <SelectItem key={s} value={String(s)}>
-                        {s} pt
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="above">
+                      Top of page (above title)
+                    </SelectItem>
+                    <SelectItem value="below">
+                      Bottom of page (below all)
+                    </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            )}
-            {showField('tpWrittenBy') && (
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Written By
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  value={data.tpWrittenBy}
-                  onChange={(e) => setField('tpWrittenBy', e.target.value)}
-                  placeholder="Author Name"
-                />
-              </div>
-            )}
-            {showField('tpBasedOn') && (
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Based On
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  value={data.tpBasedOn}
-                  onChange={(e) => setField('tpBasedOn', e.target.value)}
-                  placeholder="the novel by..."
-                />
-              </div>
-            )}
-            {showField('tpDraft') && (
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Draft
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  value={data.tpDraft}
-                  onChange={(e) => setField('tpDraft', e.target.value)}
-                  placeholder="e.g. Second Draft"
-                />
-              </div>
-            )}
-            {showField('tpDraftDate') && (
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Draft Date
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  type="date"
-                  value={data.tpDraftDate}
-                  onChange={(e) => setField('tpDraftDate', e.target.value)}
-                />
-              </div>
-            )}
-            {showField('tpContact') && (
-              <div className="space-y-1.5 col-span-full">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Contact
-                </Label>
-                <Textarea
-                  className="text-[13px]"
-                  value={data.tpContact}
-                  onChange={(e) => setField('tpContact', e.target.value)}
-                  placeholder={
-                    'Name\nAgency\nemail@example.com\n(310) 555-0100'
-                  }
-                  rows={3}
-                />
-              </div>
-            )}
-            {showField('tpCopyright') && (
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Copyright
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  value={data.tpCopyright}
-                  onChange={(e) => setField('tpCopyright', e.target.value)}
-                  placeholder="Copyright 2026 Author Name"
-                />
-              </div>
-            )}
-            {showField('tpWgaRegistration') && (
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  WGA Registration #
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  value={data.tpWgaRegistration}
-                  onChange={(e) =>
-                    setField('tpWgaRegistration', e.target.value)
-                  }
-                  placeholder="WGAw #123456"
-                />
-              </div>
-            )}
-            {showField('tpNotes') && (
-              <div className="space-y-1.5 col-span-full">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Notes
-                </Label>
-                <Input
-                  className="h-7.5 text-[13px]"
-                  value={data.tpNotes}
-                  onChange={(e) => setField('tpNotes', e.target.value)}
-                  placeholder="e.g. CONFIDENTIAL"
-                />
-              </div>
-            )}
-
-            <Button
-              variant="outline"
-              className="col-span-full mt-1 border-dashed text-muted-foreground"
-              onClick={handleSyncFromProject}
-              type="button"
-            >
-              Sync Title from Project
-            </Button>
-
-            <div className="flex items-center gap-2 col-span-full">
-              <Label className="text-[11px] text-muted-foreground uppercase tracking-wide shrink-0">
-                Place image
-              </Label>
-              <Select
-                value={imagePosition}
-                onValueChange={(v) =>
-                  v && setImagePosition(v as 'above' | 'below')
-                }
-              >
-                <SelectTrigger
-                  className="flex-1 h-7.5 text-[13px]"
-                  title="Where the next image goes"
+                <Button
+                  variant="outline"
+                  onClick={handleAddImage}
+                  type="button"
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="above">
-                    Top of page (above title)
-                  </SelectItem>
-                  <SelectItem value="below">
-                    Bottom of page (below all)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" onClick={handleAddImage} type="button">
-                Add Image…
-              </Button>
-            </div>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageChosen}
-            />
+                  Add Image…
+                </Button>
+              </div>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChosen}
+              />
 
-            {imageRows.length > 0 && (
-              <div className="space-y-1.5 col-span-full">
-                <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
-                  Title Page Images ({imageRows.length})
-                </Label>
-                <div className="flex flex-col gap-1.5">
-                  {imageRows.map((row, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-1.5 p-1 border rounded"
-                    >
-                      <div className="w-12 shrink-0">
-                        <TpImageThumb attrs={row.attrs} />
+              {imageRows.length > 0 && (
+                <div className="space-y-1.5 col-span-full">
+                  <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
+                    Title Page Images ({imageRows.length})
+                  </Label>
+                  <div className="flex flex-col gap-1.5">
+                    {imageRows.map((row, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-1.5 p-1 border rounded"
+                      >
+                        <div className="w-12 shrink-0">
+                          <TpImageThumb attrs={row.attrs} />
+                        </div>
+                        <Select
+                          value={row.above ? 'above' : 'below'}
+                          onValueChange={(v) =>
+                            v &&
+                            moveImg(row.above, row.idx, v as 'above' | 'below')
+                          }
+                        >
+                          <SelectTrigger
+                            className="flex-1 h-7.5 text-[13px]"
+                            title="Image placement"
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="above">Top</SelectItem>
+                            <SelectItem value="below">Bottom</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select
+                          value={(row.attrs.align as string) || 'center'}
+                          onValueChange={(v) =>
+                            v && alignImg(row.above, row.idx, v)
+                          }
+                        >
+                          <SelectTrigger
+                            className="flex-1 h-7.5 text-[13px]"
+                            title="Image alignment"
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => removeImg(row.above, row.idx)}
+                        >
+                          ✕
+                        </Button>
                       </div>
-                      <Select
-                        value={row.above ? 'above' : 'below'}
-                        onValueChange={(v) =>
-                          v &&
-                          moveImg(row.above, row.idx, v as 'above' | 'below')
-                        }
-                      >
-                        <SelectTrigger
-                          className="flex-1 h-7.5 text-[13px]"
-                          title="Image placement"
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="above">Top</SelectItem>
-                          <SelectItem value="below">Bottom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={(row.attrs.align as string) || 'center'}
-                        onValueChange={(v) =>
-                          v && alignImg(row.above, row.idx, v)
-                        }
-                      >
-                        <SelectTrigger
-                          className="flex-1 h-7.5 text-[13px]"
-                          title="Image alignment"
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="left">Left</SelectItem>
-                          <SelectItem value="center">Center</SelectItem>
-                          <SelectItem value="right">Right</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        type="button"
-                        onClick={() => removeImg(row.above, row.idx)}
-                      >
-                        ✕
-                      </Button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Live preview */}
-          <div className="flex justify-center items-center bg-muted p-3 rounded-md">
-            <div className="relative flex flex-col bg-white shadow-[0_2px_12px_rgba(0,0,0,0.3)] p-[7%_9%] rounded-sm w-full max-w-70 max-[720px]:max-w-60 aspect-[8.5/11] font-[Courier_New,Courier,monospace] text-[#111] text-[9px]">
-              {imagesAbove.map((a, i) => (
-                <TpImageThumb key={`a${i}`} attrs={a} align />
-              ))}
-              <div className="mt-[20%] text-center">
-                <div
-                  className="font-bold uppercase"
-                  style={{ fontSize: titlePx }}
-                >
-                  {data.tpTitle || 'UNTITLED'}
+            {/* Live preview */}
+            <div className="flex justify-center items-center bg-muted p-3 rounded-md">
+              <div className="relative flex flex-col bg-white shadow-[0_2px_12px_rgba(0,0,0,0.3)] p-[7%_9%] rounded-sm w-full max-w-70 max-[720px]:max-w-60 aspect-8.5/11 font-[Courier_New,Courier,monospace] text-[#111] text-[9px]">
+                {imagesAbove.map((a, i) => (
+                  <TpImageThumb key={`a${i}`} attrs={a} align />
+                ))}
+                <div className="mt-[20%] text-center">
+                  <div
+                    className="font-bold uppercase"
+                    style={{ fontSize: titlePx }}
+                  >
+                    {data.tpTitle || 'UNTITLED'}
+                  </div>
+                  {byLine && (
+                    <div className="mt-2 whitespace-pre-wrap">{byLine}</div>
+                  )}
                 </div>
-                {byLine && (
-                  <div className="mt-2 whitespace-pre-wrap">{byLine}</div>
-                )}
-              </div>
-              <div className="flex justify-between items-end gap-2 mt-auto text-[9px]">
-                <div className="text-left whitespace-pre-wrap">{draftLine}</div>
-                <div className="text-right whitespace-pre-wrap">
-                  {bottomRight}
+                <div className="flex justify-between items-end gap-2 mt-auto text-[9px]">
+                  <div className="text-left whitespace-pre-wrap">
+                    {draftLine}
+                  </div>
+                  <div className="text-right whitespace-pre-wrap">
+                    {bottomRight}
+                  </div>
                 </div>
+                {imagesBelow.map((a, i) => (
+                  <TpImageThumb key={`b${i}`} attrs={a} align />
+                ))}
               </div>
-              {imagesBelow.map((a, i) => (
-                <TpImageThumb key={`b${i}`} attrs={a} align />
-              ))}
             </div>
           </div>
-        </div>
-
+        </ScrollArea>
         <DialogFooter>
           <Button
             variant="ghost"

@@ -4,6 +4,7 @@ import LanguageInstallerDialog from '@/components/plugins/spelling-and-grammar/d
 import ProjectDictionarySection from '@/components/plugins/spelling-and-grammar/dictionary-settings/project-dictionary-dialog'
 import GlobalDictionariesSection from '@/components/plugins/spelling-and-grammar/dictionary-settings/global-dictionaries-dialog'
 import SpellingSettings from '@/components/plugins/spelling-and-grammar/dictionary-settings/spelling-settings-dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface DictionaryConfigPanelProps {
   onOpenLibrary: () => void
@@ -15,7 +16,7 @@ export default function DictionaryConfigPanel({
   const [installerOpen, setInstallerOpen] = useState(false)
 
   return (
-    <div className="max-h-[65vh] overflow-scroll">
+    <ScrollArea className="rounded-md w-full h-[65vh]">
       <div className="flex flex-col gap-3">
         <p className="text-muted-foreground text-xs">
           Configure which dictionaries are active for this script and where "Add
@@ -30,6 +31,6 @@ export default function DictionaryConfigPanel({
         open={installerOpen}
         onOpenChange={setInstallerOpen}
       />
-    </div>
+    </ScrollArea>
   )
 }

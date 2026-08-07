@@ -18,6 +18,8 @@ import GrammarRulesPanel from '@/components/plugins/spelling-and-grammar/grammar
 import { useHeaderMenus } from '@/hooks/use-header-menu'
 import MoresContdsDialog from './plugins/mores-continued/mores-continued-dialog'
 import TitlePageEditor from './plugins/title-page-setup-dialog/title-page-editor'
+import ScriptFormatPreferencesDialog from './plugins/script-format-dialog/script-format-dialog'
+import TemplateSelectDialog from './plugins/template-editor/template-editor'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
@@ -27,6 +29,8 @@ export default function AppShell() {
   const [goToPageOpen, setGoToPageOpen] = useState(false)
   const [moresContdsOpen, setMoresContdsOpen] = useState(false)
   const [titlePageEditorOpen, setTitlePageEditorOpen] = useState(false)
+  const [scriptFormatOpen, setScriptFormatOpen] = useState(false)
+  const [templateSelectOpen, setTemplateSelectOpen] = useState(false)
 
   const goToPage = useEditorStore((s) => s.goToPage)
 
@@ -45,6 +49,8 @@ export default function AppShell() {
     onOpenGrammarPanel: () => setGrammarPanelOpen(true),
     onOpenSetMoresAndContdsOpen: () => setMoresContdsOpen(true),
     onTitlePageEditorOpen: () => setTitlePageEditorOpen(true),
+    onScriptFormatEditorOpen: () => setScriptFormatOpen(true),
+    onTemplateSelectOpen: () => setTemplateSelectOpen(true),
   })
 
   return (
@@ -96,6 +102,16 @@ export default function AppShell() {
         editor={editor}
         open={titlePageEditorOpen}
         onOpenChange={setTitlePageEditorOpen}
+      />
+      <ScriptFormatPreferencesDialog
+        open={scriptFormatOpen}
+        onConfirm={() => setScriptFormatOpen(false)}
+        onCancel={() => setScriptFormatOpen(false)}
+      />
+      <TemplateSelectDialog
+        editor={editor}
+        open={templateSelectOpen}
+        onOpenChange={setTemplateSelectOpen}
       />
     </header>
   )
