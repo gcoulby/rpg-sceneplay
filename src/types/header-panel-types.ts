@@ -18,12 +18,12 @@ export interface HeaderMenuBarItem {
   label: string
   separator?: boolean
   icon?: MenuIcon
-
   shortcut?: string
   requireConfirmation?: boolean
   confirmation?: ConfirmationConfig
   action?: () => void
   items?: Array<HeaderMenuBarItem>
+  disabled?: boolean
 }
 
 export interface PendingAction {

@@ -13,15 +13,27 @@ import {
   type PendingAction,
 } from '@/types'
 import {
+  FaAlignCenter,
+  FaAlignJustify,
+  FaAlignLeft,
+  FaAlignRight,
+  FaBold,
   FaCog,
+  FaColumns,
+  FaCommentDots,
   FaCopy,
   FaCut,
   FaEdit,
   FaFile,
+  FaFileAlt,
   FaFileExport,
   FaFileImport,
   FaHashtag,
+  FaImage,
+  FaItalic,
+  FaListOl,
   FaMousePointer,
+  FaPalette,
   FaPaste,
   FaPlus,
   FaRedo,
@@ -29,6 +41,9 @@ import {
   FaRegFileWord,
   FaSearch,
   FaSpellCheck,
+  FaSubscript,
+  FaSuperscript,
+  FaUnderline,
   FaUndo,
 } from 'react-icons/fa'
 import ConfirmationDialog from './confirmation-dialog'
@@ -47,6 +62,15 @@ import GoToPageDialog from '@/components/plugins/goto-page/goto-page-dialog'
 import SpellCheckPopover from '@/components/plugins/spelling-and-grammar/spell-check-popover'
 import WritingSuggestionsPopover from '@/components/plugins/spelling-and-grammar/writing-suggestions-popover'
 import GrammarRulesPanel from '@/components/plugins/spelling-and-grammar/grammar-settings-dialog'
+import {
+  handleCopy,
+  handleCut,
+  handlePaste,
+  handleRedo,
+  handleSelectAll,
+  handleUndo,
+} from '@/actions/edit-actions'
+import { getLockedFormattingOption } from '@/utils/lockedFormatting'
 
 const docXImportNotice = (
   <div className="flex flex-col gap-5">
@@ -75,6 +99,7 @@ export default function AppShell() {
   const [grammarPanelOpen, setGrammarPanelOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [goToPageOpen, setGoToPageOpen] = useState(false)
+
   const goToPage = useEditorStore((s) => s.goToPage)
   const {
     spellCheckEnabled,
@@ -90,6 +115,8 @@ export default function AppShell() {
   )
     ? '⌘'
     : 'Ctrl+'
+
+  const locked = getLockedFormattingOption(editor)
 
   const runOrConfirm = (item: HeaderMenuBarItem) => {
     if (!item.action) return
@@ -198,62 +225,38 @@ export default function AppShell() {
           label: 'undo',
           icon: FaUndo,
           shortcut: `${mod}Z`,
-          action: () => {
-            editor?.chain().focus().undo().run()
-          },
+          action: () => handleUndo(editor),
         },
         {
           label: 'redo',
           icon: FaRedo,
           shortcut: `⇧${mod}Y`,
-          action: () => {
-            editor?.chain().focus().redo().run()
-          },
+          action: () => handleRedo(editor),
         },
         { separator: true, label: '' },
         {
           icon: FaCut,
           label: 'Cut',
           shortcut: `${mod}X`,
-          action: async () => {
-            const selection = editor?.state.selection
-            if (!selection) return
-            const { from, to } = selection
-            if (from === to) return // nothing selected
-
-            const text = editor?.state.doc.textBetween(from, to, '\n')
-            await navigator.clipboard.writeText(text)
-
-            editor?.chain().focus().deleteRange({ from, to }).run()
-          },
+          action: () => handleCut(editor),
         },
         {
           icon: FaCopy,
           label: 'Copy',
           shortcut: `${mod}C`,
-          action: async () => {
-            const selection = editor?.state.selection
-            if (!selection) return
-            const { from, to } = selection
-            const text = editor?.state.doc.textBetween(from, to, '\n')
-            await navigator.clipboard.writeText(text)
-          },
+          action: () => handleCopy(editor),
         },
         {
           icon: FaPaste,
           label: 'Paste',
           shortcut: `${mod}V`,
-          action: async () => {
-            if (!editor) return
-            const text = await navigator.clipboard.readText()
-            editor.chain().focus().insertContent(text).run()
-          },
+          action: () => handlePaste(editor),
         },
         {
           icon: FaMousePointer,
           label: 'Select All',
           shortcut: `${mod}A`,
-          action: () => editor?.chain().focus().selectAll().run(),
+          action: () => handleSelectAll(editor),
         },
         { separator: true, label: '' },
         {
@@ -307,6 +310,199 @@ export default function AppShell() {
               action: () => setGrammarPanelOpen(true),
             },
           ],
+        },
+      ],
+    },
+    {
+      title: 'Format',
+      icon: FaPalette,
+      items: [
+        {
+          icon: FaListOl,
+          label: 'Element',
+          items: [
+            ...Object.values(activeTemplate.rules)
+              .filter((r) => r.enabled)
+              .map((r) => {
+                const shortcuts: Record<string, string> = {
+                  sceneHeading: `${mod}1`,
+                  action: `${mod}2`,
+                  character: `${mod}3`,
+                  dialogue: `${mod}4`,
+                  parenthetical: `${mod}5`,
+                  transition: `${mod}6`,
+                  general: `${mod}7`,
+                  shot: `${mod}8`,
+                }
+                return {
+                  label: r.label,
+                  shortcut: shortcuts[r.id],
+                  action: () => setElement(r.id as any),
+                }
+              }),
+          ],
+        },
+        { separator: true, label: '' },
+        {
+          icon: FaBold,
+          label: 'Style',
+          items: [
+            {
+              icon: FaBold,
+              label: 'Bold',
+              shortcut: `${mod}B`,
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .toggleBold()
+                  .run(),
+              disabled: locked.bold,
+            },
+            {
+              icon: FaItalic,
+              label: 'Italic',
+              shortcut: `${mod}I`,
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .toggleItalic()
+                  .run(),
+              disabled: locked.italic,
+            },
+            {
+              icon: FaUnderline,
+              label: 'Underline',
+              shortcut: `${mod}U`,
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .toggleUnderline()
+                  .run(),
+              disabled: locked.underline,
+            },
+            {
+              icon: FaStrikethrough,
+              label: 'Strikethrough',
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .toggleStrike()
+                  .run(),
+              disabled: locked.strikethrough,
+            },
+            { separator: true, label: '' },
+            {
+              icon: FaSubscript,
+              label: 'Subscript',
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .toggleSubscript()
+                  .run(),
+              disabled: locked.subscript,
+            },
+            {
+              icon: FaSuperscript,
+              label: 'Superscript',
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .toggleSuperscript()
+                  .run(),
+              disabled: locked.superscript,
+            },
+          ],
+        },
+        {
+          icon: FaAlignLeft,
+          label: 'Alignment',
+          items: [
+            {
+              icon: FaAlignLeft,
+              label: 'Align Left',
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .setTextAlign('left')
+                  .run(),
+              disabled: locked.textAlign,
+            },
+            {
+              icon: FaAlignCenter,
+              label: 'Align Center',
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .setTextAlign('center')
+                  .run(),
+              disabled: locked.textAlign,
+            },
+            {
+              icon: FaAlignRight,
+              label: 'Align Right',
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .setTextAlign('right')
+                  .run(),
+              disabled: locked.textAlign,
+            },
+            {
+              icon: FaAlignJustify,
+              label: 'Justify',
+              action: () =>
+                editor
+                  ?.chain()
+                  .focus(undefined, { scrollIntoView: false })
+                  .setTextAlign('justify')
+                  .run(),
+              disabled: locked.textAlign,
+            },
+          ],
+        },
+        { separator: true, label: '' },
+        {
+          icon: FaColumns,
+          label: 'Dual Dialogue',
+          shortcut: `${mod}D`,
+          action: () => (editor as any)?.commands?.toggleDualDialogue(),
+        },
+        { separator: true, label: '' },
+        {
+          icon: FaCommentDots,
+          label: 'Mores & Continueds...',
+          action: () => useEditorStore.getState().setMoresContdsOpen(true),
+        },
+        {
+          icon: FaImage,
+          label: 'Insert Image...',
+          action: () => useEditorStore.getState().imageInsertHandler?.(),
+        },
+        { separator: true, label: '' },
+        {
+          icon: FaFileAlt,
+          label: 'Title Page...',
+          action: () => useEditorStore.getState().setTitlePageEditorOpen(true),
+        },
+        {
+          icon: FaFileAlt,
+          label: `Formatting Template (${activeTemplate.name})...`,
+          action: () => setTemplateSelectOpen(true),
+        },
+        {
+          icon: FaFileAlt,
+          label: 'Script Format Preferences...',
+          action: () =>
+            setFormatPrefsOpen({ firstRun: false, afterSave: null }),
         },
       ],
     },
