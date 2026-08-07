@@ -16,6 +16,7 @@ import SpellCheckPopover from '@/components/plugins/spelling-and-grammar/spell-c
 import WritingSuggestionsPopover from '@/components/plugins/spelling-and-grammar/writing-suggestions-popover'
 import GrammarRulesPanel from '@/components/plugins/spelling-and-grammar/grammar-settings-dialog'
 import { useHeaderMenus } from '@/hooks/use-header-menu'
+import MoresContdsDialog from './plugins/mores-continued/mores-continued-dialog'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
@@ -23,6 +24,7 @@ export default function AppShell() {
   const [grammarPanelOpen, setGrammarPanelOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [goToPageOpen, setGoToPageOpen] = useState(false)
+  const [moresContdsOpen, setMoresContdsOpen] = useState(false)
 
   const goToPage = useEditorStore((s) => s.goToPage)
 
@@ -39,6 +41,7 @@ export default function AppShell() {
     onOpenPageSetup: () => setPageSetupOpen(true),
     onOpenGoToPage: () => setGoToPageOpen(true),
     onOpenGrammarPanel: () => setGrammarPanelOpen(true),
+    onOpenSetMoresAndContdsOpen: () => setMoresContdsOpen(true),
   })
 
   return (
@@ -82,6 +85,10 @@ export default function AppShell() {
       />
       <SpellCheckPopover editor={editor} />
       <WritingSuggestionsPopover editor={editor} />
+      <MoresContdsDialog
+        open={moresContdsOpen}
+        onOpenChange={setMoresContdsOpen}
+      />
     </header>
   )
 }

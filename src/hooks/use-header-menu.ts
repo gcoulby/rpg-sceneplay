@@ -73,12 +73,14 @@ interface UseHeaderMenusArgs {
   onOpenPageSetup: () => void
   onOpenGoToPage: () => void
   onOpenGrammarPanel: () => void
+  onOpenSetMoresAndContdsOpen: () => void
 }
 
 export function useHeaderMenus({
   onOpenPageSetup,
   onOpenGoToPage,
   onOpenGrammarPanel,
+  onOpenSetMoresAndContdsOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
@@ -404,7 +406,7 @@ export function useHeaderMenus({
           {
             icon: FaCommentDots,
             label: 'Mores & Continueds...',
-            action: () => useEditorStore.getState().setMoresContdsOpen(true),
+            action: onOpenSetMoresAndContdsOpen,
           },
           {
             icon: FaImage,
