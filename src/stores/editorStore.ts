@@ -715,6 +715,10 @@ interface EditorState {
   // Spell check
   spellCheckEnabled: boolean
   toggleSpellCheck: () => void
+  spellCheckOpen: boolean
+  setSpellCheckOpen: (open: boolean) => void
+  writingSuggestionsOpen: boolean
+  setWritingSuggestionsOpen: (open: boolean) => void
   setSpellCheckEnabled: (v: boolean) => void
   spellModalOpen: boolean
   setSpellModalOpen: (open: boolean) => void
@@ -785,6 +789,8 @@ interface EditorState {
   // Dialogs
   searchOpen: boolean
   setSearchOpen: (open: boolean) => void
+  goToPage: ((page: number) => void) | null
+  setGoToPage: (fn: (page: number) => void) => void
   goToPageOpen: boolean
   setGoToPageOpen: (open: boolean) => void
   titlePageEditorOpen: boolean
@@ -1547,6 +1553,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   searchOpen: false,
   setSearchOpen: (open) => set({ searchOpen: open }),
+  goToPage: null,
+  setGoToPage: (fn) => set({ goToPage: fn }),
   goToPageOpen: false,
   setGoToPageOpen: (open) => set({ goToPageOpen: open }),
   titlePageEditorOpen: false,
@@ -1580,4 +1588,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setFormatPickerMode: (mode) => set({ formatPickerMode: mode }),
   pageSetupOpen: false,
   setPageSetupOpen: (open) => set({ pageSetupOpen: open }),
+  spellCheckOpen: false,
+
+  setSpellCheckOpen: (open: boolean) => set({ spellCheckOpen: open }),
+  writingSuggestionsOpen: false,
+  setWritingSuggestionsOpen: (open: boolean) =>
+    set({ writingSuggestionsOpen: open }),
 }))

@@ -3,27 +3,27 @@ import type { ForwardRefExoticComponent, RefAttributes } from 'react'
 import type { IconType } from 'react-icons/lib'
 import type { ConfirmationConfig } from './dialog-types'
 
+export type MenuIcon =
+  | ForwardRefExoticComponent<
+      Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>
+    >
+  | IconType
 export interface HeaderMenuBarModel {
   title: string
-  groups: Array<HeaderMenuBarGroup>
-}
-
-export interface HeaderMenuBarGroup {
+  icon: MenuIcon
   items: Array<HeaderMenuBarItem>
 }
 
 export interface HeaderMenuBarItem {
-  text: string
-  icon:
-    | ForwardRefExoticComponent<
-        Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>
-      >
-    | IconType
+  label: string
+  separator?: boolean
+  icon?: MenuIcon
+
   shortcut?: string
   requireConfirmation?: boolean
   confirmation?: ConfirmationConfig
   action?: () => void
-  groups?: Array<HeaderMenuBarGroup>
+  items?: Array<HeaderMenuBarItem>
 }
 
 export interface PendingAction {

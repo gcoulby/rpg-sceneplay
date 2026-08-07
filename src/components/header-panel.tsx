@@ -1,17 +1,10 @@
 import { Menubar } from '@base-ui/react/menubar'
 import {
   MenubarContent,
-  MenubarGroup,
-  MenubarItem,
   MenubarMenu,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarSub,
-  MenubarSubContent,
-  MenubarSubTrigger,
   MenubarTrigger,
 } from '@/components/ui/menubar'
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { newScreenplay } from '@/actions/new-screenplay'
 import { useEditorStore } from '@/stores/editorStore'
 import {
@@ -21,11 +14,22 @@ import {
 } from '@/types'
 import {
   FaCog,
+  FaCopy,
+  FaCut,
+  FaEdit,
+  FaFile,
   FaFileExport,
   FaFileImport,
+  FaHashtag,
+  FaMousePointer,
+  FaPaste,
   FaPlus,
+  FaRedo,
   FaRegFileCode,
   FaRegFileWord,
+  FaSearch,
+  FaSpellCheck,
+  FaUndo,
 } from 'react-icons/fa'
 import ConfirmationDialog from './confirmation-dialog'
 import { handleImport, handleImportDocx } from '@/actions/file-import'
@@ -36,7 +40,13 @@ import {
   handleExportOdraft,
   handleExportPDF,
 } from '@/actions/file-export'
-import PageSetupDialog from './page-setup-dialog'
+import PageSetupDialog from '@/components/plugins/page-setup/page-setup-dialog'
+import { MenuItemRenderer } from './menu-item-renderer'
+import SearchReplace from '@/components/plugins/search-replace/search-replace-comp'
+import GoToPageDialog from '@/components/plugins/goto-page/goto-page-dialog'
+import SpellCheckPopover from '@/components/plugins/spelling-and-grammar/spell-check-popover'
+import WritingSuggestionsPopover from '@/components/plugins/spelling-and-grammar/writing-suggestions-popover'
+import GrammarRulesPanel from '@/components/plugins/spelling-and-grammar/grammar-settings-dialog'
 
 const docXImportNotice = (
   <div className="flex flex-col gap-5">
@@ -60,8 +70,26 @@ const docXImportNotice = (
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
+  const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
   const [pageSetupOpen, setPageSetupOpen] = useState(false)
+  const [grammarPanelOpen, setGrammarPanelOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
+  const [goToPageOpen, setGoToPageOpen] = useState(false)
+  const goToPage = useEditorStore((s) => s.goToPage)
+  const {
+    spellCheckEnabled,
+    toggleSpellCheck,
+    grammarCheckEnabled,
+    toggleGrammarCheck,
+    setSpellCheckOpen,
+    setWritingSuggestionsOpen,
+  } = useEditorStore()
+
+  const mod = /mac|iphone|ipad|ipod/i.test(
+    navigator.platform || navigator.userAgent,
+  )
+    ? '⌘'
+    : 'Ctrl+'
 
   const runOrConfirm = (item: HeaderMenuBarItem) => {
     if (!item.action) return
@@ -71,106 +99,212 @@ export default function AppShell() {
       item.action()
     }
   }
+
   const menus: Array<HeaderMenuBarModel> = [
     {
       title: 'File',
-      groups: [
+      icon: FaFile,
+      items: [
         {
+          label: 'New Screenplay',
+          icon: FaPlus,
+          shortcut: `${mod}N`,
+          confirmation: {},
+          action: () => {
+            newScreenplay(editor)
+          },
+        },
+        { separator: true, label: '' },
+        {
+          label: 'Import',
+          icon: FaFileImport,
           items: [
             {
-              text: 'New Screenplay',
-              icon: FaPlus,
-              shortcut: '⌘N',
-              confirmation: {},
+              label: 'Final Draft / Open Draft / Fountain',
+              icon: FaRegFileCode,
               action: () => {
-                newScreenplay(editor)
+                handleImport(editor)
+              },
+            },
+            {
+              label: 'Microsoft Word',
+              icon: FaRegFileWord,
+              confirmation: {
+                title: 'Notice',
+                description: docXImportNotice,
+              },
+              action: () => {
+                handleImportDocx(editor)
               },
             },
           ],
         },
         {
+          label: 'Export',
+          icon: FaFileExport,
+
           items: [
             {
-              text: 'Import',
-              icon: FaFileImport,
-              groups: [
-                {
-                  items: [
-                    {
-                      text: 'Final Draft / Open Draft / Fountain',
-                      icon: FaRegFileCode,
-                      action: () => {
-                        handleImport(editor)
-                      },
-                    },
-                    {
-                      text: 'Microsoft Word',
-                      icon: FaRegFileWord,
-                      confirmation: {
-                        title: 'Notice',
-                        description: docXImportNotice,
-                      },
-                      action: () => {
-                        handleImportDocx(editor)
-                      },
-                    },
-                  ],
-                },
-              ],
+              label: 'Final Draft (.fdx)',
+              icon: FaRegFileCode,
+              action: () => {
+                handleExportFDX(editor)
+              },
             },
             {
-              text: 'Export',
-              icon: FaFileExport,
-              groups: [
-                {
-                  items: [
-                    {
-                      text: 'Final Draft (.fdx)',
-                      icon: FaRegFileCode,
-                      action: () => {
-                        handleExportFDX(editor)
-                      },
-                    },
-                    {
-                      text: 'Fountain (.fountain)',
-                      icon: FaRegFileCode,
-                      action: () => {
-                        handleExportFountain(editor)
-                      },
-                    },
-                    {
-                      text: 'PDF',
-                      icon: FaRegFileCode,
-                      action: () => {
-                        handleExportPDF(editor)
-                      },
-                    },
-                    {
-                      text: 'Microsoft Word',
-                      icon: FaRegFileWord,
-                      action: () => {
-                        handleExportDocx(editor)
-                      },
-                    },
-                    {
-                      text: 'OpenDraft (.odraft)',
-                      icon: FaRegFileCode,
-                      action: () => {
-                        handleExportOdraft(editor)
-                      },
-                    },
-                  ],
-                },
-              ],
+              label: 'Fountain (.fountain)',
+              icon: FaRegFileCode,
+              action: () => {
+                handleExportFountain(editor)
+              },
+            },
+            {
+              label: 'PDF',
+              icon: FaRegFileCode,
+              action: () => {
+                handleExportPDF(editor)
+              },
+            },
+            {
+              label: 'Microsoft Word',
+              icon: FaRegFileWord,
+              action: () => {
+                handleExportDocx(editor)
+              },
+            },
+            {
+              label: 'OpenDraft (.odraft)',
+              icon: FaRegFileCode,
+              action: () => {
+                handleExportOdraft(editor)
+              },
             },
           ],
         },
+
+        { separator: true, label: '' },
         {
+          label: 'Page Setup…',
+          icon: FaCog, // or whatever icon
+          action: () => setPageSetupOpen(true),
+        },
+      ],
+    },
+    {
+      title: 'Edit',
+      icon: FaEdit,
+      items: [
+        {
+          label: 'undo',
+          icon: FaUndo,
+          shortcut: `${mod}Z`,
+          action: () => {
+            editor?.chain().focus().undo().run()
+          },
+        },
+        {
+          label: 'redo',
+          icon: FaRedo,
+          shortcut: `⇧${mod}Y`,
+          action: () => {
+            editor?.chain().focus().redo().run()
+          },
+        },
+        { separator: true, label: '' },
+        {
+          icon: FaCut,
+          label: 'Cut',
+          shortcut: `${mod}X`,
+          action: async () => {
+            const selection = editor?.state.selection
+            if (!selection) return
+            const { from, to } = selection
+            if (from === to) return // nothing selected
+
+            const text = editor?.state.doc.textBetween(from, to, '\n')
+            await navigator.clipboard.writeText(text)
+
+            editor?.chain().focus().deleteRange({ from, to }).run()
+          },
+        },
+        {
+          icon: FaCopy,
+          label: 'Copy',
+          shortcut: `${mod}C`,
+          action: async () => {
+            const selection = editor?.state.selection
+            if (!selection) return
+            const { from, to } = selection
+            const text = editor?.state.doc.textBetween(from, to, '\n')
+            await navigator.clipboard.writeText(text)
+          },
+        },
+        {
+          icon: FaPaste,
+          label: 'Paste',
+          shortcut: `${mod}V`,
+          action: async () => {
+            if (!editor) return
+            const text = await navigator.clipboard.readText()
+            editor.chain().focus().insertContent(text).run()
+          },
+        },
+        {
+          icon: FaMousePointer,
+          label: 'Select All',
+          shortcut: `${mod}A`,
+          action: () => editor?.chain().focus().selectAll().run(),
+        },
+        { separator: true, label: '' },
+        {
+          icon: FaSearch,
+          label: 'Find & Replace',
+          shortcut: `${mod}F`,
+          action: () => setSearchOpen(true),
+        },
+        {
+          icon: FaHashtag,
+          label: 'Go to Page',
+          shortcut: `${mod}G`,
+          action: () => setGoToPageOpen(true),
+        },
+        { separator: true, label: '' },
+
+        {
+          icon: FaSpellCheck,
+          label: 'Spelling & Grammar',
           items: [
             {
-              text: 'Page Setup…',
-              icon: FaCog, // or whatever icon
-              action: () => setPageSetupOpen(true),
+              icon: FaSpellCheck,
+              label: spellCheckEnabled
+                ? '\u2713 Auto Spell Check'
+                : 'Auto Spell Check',
+              action: toggleSpellCheck,
+            },
+            {
+              icon: FaSpellCheck,
+              label: 'Spell Check\u2026',
+              shortcut: 'F7',
+              action: () => setSpellCheckOpen(true),
+            },
+            { separator: true, label: '' },
+            {
+              icon: FaSpellCheck,
+              label: grammarCheckEnabled
+                ? '\u2713 Auto Writing Suggestions'
+                : 'Auto Writing Suggestions',
+              action: toggleGrammarCheck,
+            },
+            {
+              icon: FaSpellCheck,
+              label: 'Writing Suggestions\u2026',
+              shortcut: '\u21e7F7',
+              action: () => setWritingSuggestionsOpen(true),
+            },
+            {
+              icon: FaSpellCheck,
+              label: 'Grammar & Spelling Settings\u2026',
+              action: () => setGrammarPanelOpen(true),
             },
           ],
         },
@@ -180,71 +314,19 @@ export default function AppShell() {
 
   return (
     <header className="px-4">
-      <Menubar className="text-xs">
-        <MenubarMenu>
-          {menus.map((menu, i) => (
-            <Fragment key={i}>
-              <MenubarTrigger>{menu.title}</MenubarTrigger>
-              <MenubarContent className="w-70">
-                {menu.groups.map((group, j) => (
-                  <Fragment key={j}>
-                    <MenubarGroup key={j} className="w-full">
-                      {group.items.map((item, k) => (
-                        <Fragment key={k}>
-                          {item.groups?.length && item.groups.length > 0 ? (
-                            <MenubarSub>
-                              <MenubarSubTrigger>
-                                <item.icon size={25} /> {item.text}
-                              </MenubarSubTrigger>
-                              <MenubarSubContent>
-                                {item.groups?.map((subGroup, l) => (
-                                  <Fragment key={l}>
-                                    <MenubarGroup key={l} className="w-full">
-                                      {subGroup.items.map((subGroupItem, m) => (
-                                        <Fragment key={m}>
-                                          <MenubarItem
-                                            onClick={() =>
-                                              runOrConfirm(subGroupItem)
-                                            }
-                                          >
-                                            <subGroupItem.icon size={25} />{' '}
-                                            {subGroupItem.text}{' '}
-                                            {subGroupItem.shortcut && (
-                                              <MenubarShortcut>
-                                                {subGroupItem.shortcut}
-                                              </MenubarShortcut>
-                                            )}
-                                          </MenubarItem>
-                                        </Fragment>
-                                      ))}
-                                    </MenubarGroup>
-                                    {j < menu.groups.length - 1 && (
-                                      <MenubarSeparator />
-                                    )}
-                                  </Fragment>
-                                ))}
-                              </MenubarSubContent>
-                            </MenubarSub>
-                          ) : (
-                            <MenubarItem onClick={() => runOrConfirm(item)}>
-                              <item.icon size={25} /> {item.text}{' '}
-                              {item.shortcut && (
-                                <MenubarShortcut>
-                                  {item.shortcut}
-                                </MenubarShortcut>
-                              )}
-                            </MenubarItem>
-                          )}
-                        </Fragment>
-                      ))}
-                    </MenubarGroup>
-                    {j < menu.groups.length - 1 && <MenubarSeparator />}
-                  </Fragment>
-                ))}
-              </MenubarContent>
-            </Fragment>
-          ))}
-        </MenubarMenu>
+      <Menubar className="flex flex-row gap-4 text-xs">
+        {menus.map((menu, i) => (
+          <MenubarMenu key={i}>
+            <MenubarTrigger className="gap-2">
+              <menu.icon size={10} /> {menu.title}
+            </MenubarTrigger>
+            <MenubarContent className="w-70">
+              {menu.items.map((item, k) => (
+                <MenuItemRenderer key={k} item={item} onSelect={runOrConfirm} />
+              ))}
+            </MenubarContent>
+          </MenubarMenu>
+        ))}
       </Menubar>
       <ConfirmationDialog
         open={pendingAction !== null}
@@ -256,6 +338,21 @@ export default function AppShell() {
         onCancel={() => setPendingAction(null)}
       />
       <PageSetupDialog open={pageSetupOpen} onOpenChange={setPageSetupOpen} />
+      <GrammarRulesPanel
+        open={grammarPanelOpen}
+        onOpenChange={setGrammarPanelOpen}
+      />
+      <SearchReplace editor={editor} />
+      <GoToPageDialog
+        open={goToPageOpen}
+        onOpenChange={setGoToPageOpen}
+        onGoToPage={(page) => {
+          goToPage?.(page)
+          setGoToPageOpen(false)
+        }}
+      />
+      <SpellCheckPopover editor={editor} />
+      <WritingSuggestionsPopover editor={editor} />
     </header>
   )
 }
