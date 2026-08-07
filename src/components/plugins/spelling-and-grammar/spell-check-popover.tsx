@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
 
 interface SpellError {
   word: string
@@ -223,9 +224,9 @@ const SpellCheckPopover: React.FC<SpellCheckPopoverProps> = ({ editor }) => {
                 Spell check is not available in this environment.
               </span>
             </div>
-            <button className="mt-4 dialog-primary" onClick={handleClose}>
+            <Button className="mt-4 dialog-primary" onClick={handleClose}>
               Close
-            </button>
+            </Button>
           </div>
         ) : complete ? (
           <div className="p-8 text-center">
@@ -234,10 +235,10 @@ const SpellCheckPopover: React.FC<SpellCheckPopoverProps> = ({ editor }) => {
               Spelling check is complete.
             </div>
             <div className="flex justify-center gap-2">
-              <button onClick={handleRecheck}>Recheck</button>
-              <button className="dialog-primary" onClick={handleClose}>
+              <Button onClick={handleRecheck}>Recheck</Button>
+              <Button className="dialog-primary" onClick={handleClose}>
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -324,19 +325,19 @@ const SpellCheckPopover: React.FC<SpellCheckPopoverProps> = ({ editor }) => {
 
             <div className="flex justify-between gap-2 px-3.5 pb-3.5">
               <div className="flex flex-col gap-1.5">
-                <button onClick={handleIgnore}>Ignore Once</button>
-                <button onClick={handleIgnoreAll}>Ignore All</button>
-                <button onClick={handleAddToDictionary}>
+                <Button onClick={handleIgnore}>Ignore Once</Button>
+                <Button onClick={handleIgnoreAll}>Ignore All</Button>
+                <Button onClick={handleAddToDictionary}>
                   Add to Dictionary
-                </button>
+                </Button>
               </div>
               <div className="flex flex-col gap-1.5">
-                <button className="dialog-primary" onClick={handleChange}>
+                <Button className="dialog-primary" onClick={handleChange}>
                   Change
-                </button>
-                <button onClick={handleChangeAll}>Change All</button>
-                <button onClick={handleRecheck}>Recheck</button>
-                <button onClick={handleClose}>Close</button>
+                </Button>
+                <Button onClick={handleChangeAll}>Change All</Button>
+                <Button onClick={handleRecheck}>Recheck</Button>
+                <Button onClick={handleClose}>Close</Button>
               </div>
             </div>
           </>

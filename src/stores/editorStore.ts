@@ -717,6 +717,8 @@ interface EditorState {
   toggleSpellCheck: () => void
   spellCheckOpen: boolean
   setSpellCheckOpen: (open: boolean) => void
+  writingSuggestionsOpen: boolean
+  setWritingSuggestionsOpen: (open: boolean) => void
   setSpellCheckEnabled: (v: boolean) => void
   spellModalOpen: boolean
   setSpellModalOpen: (open: boolean) => void
@@ -1589,4 +1591,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   spellCheckOpen: false,
 
   setSpellCheckOpen: (open: boolean) => set({ spellCheckOpen: open }),
+  writingSuggestionsOpen: false,
+  setWritingSuggestionsOpen: (open: boolean) =>
+    set({ writingSuggestionsOpen: open }),
 }))

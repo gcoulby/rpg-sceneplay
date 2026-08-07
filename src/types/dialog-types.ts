@@ -11,3 +11,14 @@ export interface PageSetupDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
+
+export type RuleMeta = Record<
+  string,
+  { label: string; severity: 'grammar' | 'style'; description: string }
+>
+
+export type RuleSection = {
+  blurb: string
+  ids: readonly string[]
+  meta: RuleMeta
+}

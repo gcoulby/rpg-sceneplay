@@ -40,11 +40,13 @@ import {
   handleExportOdraft,
   handleExportPDF,
 } from '@/actions/file-export'
-import PageSetupDialog from './plugins/page-setup/page-setup-dialog'
+import PageSetupDialog from '@/components/plugins/page-setup/page-setup-dialog'
 import { MenuItemRenderer } from './menu-item-renderer'
-import SearchReplace from './plugins/search-replace/search-replace-comp'
-import GoToPageDialog from './plugins/goto-page/goto-page-dialog'
-import SpellCheckPopover from './plugins/spell-check/spell-check-popover'
+import SearchReplace from '@/components/plugins/search-replace/search-replace-comp'
+import GoToPageDialog from '@/components/plugins/goto-page/goto-page-dialog'
+import SpellCheckPopover from '@/components/plugins/spelling-and-grammar/spell-check-popover'
+import WritingSuggestionsPopover from '@/components/plugins/spelling-and-grammar/writing-suggestions-popover'
+import GrammarRulesPanel from '@/components/plugins/spelling-and-grammar/grammar-settings-dialog'
 
 const docXImportNotice = (
   <div className="flex flex-col gap-5">
@@ -70,6 +72,7 @@ export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
   const [pageSetupOpen, setPageSetupOpen] = useState(false)
+  const [grammarPanelOpen, setGrammarPanelOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [goToPageOpen, setGoToPageOpen] = useState(false)
   const goToPage = useEditorStore((s) => s.goToPage)
@@ -78,9 +81,8 @@ export default function AppShell() {
     toggleSpellCheck,
     grammarCheckEnabled,
     toggleGrammarCheck,
-    setGrammarModalOpen,
-    setGrammarRulesPanelOpen,
     setSpellCheckOpen,
+    setWritingSuggestionsOpen,
   } = useEditorStore()
 
   const mod = /mac|iphone|ipad|ipod/i.test(
@@ -297,12 +299,12 @@ export default function AppShell() {
               icon: FaSpellCheck,
               label: 'Writing Suggestions\u2026',
               shortcut: '\u21e7F7',
-              action: () => setGrammarModalOpen(true),
+              action: () => setWritingSuggestionsOpen(true),
             },
             {
               icon: FaSpellCheck,
               label: 'Grammar & Spelling Settings\u2026',
-              action: () => setGrammarRulesPanelOpen(true),
+              action: () => setGrammarPanelOpen(true),
             },
           ],
         },
@@ -336,6 +338,10 @@ export default function AppShell() {
         onCancel={() => setPendingAction(null)}
       />
       <PageSetupDialog open={pageSetupOpen} onOpenChange={setPageSetupOpen} />
+      <GrammarRulesPanel
+        open={grammarPanelOpen}
+        onOpenChange={setGrammarPanelOpen}
+      />
       <SearchReplace editor={editor} />
       <GoToPageDialog
         open={goToPageOpen}
@@ -346,6 +352,7 @@ export default function AppShell() {
         }}
       />
       <SpellCheckPopover editor={editor} />
+      <WritingSuggestionsPopover editor={editor} />
     </header>
   )
 }
