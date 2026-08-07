@@ -17,6 +17,7 @@ import WritingSuggestionsPopover from '@/components/plugins/spelling-and-grammar
 import GrammarRulesPanel from '@/components/plugins/spelling-and-grammar/grammar-settings-dialog'
 import { useHeaderMenus } from '@/hooks/use-header-menu'
 import MoresContdsDialog from './plugins/mores-continued/mores-continued-dialog'
+import TitlePageEditor from './plugins/title-page-setup-dialog/title-page-editor'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
@@ -25,6 +26,7 @@ export default function AppShell() {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [goToPageOpen, setGoToPageOpen] = useState(false)
   const [moresContdsOpen, setMoresContdsOpen] = useState(false)
+  const [titlePageEditorOpen, setTitlePageEditorOpen] = useState(false)
 
   const goToPage = useEditorStore((s) => s.goToPage)
 
@@ -42,6 +44,7 @@ export default function AppShell() {
     onOpenGoToPage: () => setGoToPageOpen(true),
     onOpenGrammarPanel: () => setGrammarPanelOpen(true),
     onOpenSetMoresAndContdsOpen: () => setMoresContdsOpen(true),
+    onTitlePageEditorOpen: () => setTitlePageEditorOpen(true),
   })
 
   return (
@@ -88,6 +91,11 @@ export default function AppShell() {
       <MoresContdsDialog
         open={moresContdsOpen}
         onOpenChange={setMoresContdsOpen}
+      />
+      <TitlePageEditor
+        editor={editor}
+        open={titlePageEditorOpen}
+        onOpenChange={setTitlePageEditorOpen}
       />
     </header>
   )

@@ -74,6 +74,7 @@ interface UseHeaderMenusArgs {
   onOpenGoToPage: () => void
   onOpenGrammarPanel: () => void
   onOpenSetMoresAndContdsOpen: () => void
+  onTitlePageEditorOpen: () => void
 }
 
 export function useHeaderMenus({
@@ -81,6 +82,7 @@ export function useHeaderMenus({
   onOpenGoToPage,
   onOpenGrammarPanel,
   onOpenSetMoresAndContdsOpen,
+  onTitlePageEditorOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
@@ -417,8 +419,7 @@ export function useHeaderMenus({
           {
             icon: FaFileAlt,
             label: 'Title Page...',
-            action: () =>
-              useEditorStore.getState().setTitlePageEditorOpen(true),
+            action: onTitlePageEditorOpen,
           },
           {
             icon: FaFileAlt,
