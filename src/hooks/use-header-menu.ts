@@ -75,7 +75,6 @@ interface UseHeaderMenusArgs {
   onOpenGrammarPanel: () => void
   onOpenSetMoresAndContdsOpen: () => void
   onTitlePageEditorOpen: () => void
-  onScriptFormatEditorOpen: () => void
   onTemplateSelectOpen: () => void
 }
 
@@ -428,12 +427,6 @@ export function useHeaderMenus({
             icon: FaFileAlt,
             label: `Formatting Template (${activeTemplateName})...`,
             action: onTemplateSelectOpen,
-            //   action: () => setTemplateSelectOpen(true),
-          },
-          {
-            icon: FaFileAlt,
-            label: 'Script Format Preferences...',
-            //   action: () =>            setFormatPrefsOpen({ firstRun: false, afterSave: null }),
           },
         ],
       },

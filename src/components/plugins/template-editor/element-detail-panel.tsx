@@ -21,6 +21,8 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -66,26 +68,37 @@ export default function ElementDetailPanel({
           <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
             Font Family
           </Label>
-          <select
-            className="bg-input px-2.5 border focus:border-primary rounded outline-none w-full h-8.5 text-foreground text-sm"
+
+          <Select
             value={rule.fontFamily || ''}
-            onChange={(e) => onUpdate({ fontFamily: e.target.value || null })}
+            onValueChange={(e) => onUpdate({ fontFamily: e || null })}
           >
-            <option value="">Default</option>
-            {FONT_CATEGORIES.map((category) => {
-              const fonts = getFontsByCategory()[category]
-              if (!fonts || fonts.length === 0) return null
-              return (
-                <optgroup key={category} label={category}>
-                  {fonts.map((font: FontEntry) => (
-                    <option key={font.name} value={font.name}>
-                      {font.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )
-            })}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Default">
+                {FONT_CATEGORIES.find((x) => x == rule.fontFamily)}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Default</SelectItem>
+              {FONT_CATEGORIES.map((category, i) => {
+                const fonts = getFontsByCategory()[category]
+                if (!fonts || fonts.length === 0) return null
+                return (
+                  <>
+                    <SelectGroup key={category}>
+                      <SelectLabel>{category}</SelectLabel>
+                      {fonts.map((font: FontEntry) => (
+                        <SelectItem key={font.name} value={font.name}>
+                          {font.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                    {i <= FONT_CATEGORIES.length - 1 && <SelectSeparator />}
+                  </>
+                )
+              })}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex-1 space-y-1 min-w-45">
           <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
@@ -115,22 +128,6 @@ export default function ElementDetailPanel({
               </SelectGroup>
             </SelectContent>
           </Select>
-          {/* <select
-            className="bg-input px-2.5 border focus:border-primary rounded outline-none w-full h-8.5 text-foreground text-sm"
-            value={rule.fontSize ?? ''}
-            onChange={(e) =>
-              onUpdate({
-                fontSize: e.target.value ? Number(e.target.value) : null,
-              })
-            }
-          >
-            <option value="">Default</option>
-            {FONT_SIZES.map((s) => (
-              <option key={s} value={s}>
-                {s}pt
-              </option>
-            ))}
-          </select> */}
         </div>
       </div>
 
@@ -202,19 +199,6 @@ export default function ElementDetailPanel({
             <SelectGroup></SelectGroup>
           </SelectContent>
         </Select>
-        {/* <select
-          className="bg-input px-2.5 border focus:border-primary rounded outline-none w-full h-8.5 text-foreground text-sm"
-          value={rule.textTransform}
-          onChange={(e) =>
-            onUpdate({
-              textTransform: e.target.value as typeof rule.textTransform,
-            })
-          }
-        >
-          <option value="none">None</option>
-          <option value="uppercase">Uppercase</option>
-          <option value="lowercase">Lowercase</option>
-        </select> */}
       </div>
 
       {/* Alignment */}
@@ -386,18 +370,6 @@ export default function ElementDetailPanel({
               </SelectGroup>
             </SelectContent>
           </Select>
-
-          {/* <select
-            className="bg-input px-2.5 border focus:border-primary rounded outline-none w-full h-8.5 text-foreground text-sm"
-            value={rule.nextOnEnter}
-            onChange={(e) => onUpdate({ nextOnEnter: e.target.value })}
-          >
-            {elementOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label}
-              </option>
-            ))}
-          </select> */}
         </div>
         <div className="flex-1 space-y-1 min-w-45">
           <Label className="text-[11px] text-muted-foreground uppercase tracking-wide">
@@ -427,18 +399,6 @@ export default function ElementDetailPanel({
               </SelectGroup>
             </SelectContent>
           </Select>
-          {/* <select
-            className="bg-input px-2.5 border focus:border-primary rounded outline-none w-full h-8.5 text-foreground text-sm"
-            value={rule.nextOnTab || ''}
-            onChange={(e) => onUpdate({ nextOnTab: e.target.value || null })}
-          >
-            <option value="">None</option>
-            {elementOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label}
-              </option>
-            ))}
-          </select> */}
         </div>
       </div>
 
@@ -482,7 +442,7 @@ export default function ElementDetailPanel({
           Preview
         </Label>
         <div
-          className="bg-background px-4 py-3 border rounded min-h-12"
+          className="bg-foreground px-4 py-3 border rounded min-h-12 text-background"
           style={{
             fontFamily: rule.fontFamily || undefined,
             fontSize: rule.fontSize ? `${rule.fontSize}pt` : undefined,
@@ -499,7 +459,7 @@ export default function ElementDetailPanel({
               rule.textTransform as React.CSSProperties['textTransform'],
             textAlign: rule.textAlign as React.CSSProperties['textAlign'],
             marginTop: `${rule.marginTop}pt`,
-            paddingLeft: `${Math.max(0, (rule.leftIndent - 1.5) * 96)}px`,
+            paddingLeft: `${Math.max(0, (rule.leftIndent - 1.4) * 96)}px`,
             color: rule.textColor || undefined,
             backgroundColor: rule.backgroundColor || undefined,
           }}
