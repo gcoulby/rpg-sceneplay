@@ -23,6 +23,7 @@ import { getActiveTemplate } from '@/utils/activeTemplate'
 import { getShortcutModifier } from '@/utils/shortcutModifier'
 import { docXImportNotice } from '@/components/docx-import-notice'
 import {
+  FaAdjust,
   FaAlignCenter,
   FaAlignJustify,
   FaAlignLeft,
@@ -31,17 +32,27 @@ import {
   FaCog,
   FaColumns,
   FaCommentDots,
+  FaCompass,
+  FaCompressArrowsAlt,
   FaCopy,
   FaCut,
   FaEdit,
+  FaExpandArrowsAlt,
+  FaEye,
+  FaEyeSlash,
   FaFile,
   FaFileAlt,
   FaFileExport,
   FaFileImport,
+  FaFilm,
   FaHashtag,
+  FaHighlighter,
+  FaHistory,
   FaImage,
   FaItalic,
   FaListOl,
+  FaListUl,
+  FaLock,
   FaMousePointer,
   FaPalette,
   FaPaste,
@@ -50,12 +61,20 @@ import {
   FaRegFileCode,
   FaRegFileWord,
   FaSearch,
+  FaSearchMinus,
+  FaSearchPlus,
   FaSpellCheck,
+  FaStickyNote,
+  FaStream,
   FaStrikethrough,
   FaSubscript,
   FaSuperscript,
+  FaTags,
+  FaTh,
+  FaToolbox,
   FaUnderline,
   FaUndo,
+  FaUsers,
 } from 'react-icons/fa'
 import {
   toggleBold,
@@ -87,14 +106,60 @@ export function useHeaderMenus({
   onTemplateSelectOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
-  const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
+  //   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
+
   const {
+    setSpellCheckOpen,
+    setWritingSuggestionsOpen,
+    navigatorOpen,
+    toggleNavigator,
+    indexCardsOpen,
+    toggleIndexCards,
+    beatBoardOpen,
+    toggleBeatBoard,
+    scriptNotesOpen,
+    toggleScriptNotes,
+    characterProfilesOpen,
+    toggleCharacterProfiles,
+    tagsPanelOpen,
+    toggleTagsPanel,
+    locationDatabaseOpen,
+    toggleLocationDatabase,
+    notesVisible,
+    setNotesVisible,
+    tagsVisible,
+    setTagsVisible,
+    setSearchOpen,
     spellCheckEnabled,
     toggleSpellCheck,
     grammarCheckEnabled,
     toggleGrammarCheck,
-    setSpellCheckOpen,
-    setWritingSuggestionsOpen,
+    theme,
+    setTheme,
+    toolbarMode,
+    setToolbarMode,
+    zoomLevel,
+    setZoomLevel,
+    sceneNumbersVisible,
+    setSceneNumbersVisible,
+    sceneNumbersLocked,
+    setSceneNumbersLocked,
+    // revisionMode,
+    // setRevisionMode,
+    //   documentTitle,
+    //   pageLayout,
+    //   setGoToPageOpen,
+    //   setSpellModalOpen,
+    //   setGrammarModalOpen,
+    //   setGrammarRulesPanelOpen,
+    //   setOpenFileOpen,
+    //   setPostSaveAction,
+    //   setSaveAsOpen,
+    //   navPanelWidth,
+    //   trackChangesEnabled,
+    //   setTrackChangesEnabled,
+    //   setTrackChangesLabel,
+    //   setCompareVersionOpen,
   } = useEditorStore()
 
   const mod = getShortcutModifier()
@@ -430,6 +495,206 @@ export function useHeaderMenus({
           },
         ],
       },
+      {
+        title: 'View',
+        icon: FaEye,
+        items: [
+          {
+            icon: FaColumns,
+            label: 'Panels',
+            items: [
+              {
+                icon: FaCompass,
+                label: navigatorOpen ? '\u2713 Navigator' : 'Navigator',
+                action: toggleNavigator,
+              },
+              {
+                icon: FaTh,
+                label: indexCardsOpen ? '\u2713 Index Cards' : 'Index Cards',
+                action: toggleIndexCards,
+              },
+              {
+                icon: FaStream,
+                label: beatBoardOpen ? '\u2713 Beat Board' : 'Beat Board',
+                action: toggleBeatBoard,
+              },
+              {
+                icon: FaStickyNote,
+                label: scriptNotesOpen ? '\u2713 Notes Panel' : 'Notes Panel',
+                action: () => {
+                  const hasSelection = editor && !editor.state.selection.empty
+                  useEditorStore
+                    .getState()
+                    .setNotesActiveTab(hasSelection ? 'script' : 'general')
+                  toggleScriptNotes()
+                },
+              },
+              {
+                icon: FaUsers,
+                label: characterProfilesOpen
+                  ? '\u2713 Characters'
+                  : 'Characters',
+                action: toggleCharacterProfiles,
+              },
+              {
+                icon: FaTags,
+                label: tagsPanelOpen ? '\u2713 Tags' : 'Tags',
+                action: toggleTagsPanel,
+              },
+              {
+                icon: FaCompass,
+                label: locationDatabaseOpen ? '\u2713 Locations' : 'Locations',
+                action: toggleLocationDatabase,
+              },
+            ],
+          },
+
+          {
+            icon: FaStream,
+            label: 'Analytics',
+            items: [
+              {
+                icon: FaStream,
+                label: 'Script Statistics',
+                action: () => {
+                  const s = useEditorStore.getState()
+                  s.setStatisticsScrollTo(null)
+                  s.setStatisticsOpen(true)
+                },
+              },
+              {
+                icon: FaHistory,
+                label: 'Timing Report',
+                action: () => {
+                  const s = useEditorStore.getState()
+                  s.setStatisticsScrollTo('stats-timing-report')
+                  s.setStatisticsOpen(true)
+                },
+              },
+            ],
+          },
+          {
+            icon: FaHighlighter,
+            label: 'Highlights',
+            items: [
+              {
+                icon: FaHighlighter,
+                label: notesVisible
+                  ? '\u2713 Note Highlights'
+                  : 'Note Highlights',
+                action: () => setNotesVisible(!notesVisible),
+              },
+              {
+                icon: FaHighlighter,
+                label: tagsVisible ? '\u2713 Tag Highlights' : 'Tag Highlights',
+                action: () => setTagsVisible(!tagsVisible),
+              },
+            ],
+          },
+          { separator: true, label: '' },
+          {
+            icon: FaFilm,
+            label: 'Scene Numbers',
+            items: [
+              {
+                icon: FaListUl,
+                label: sceneNumbersVisible
+                  ? '\u2713 Show Scene Numbers'
+                  : 'Show Scene Numbers',
+                action: () => setSceneNumbersVisible(!sceneNumbersVisible),
+              },
+              {
+                icon: FaLock,
+                label: sceneNumbersLocked
+                  ? '\u2713 Lock Scene Numbers'
+                  : 'Lock Scene Numbers',
+                action: () => setSceneNumbersLocked(!sceneNumbersLocked),
+                disabled: !sceneNumbersVisible,
+              },
+            ],
+          },
+          { separator: true, label: '' },
+          {
+            icon: FaAdjust,
+            label: theme === 'light' ? '\u2713 Light Theme' : 'Light Theme',
+            action: () => setTheme(theme === 'light' ? 'dark' : 'light'),
+          },
+          { separator: true, label: '' },
+          {
+            icon: FaToolbox,
+            label: 'Menu & Toolbar',
+            items: [
+              {
+                icon: FaCompressArrowsAlt,
+                label: toolbarMode === 'compact' ? '\u2713 Compact' : 'Compact',
+                action: () => setToolbarMode('compact'),
+              },
+              {
+                icon: FaExpandArrowsAlt,
+                label:
+                  toolbarMode === 'comfortable'
+                    ? '\u2713 Comfortable'
+                    : 'Comfortable',
+                action: () => setToolbarMode('comfortable'),
+              },
+              {
+                icon: FaEyeSlash,
+                label: toolbarMode === 'hidden' ? '\u2713 Hidden' : 'Hidden',
+                action: () => {
+                  setToolbarMode('hidden')
+                },
+              },
+            ],
+          },
+          {
+            icon: FaSearchPlus,
+            label: `Zoom (${zoomLevel}%)`,
+            items: [
+              {
+                icon: FaSearchPlus,
+                label: 'Zoom In',
+                shortcut: `${mod}+`,
+                action: () => setZoomLevel(Math.min(300, zoomLevel + 10)),
+              },
+              {
+                icon: FaSearchMinus,
+                label: 'Zoom Out',
+                shortcut: `${mod}−`,
+                action: () => setZoomLevel(Math.max(50, zoomLevel - 10)),
+              },
+              { separator: true, label: '' },
+              {
+                label: zoomLevel === 50 ? '\u2713 50%' : '50%',
+                action: () => setZoomLevel(50),
+              },
+              {
+                label: zoomLevel === 75 ? '\u2713 75%' : '75%',
+                action: () => setZoomLevel(75),
+              },
+              {
+                label: zoomLevel === 100 ? '\u2713 100%' : '100%',
+                action: () => setZoomLevel(100),
+              },
+              {
+                label: zoomLevel === 125 ? '\u2713 125%' : '125%',
+                action: () => setZoomLevel(125),
+              },
+              {
+                label: zoomLevel === 150 ? '\u2713 150%' : '150%',
+                action: () => setZoomLevel(150),
+              },
+              {
+                label: zoomLevel === 200 ? '\u2713 200%' : '200%',
+                action: () => setZoomLevel(200),
+              },
+              {
+                label: zoomLevel === 300 ? '\u2713 300%' : '300%',
+                action: () => setZoomLevel(300),
+              },
+            ],
+          },
+        ],
+      },
     ],
     [
       mod,
@@ -452,10 +717,38 @@ export function useHeaderMenus({
       onTitlePageEditorOpen,
       activeTemplateName,
       onTemplateSelectOpen,
+      navigatorOpen,
+      toggleNavigator,
+      indexCardsOpen,
+      toggleIndexCards,
+      beatBoardOpen,
+      toggleBeatBoard,
+      scriptNotesOpen,
+      characterProfilesOpen,
+      toggleCharacterProfiles,
+      tagsPanelOpen,
+      toggleTagsPanel,
+      locationDatabaseOpen,
+      toggleLocationDatabase,
+      notesVisible,
+      tagsVisible,
+      sceneNumbersVisible,
+      sceneNumbersLocked,
+      theme,
+      toolbarMode,
+      zoomLevel,
       editor,
       setSearchOpen,
       setSpellCheckOpen,
       setWritingSuggestionsOpen,
+      toggleScriptNotes,
+      setNotesVisible,
+      setTagsVisible,
+      setSceneNumbersVisible,
+      setSceneNumbersLocked,
+      setTheme,
+      setToolbarMode,
+      setZoomLevel,
     ],
   )
 }
