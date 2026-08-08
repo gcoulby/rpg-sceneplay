@@ -3,8 +3,8 @@ import { useEditorStore, DEFAULT_PAGE_LAYOUT } from '@/stores/editorStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { clearEditorHistory } from '@/editor/clearHistory'
-import { clearSessionDoc } from '@/utils/sessionDoc'
-import { applyScriptFormat } from '@/utils/applyScriptFormat'
+import { clearSessionDoc } from '@/utils/open-draft/sessionDoc'
+import { applyScriptFormat } from '@/utils/open-draft/applyScriptFormat'
 import { clearTrackChanges } from './shared'
 
 function resetForNewScreenplay(editor: Editor) {

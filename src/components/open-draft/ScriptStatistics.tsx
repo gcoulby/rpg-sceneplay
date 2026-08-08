@@ -8,13 +8,13 @@ import {
   computeSceneBreakdown,
   computePacingData,
   computeCharacterPresence,
-} from '@/utils/scriptStatistics'
+} from '@/utils/open-draft/scriptStatistics'
 import {
   computeSceneTiming,
   formatRuntime,
   formatSceneDuration,
   getTimingColor,
-} from '@/utils/scriptTiming'
+} from '@/utils/open-draft/scriptTiming'
 import {
   BarChart,
   Bar,

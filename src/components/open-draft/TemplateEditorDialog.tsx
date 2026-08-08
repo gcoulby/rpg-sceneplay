@@ -24,8 +24,8 @@ import type {
   FormattingElementRule,
 } from '@/stores/formattingTypes'
 import { createDefaultRule } from '@/stores/formattingTypes'
-import { FONT_CATEGORIES, getFontsByCategory } from '@/utils/fonts'
-import type { FontEntry } from '@/utils/fonts'
+import { FONT_CATEGORIES, getFontsByCategory } from '@/utils/open-draft/fonts'
+import type { FontEntry } from '@/utils/open-draft/fonts'
 
 const FONT_SIZES = [
   8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96,

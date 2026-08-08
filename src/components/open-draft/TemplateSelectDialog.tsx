@@ -26,8 +26,8 @@ import {
   detectTemplateConflicts,
   resolveTemplateConflicts,
   getEnabledElementOptions,
-} from '@/utils/templateConflicts'
-import type { TemplateConflicts } from '@/utils/templateConflicts'
+} from '@/utils/open-draft/templateConflicts'
+import type { TemplateConflicts } from '@/utils/open-draft/templateConflicts'
 import { showToast } from './Toast'
 
 interface TemplateSelectDialogProps {

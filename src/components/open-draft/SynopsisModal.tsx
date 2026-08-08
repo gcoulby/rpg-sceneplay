@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { formatSceneDuration, getTimingColor } from '@/utils/scriptTiming'
+import {
+  formatSceneDuration,
+  getTimingColor,
+} from '@/utils/open-draft/scriptTiming'
 
 // VIBGYOR + black + white + no color (rainbow order)
 const SCENE_COLORS = [

@@ -6,8 +6,11 @@ import {
 } from '@/stores/editorStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
-import { computeSceneTiming, formatRuntime } from '@/utils/scriptTiming'
-import { computeScriptStructure } from '@/utils/scriptStructure'
+import {
+  computeSceneTiming,
+  formatRuntime,
+} from '@/utils/open-draft/scriptTiming'
+import { computeScriptStructure } from '@/utils/open-draft/scriptStructure'
 
 const SAVE_STATUS_DISPLAY: Record<
   string,

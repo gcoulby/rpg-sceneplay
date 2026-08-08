@@ -29,10 +29,13 @@ import {
   type BackupEntry,
 } from '@/services/backupService'
 import { unpackAssets } from '@/services/snapshotAssets'
-import { parseOdraftLoose, type ParsedOdraft } from '@/utils/odraftFormat'
-import { relativeTime } from '@/utils/relativeTime'
-import { docHasAnyText } from '@/utils/docText'
-import { openTextFile } from '@/utils/fileOps'
+import {
+  parseOdraftLoose,
+  type ParsedOdraft,
+} from '@/utils/open-draft/odraftFormat'
+import { relativeTime } from '@/utils/open-draft/relativeTime'
+import { docHasAnyText } from '@/utils/open-draft/docText'
+import { openTextFile } from '@/utils/open-draft/fileOps'
 import { showToast } from './Toast'
 
 interface Props {

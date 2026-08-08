@@ -59,16 +59,19 @@ import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
 import Highlight from '@tiptap/extension-highlight'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
-import { generateTemplateCss, injectTemplateCss } from '@/utils/templateCss'
-import { docHasAnyText } from '@/utils/docText'
+import {
+  generateTemplateCss,
+  injectTemplateCss,
+} from '@/utils/open-draft/templateCss'
+import { docHasAnyText } from '@/utils/open-draft/docText'
 import {
   getCurrentElementRule,
   getLockedFormatting,
-} from '@/utils/effectiveFormatting'
+} from '@/utils/open-draft/effectiveFormatting'
 import { createPaginationPlugin, getPageMetrics } from '@/editor/pagination'
 import { createContdCasePlugin } from '@/editor/contdCase'
 import { ScreenplayImage } from '@/editor/extensions/ScreenplayImage'
-import { insertImageNode } from '@/utils/insertImage'
+import { insertImageNode } from '@/utils/open-draft/insertImage'
 
 import {
   useEditorStore,
@@ -105,8 +108,8 @@ import { SpellCheck, spellCheckPluginKey } from '@/editor/extensions/SpellCheck'
 import { Grammar, grammarPluginKey } from '@/editor/extensions/Grammar'
 import { spellChecker, BUILTIN_LANGUAGE } from '@/editor/spellchecker'
 import { grammarIgnore } from '@/editor/grammar/grammarIgnore'
-import { buildSaveContent as buildSaveContentShared } from '@/utils/saveContent'
-import { characterKey } from '@/utils/nodeText'
+import { buildSaveContent as buildSaveContentShared } from '@/utils/open-draft/saveContent'
+import { characterKey } from '@/utils/open-draft/nodeText'
 import { computeContdChanges, type ContdBlock } from '@/editor/contdAuto'
 import { useBackupScheduler } from '@/hooks/useBackupScheduler'
 import { useBackupStatusStore } from '@/stores/backupStatusStore'
@@ -130,15 +133,15 @@ import { useParams, useNavigate } from 'react-router-dom'
 import OpenFile from './OpenFile'
 import type { OpenSource } from './OpenFile'
 import WelcomeDialog, { type WelcomeChoice } from './WelcomeDialog'
-import { parseFountain } from '@/utils/fountainParser'
-import { parseFDXFull } from '@/utils/fdxParser'
-import { parseOdraft, downloadOdraft } from '@/utils/odraftFormat'
-import { hydrateEditorStoresFromContent } from '@/utils/hydrateStores'
+import { parseFountain } from '@/utils/open-draft/fountainParser'
+import { parseFDXFull } from '@/utils/open-draft/fdxParser'
+import { parseOdraft, downloadOdraft } from '@/utils/open-draft/odraftFormat'
+import { hydrateEditorStoresFromContent } from '@/utils/open-draft/hydrateStores'
 import {
   stashSessionDoc,
   takeSessionDoc,
   clearSessionDoc,
-} from '@/utils/sessionDoc'
+} from '@/utils/open-draft/sessionDoc'
 import SaveAsDialog from './SaveAsDialog'
 import TitlePageEditor from './TitlePageEditor'
 import MoresContdsDialog from './MoresContdsDialog'
@@ -4113,7 +4116,7 @@ const ScreenplayEditor: React.FC = () => {
         if (editor) clearEditorHistory(editor)
       } else if (choice === 'import') {
         if (!editor) return
-        const { openTextFile } = await import('@/utils/fileOps')
+        const { openTextFile } = await import('@/utils/open-draft/fileOps')
         const result = await openTextFile([
           { name: 'Screenplay', extensions: ['fountain', 'fdx', 'txt'] },
         ])

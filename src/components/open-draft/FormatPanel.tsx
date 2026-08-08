@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
 import FontPicker from './FontPicker'
-import { FONT_REGISTRY, loadFont } from '@/utils/fonts'
+import { FONT_REGISTRY, loadFont } from '@/utils/open-draft/fonts'
 import { useEditorStore } from '@/stores/editorStore'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import {
   getCurrentElementRule,
   getLockedFormatting,
-} from '@/utils/effectiveFormatting'
+} from '@/utils/open-draft/effectiveFormatting'
 
 const FONT_SIZES = [
   8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72, 96,

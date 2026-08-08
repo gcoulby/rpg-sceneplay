@@ -6,7 +6,7 @@ import {
   type ElementType,
 } from '@/stores/editorStore'
 import { useEditorStore } from '@/stores/editorStore'
-import { singleLine } from '@/utils/nodeText'
+import { singleLine } from '@/utils/open-draft/nodeText'
 
 // Element types for the picker sheet
 const ELEMENT_TYPES: ElementType[] = [

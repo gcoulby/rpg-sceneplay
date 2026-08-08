@@ -6,7 +6,7 @@ import {
   computeSceneTiming,
   formatSceneDuration,
   getTimingColor,
-} from '@/utils/scriptTiming'
+} from '@/utils/open-draft/scriptTiming'
 import SynopsisModal from './SynopsisModal'
 
 interface IndexCardsProps {

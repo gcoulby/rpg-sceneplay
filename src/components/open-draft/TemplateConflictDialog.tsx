@@ -11,7 +11,7 @@ import type {
   TemplateConflicts,
   DisabledElementConflict,
   FormattingViolation,
-} from '@/utils/templateConflicts'
+} from '@/utils/open-draft/templateConflicts'
 
 interface TemplateConflictDialogProps {
   conflicts: TemplateConflicts

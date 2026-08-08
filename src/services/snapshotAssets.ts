@@ -12,83 +12,92 @@
  * the snapshot still gets written, `assets_omitted` is set, and the Recover
  * dialog says so rather than silently restoring a broken script.
  */
-import type { JSONContent } from '@tiptap/react';
-import type { OdraftAsset } from '../utils/odraftFormat';
-import { api } from './api';
+import type { JSONContent } from '@tiptap/react'
+import type { OdraftAsset } from '../utils/open-draft/odraftFormat'
+import { api } from './api'
 
 /** Default ceiling on embedded image bytes per snapshot. */
-export const DEFAULT_ASSET_CAP_BYTES = 25 * 1024 * 1024;
+export const DEFAULT_ASSET_CAP_BYTES = 25 * 1024 * 1024
 
 interface AssetRef {
-  id: string;
-  filename: string;
+  id: string
+  filename: string
 }
 
-function addRef(out: Map<string, AssetRef>, id: unknown, filename: unknown): void {
-  if (typeof id !== 'string' || !id) return;
-  if (out.has(id)) return;
-  out.set(id, { id, filename: typeof filename === 'string' && filename ? filename : id });
+function addRef(
+  out: Map<string, AssetRef>,
+  id: unknown,
+  filename: unknown,
+): void {
+  if (typeof id !== 'string' || !id) return
+  if (out.has(id)) return
+  out.set(id, {
+    id,
+    filename: typeof filename === 'string' && filename ? filename : id,
+  })
 }
 
 /**
  * Every asset the payload references: inline screenplay images, title-page
  * images, and character-profile images.
  */
-export function collectAssetRefs(content: Record<string, unknown> | null | undefined): AssetRef[] {
-  const out = new Map<string, AssetRef>();
-  if (!content) return [];
+export function collectAssetRefs(
+  content: Record<string, unknown> | null | undefined,
+): AssetRef[] {
+  const out = new Map<string, AssetRef>()
+  if (!content) return []
 
   const walk = (node: JSONContent | null | undefined): void => {
-    if (!node || typeof node !== 'object') return;
-    const attrs = node.attrs as Record<string, unknown> | undefined;
-    if (attrs) addRef(out, attrs.assetId, attrs.filename);
-    if (Array.isArray(node.content)) node.content.forEach(walk);
-  };
-  walk(content as JSONContent);
+    if (!node || typeof node !== 'object') return
+    const attrs = node.attrs as Record<string, unknown> | undefined
+    if (attrs) addRef(out, attrs.assetId, attrs.filename)
+    if (Array.isArray(node.content)) node.content.forEach(walk)
+  }
+  walk(content as JSONContent)
 
   // Character profiles keep their portraits as the same asset rows.
-  const profiles = content._characterProfiles;
+  const profiles = content._characterProfiles
   if (Array.isArray(profiles)) {
     for (const p of profiles) {
-      const images = (p as Record<string, unknown>)?.images;
-      if (!Array.isArray(images)) continue;
+      const images = (p as Record<string, unknown>)?.images
+      if (!Array.isArray(images)) continue
       for (const img of images) {
-        if (typeof img === 'string') addRef(out, img, undefined);
+        if (typeof img === 'string') addRef(out, img, undefined)
         else if (img && typeof img === 'object') {
-          const rec = img as Record<string, unknown>;
-          addRef(out, rec.assetId ?? rec.id, rec.filename);
+          const rec = img as Record<string, unknown>
+          addRef(out, rec.assetId ?? rec.id, rec.filename)
         }
       }
     }
   }
 
-  return Array.from(out.values());
+  return Array.from(out.values())
 }
 
 function toBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const chunk = 0x8000; // chunked so a large image can't blow the call stack
+  let binary = ''
+  const chunk = 0x8000 // chunked so a large image can't blow the call stack
   for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
   }
-  return btoa(binary);
+  return btoa(binary)
 }
 
 function fromBase64(b64: string): Uint8Array {
-  const binary = atob(b64);
-  const out = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
-  return out;
+  const binary = atob(b64)
+  const out = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i)
+  return out
 }
 
 function mimeFor(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase() || '';
-  if (ext === 'png') return 'image/png';
-  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
-  if (ext === 'gif') return 'image/gif';
-  if (ext === 'webp') return 'image/webp';
-  if (ext === 'svg') return 'image/svg+xml';
-  return 'application/octet-stream';
+  const ext = filename.split('.').pop()?.toLowerCase() || ''
+  if (ext === 'png') return 'image/png'
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg'
+  if (ext === 'gif') return 'image/gif'
+  if (ext === 'webp') return 'image/webp'
+  if (ext === 'svg') return 'image/svg+xml'
+  return 'application/octet-stream'
 }
 
 /**
@@ -103,38 +112,40 @@ export async function packAssets(
   refs: AssetRef[],
   capBytes: number = DEFAULT_ASSET_CAP_BYTES,
 ): Promise<{ assets: OdraftAsset[]; truncated: boolean }> {
-  const assets: OdraftAsset[] = [];
-  let total = 0;
-  let truncated = false;
+  const assets: OdraftAsset[] = []
+  let total = 0
+  let truncated = false
 
-  const getBytes = (api as unknown as {
-    getAssetBytes?: (p: string, a: string) => Promise<Uint8Array>;
-  }).getAssetBytes;
+  const getBytes = (
+    api as unknown as {
+      getAssetBytes?: (p: string, a: string) => Promise<Uint8Array>
+    }
+  ).getAssetBytes
   if (typeof getBytes !== 'function') {
-    return { assets: [], truncated: refs.length > 0 };
+    return { assets: [], truncated: refs.length > 0 }
   }
 
   for (const ref of refs) {
     try {
-      const bytes = await getBytes.call(api, projectId, ref.id);
+      const bytes = await getBytes.call(api, projectId, ref.id)
       if (total + bytes.byteLength > capBytes) {
-        truncated = true;
-        break;
+        truncated = true
+        break
       }
-      total += bytes.byteLength;
+      total += bytes.byteLength
       assets.push({
         id: ref.id,
         filename: ref.filename,
         mime_type: mimeFor(ref.filename),
         data_base64: toBase64(bytes),
-      });
+      })
     } catch (err) {
-      console.warn('[backup] could not read asset', ref.id, err);
-      truncated = true;
+      console.warn('[backup] could not read asset', ref.id, err)
+      truncated = true
     }
   }
 
-  return { assets, truncated };
+  return { assets, truncated }
 }
 
 /**
@@ -142,13 +153,26 @@ export async function packAssets(
  * restored document's references still resolve. Failures are logged, not
  * thrown: a restored script with a missing image beats a failed restore.
  */
-export async function unpackAssets(projectId: string, assets: OdraftAsset[]): Promise<number> {
-  const importAsset = (api as unknown as {
-    importAsset?: (p: string, a: { id: string; filename: string; mime_type: string; bytes: Uint8Array }) => Promise<void>;
-  }).importAsset;
-  if (typeof importAsset !== 'function' || assets.length === 0) return 0;
+export async function unpackAssets(
+  projectId: string,
+  assets: OdraftAsset[],
+): Promise<number> {
+  const importAsset = (
+    api as unknown as {
+      importAsset?: (
+        p: string,
+        a: {
+          id: string
+          filename: string
+          mime_type: string
+          bytes: Uint8Array
+        },
+      ) => Promise<void>
+    }
+  ).importAsset
+  if (typeof importAsset !== 'function' || assets.length === 0) return 0
 
-  let restored = 0;
+  let restored = 0
   for (const asset of assets) {
     try {
       await importAsset.call(api, projectId, {
@@ -156,11 +180,11 @@ export async function unpackAssets(projectId: string, assets: OdraftAsset[]): Pr
         filename: asset.filename,
         mime_type: asset.mime_type,
         bytes: fromBase64(asset.data_base64),
-      });
-      restored++;
+      })
+      restored++
     } catch (err) {
-      console.warn('[backup] could not restore asset', asset.id, err);
+      console.warn('[backup] could not restore asset', asset.id, err)
     }
   }
-  return restored;
+  return restored
 }
