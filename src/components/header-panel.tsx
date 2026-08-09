@@ -19,6 +19,8 @@ import { useHeaderMenus } from '@/hooks/use-header-menu'
 import MoresContdsDialog from './plugins/mores-continued/mores-continued-dialog'
 import TitlePageEditor from './plugins/title-page-setup-dialog/title-page-editor'
 import TemplateSelectDialog from './plugins/template-editor/template-editor'
+import AboutDialog from './plugins/about/about-dialog'
+import DiagnosticsDialog from './plugins/diagnostics/diagnostics-dialog'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
@@ -28,8 +30,10 @@ export default function AppShell() {
   const [goToPageOpen, setGoToPageOpen] = useState(false)
   const [moresContdsOpen, setMoresContdsOpen] = useState(false)
   const [titlePageEditorOpen, setTitlePageEditorOpen] = useState(false)
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
 
   const [templateSelectOpen, setTemplateSelectOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
 
   const goToPage = useEditorStore((s) => s.goToPage)
 
@@ -49,6 +53,8 @@ export default function AppShell() {
     onOpenSetMoresAndContdsOpen: () => setMoresContdsOpen(true),
     onTitlePageEditorOpen: () => setTitlePageEditorOpen(true),
     onTemplateSelectOpen: () => setTemplateSelectOpen(true),
+    onAboutOpen: () => setAboutOpen(true),
+    onDiagnosticsOpen: () => setDiagnosticsOpen(true),
   })
 
   return (
@@ -105,6 +111,11 @@ export default function AppShell() {
         editor={editor}
         open={templateSelectOpen}
         onOpenChange={setTemplateSelectOpen}
+      />
+      <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
+      <DiagnosticsDialog
+        open={diagnosticsOpen}
+        onOpenChange={setDiagnosticsOpen}
       />
     </header>
   )

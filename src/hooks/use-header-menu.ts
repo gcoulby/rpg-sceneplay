@@ -49,7 +49,10 @@ import {
   FaHighlighter,
   FaHistory,
   FaImage,
+  FaInfo,
+  FaInfoCircle,
   FaItalic,
+  FaKeyboard,
   FaListOl,
   FaListUl,
   FaLock,
@@ -64,6 +67,7 @@ import {
   FaSearchMinus,
   FaSearchPlus,
   FaSpellCheck,
+  FaStethoscope,
   FaStickyNote,
   FaStream,
   FaStrikethrough,
@@ -87,6 +91,7 @@ import {
   setAlignment,
   toggleDualDialogue,
 } from '@/actions/format-actions'
+import { showToast } from '@/actions/show-toast'
 
 interface UseHeaderMenusArgs {
   onOpenPageSetup: () => void
@@ -95,6 +100,8 @@ interface UseHeaderMenusArgs {
   onOpenSetMoresAndContdsOpen: () => void
   onTitlePageEditorOpen: () => void
   onTemplateSelectOpen: () => void
+  onAboutOpen: () => void
+  onDiagnosticsOpen: () => void
 }
 
 export function useHeaderMenus({
@@ -104,6 +111,8 @@ export function useHeaderMenus({
   onOpenSetMoresAndContdsOpen,
   onTitlePageEditorOpen,
   onTemplateSelectOpen,
+  onAboutOpen,
+  onDiagnosticsOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
   //   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
@@ -695,6 +704,31 @@ export function useHeaderMenus({
           },
         ],
       },
+      {
+        title: 'Help',
+        icon: FaInfo,
+        items: [
+          {
+            icon: FaInfoCircle,
+            label: 'About Open Draft',
+            action: onAboutOpen,
+          },
+          {
+            icon: FaKeyboard,
+            label: 'Keyboard Shortcuts',
+            action: () =>
+              showToast({
+                description: `${mod}1-8: Elements | Tab: Next | ${mod}B/I/U: Format | ${mod}Z: Undo | ${mod}F: Find | ${mod}G: Go to Page`,
+                type: 'success',
+              }),
+          },
+          {
+            icon: FaStethoscope,
+            label: 'Diagnostics',
+            action: onDiagnosticsOpen,
+          },
+        ],
+      },
     ],
     [
       mod,
@@ -737,6 +771,8 @@ export function useHeaderMenus({
       theme,
       toolbarMode,
       zoomLevel,
+      onAboutOpen,
+      onDiagnosticsOpen,
       editor,
       setSearchOpen,
       setSpellCheckOpen,

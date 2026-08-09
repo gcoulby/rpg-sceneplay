@@ -1,7 +1,13 @@
 {
-  "name": "frontend",
+  "name": "rpg-sceneplay",
   "private": true,
-  "version": "0.0.0",
+  "description": "A Screenplay writing software designed for Solo TTRPGs",
+  "metadata": {
+    "title": "RPG Sceneplay",
+    "author": "Graham Coulby",
+    "homepage": "https://grahamcoulby.co.uk"
+  },
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
