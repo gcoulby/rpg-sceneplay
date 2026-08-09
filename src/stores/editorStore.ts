@@ -858,6 +858,8 @@ interface EditorState {
   setFormatPickerMode: (mode: 'reset' | 'apply-only') => void
   pageSetupOpen: boolean
   setPageSetupOpen: (open: boolean) => void
+  scriptStatisticsOpen: boolean
+  setScriptStatisticsOpen: (open: boolean) => void
 }
 
 const BEAT_UNDO_MAX = 50
@@ -1593,6 +1595,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setFormatPickerMode: (mode) => set({ formatPickerMode: mode }),
   pageSetupOpen: false,
   setPageSetupOpen: (open) => set({ pageSetupOpen: open }),
+  scriptStatisticsOpen: false,
+  setScriptStatisticsOpen: (open) => set({ scriptStatisticsOpen: open }),
   spellCheckOpen: false,
 
   setSpellCheckOpen: (open: boolean) => set({ spellCheckOpen: open }),
