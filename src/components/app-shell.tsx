@@ -1,4 +1,4 @@
-import HeaderPanel from './header-panel'
+import HeaderPanel from './header-panel/header-panel'
 
 export default function AppShell() {
   return <HeaderPanel />

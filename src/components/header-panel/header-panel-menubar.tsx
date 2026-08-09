@@ -1,15 +1,23 @@
-import React from 'react'
 import {
   Menubar,
   MenubarContent,
   MenubarMenu,
   MenubarTrigger,
-} from './ui/menubar'
+} from '../ui/menubar'
 import { MenuItemRenderer } from './menu-item-renderer'
+import type { HeaderMenuBarItem, HeaderMenuBarModel } from '@/types'
 
-export default function HeaderPanelMenuBar() {
+interface HeaderPanelMenuBarProps {
+  menus: Array<HeaderMenuBarModel>
+  runOrConfirm: (item: HeaderMenuBarItem) => void
+}
+
+export const HeaderPanelMenuBar = ({
+  menus,
+  runOrConfirm,
+}: HeaderPanelMenuBarProps) => {
   return (
-    <Menubar className="flex flex-row gap-4 text-xs">
+    <Menubar className="flex flex-row gap-4 rounded-none h-7 text-xs">
       {menus.map((menu, i) => (
         <MenubarMenu key={i}>
           <MenubarTrigger className="gap-2">

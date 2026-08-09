@@ -6,7 +6,7 @@ import {
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
-} from './ui/menubar'
+} from '../ui/menubar'
 
 export function MenuItemRenderer({
   item,
@@ -35,7 +35,7 @@ export function MenuItemRenderer({
   }
 
   return (
-    <MenubarItem onClick={() => onSelect(item)}>
+    <MenubarItem onClick={() => onSelect(item)} disabled={item.disabled}>
       {item.icon && <item.icon size={25} />} {item.label}{' '}
       {item.shortcut && <MenubarShortcut>{item.shortcut}</MenubarShortcut>}
     </MenubarItem>
