@@ -300,12 +300,20 @@ export function useHeaderMenus({
             icon: FaUndo,
             shortcut: `${mod}Z`,
             action: () => handleUndo(editor),
+            disabled:
+              !editor ||
+              typeof editor.can().undo !== 'function' ||
+              !editor.can().undo(),
           },
           {
             label: 'redo',
             icon: FaRedo,
             shortcut: `⇧${mod}Y`,
             action: () => handleRedo(editor),
+            disabled:
+              !editor ||
+              typeof editor.can().redo !== 'function' ||
+              !editor.can().redo(),
           },
           { separator: true, label: '' },
           {

@@ -48,6 +48,12 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --menubar-h: calc(var(--spacing) * 6);
+  --toolbar-h: calc(var(--spacing) * 10);
+  --statusbar-h: calc(var(--spacing) * 6);
+  --app-h: calc(
+    100dvh - var(--menubar-h) - var(--toolbar-h) - var(--statusbar-h)
+  );
 }
 
 :root {
@@ -130,4 +136,9 @@
     @apply font-sans;
     font-size: 14px;
   }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

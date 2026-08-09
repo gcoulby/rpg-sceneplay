@@ -5105,7 +5105,7 @@ const ScreenplayEditor: React.FC = () => {
 
   return (
     <div
-      className={`app-container flex flex-col h-dvh overflow-hidden${isHistoryMode ? ' history-mode' : ''}`}
+      className={`app-container flex flex-col h-[var(--app-h)] overflow-hidden${isHistoryMode ? ' history-mode' : ''}`}
     >
       {isHistoryMode && (
         <div className="z-4000 flex justify-center items-center gap-2.5 bg-linear-to-br from-[#b8860b] to-[#8b6914] shadow-[0_2px_8px_rgba(0,0,0,.3)] px-5 py-2.5 font-medium text-[13px] text-white tracking-[0.3px] select-none history-banner shrink-0">
@@ -5373,7 +5373,7 @@ const ScreenplayEditor: React.FC = () => {
           />
         </>
       )} */}
-      {!isHistoryMode && <Toolbar editor={editor} />}
+      {/* {!isHistoryMode && <Toolbar editor={editor} />} */}
       <div className="flex flex-1 overflow-hidden editor-layout">
         {!isHistoryMode && (
           <SceneNavigator
@@ -5683,14 +5683,14 @@ const ScreenplayEditor: React.FC = () => {
             .getPanels('right-sidebar')
             .map((p) => <p.component key={p.id} editor={editor} />)}
       </div>
-      {!isHistoryMode && (
+      {/* {!isHistoryMode && (
         <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
           <StatusBar editorDoc={editor?.getJSON()} />
           {pluginRegistry.getPanels('status-bar').map((p) => (
             <p.component key={p.id} />
           ))}
         </div>
-      )}
+      )} */}
       {!isHistoryMode && <SearchReplace editor={editor} />}
       {!isHistoryMode && <GoToPage onGoToPage={handleGoToPage} />}
       <ZoomPanel />

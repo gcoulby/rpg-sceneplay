@@ -1,26 +1,21 @@
-import { Menubar } from '@base-ui/react/menubar'
-import {
-  MenubarContent,
-  MenubarMenu,
-  MenubarTrigger,
-} from '@/components/ui/menubar'
 import { useState } from 'react'
 import { useEditorStore } from '@/stores/editorStore'
 import { type HeaderMenuBarItem, type PendingAction } from '@/types'
-import ConfirmationDialog from './confirmation-dialog'
+import ConfirmationDialog from '../confirmation-dialog'
 import PageSetupDialog from '@/components/plugins/page-setup/page-setup-dialog'
-import { MenuItemRenderer } from './menu-item-renderer'
 import SearchReplace from '@/components/plugins/search-replace/search-replace-comp'
 import GoToPageDialog from '@/components/plugins/goto-page/goto-page-dialog'
 import SpellCheckPopover from '@/components/plugins/spelling-and-grammar/spell-check-popover'
 import WritingSuggestionsPopover from '@/components/plugins/spelling-and-grammar/writing-suggestions-popover'
 import GrammarRulesPanel from '@/components/plugins/spelling-and-grammar/grammar-settings-dialog'
-import { useHeaderMenus } from '@/hooks/use-header-menu'
-import MoresContdsDialog from './plugins/mores-continued/mores-continued-dialog'
-import TitlePageEditor from './plugins/title-page-setup-dialog/title-page-editor'
-import TemplateSelectDialog from './plugins/template-editor/template-editor'
-import AboutDialog from './plugins/about/about-dialog'
-import DiagnosticsDialog from './plugins/diagnostics/diagnostics-dialog'
+import { useHeaderMenus } from '@/components/header-panel/use-header-menu'
+import MoresContdsDialog from '../plugins/mores-continued/mores-continued-dialog'
+import TitlePageEditor from '../plugins/title-page-setup-dialog/title-page-editor'
+import TemplateSelectDialog from '../plugins/template-editor/template-editor'
+import AboutDialog from '../plugins/about/about-dialog'
+import DiagnosticsDialog from '../plugins/diagnostics/diagnostics-dialog'
+import { HeaderPanelMenuBar } from './header-panel-menubar'
+import { HeaderPanelToolbar } from './toolbar/header-panel-toolbar'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
@@ -58,21 +53,13 @@ export default function AppShell() {
   })
 
   return (
-    <header className="px-4">
-      <Menubar className="flex flex-row gap-4 text-xs">
-        {menus.map((menu, i) => (
-          <MenubarMenu key={i}>
-            <MenubarTrigger className="gap-2">
-              <menu.icon size={10} /> {menu.title}
-            </MenubarTrigger>
-            <MenubarContent className="w-70">
-              {menu.items.map((item, k) => (
-                <MenuItemRenderer key={k} item={item} onSelect={runOrConfirm} />
-              ))}
-            </MenubarContent>
-          </MenubarMenu>
-        ))}
-      </Menubar>
+    <header className="p-0">
+      <div className="flex flex-col gap-0">
+        <HeaderPanelMenuBar menus={menus} runOrConfirm={runOrConfirm} />
+
+        <HeaderPanelToolbar onOpenGoToPage={() => setGoToPageOpen(true)} />
+      </div>
+
       <ConfirmationDialog
         open={pendingAction !== null}
         {...pendingAction?.config}

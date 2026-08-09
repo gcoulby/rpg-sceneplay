@@ -1490,7 +1490,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 return {
                   label: r.label,
                   shortcut: shortcuts[r.id],
-                  action: () => setElement(r.id as any),
+                  action: () => setElement(r.id as string),
                 }
               }),
           ],
@@ -1627,7 +1627,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
           icon: <FaColumns />,
           label: 'Dual Dialogue',
           shortcut: `${mod}D`,
-          action: () => (editor as any)?.commands?.toggleDualDialogue(),
+          action: () => (editor as Editor)?.commands?.toggleDualDialogue(),
         },
         { separator: true, label: '' },
         {

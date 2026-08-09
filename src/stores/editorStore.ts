@@ -29,6 +29,11 @@ interface ViewState {
   spellingSettings?: SpellingSettings
 }
 
+const initialTheme =
+  (localStorage.getItem('opendraft:theme') as 'dark' | 'light') || 'dark'
+document.documentElement.classList.toggle('dark', initialTheme === 'dark')
+document.documentElement.setAttribute('data-theme', initialTheme)
+
 export interface SpellingSettings {
   /** When true, capitalized unknown words (likely proper nouns) are flagged. */
   flagProperNouns?: boolean
@@ -1329,11 +1334,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   pageLayout: DEFAULT_PAGE_LAYOUT,
   setPageLayout: (layout) => set({ pageLayout: layout }),
 
-  theme:
-    (localStorage.getItem('opendraft:theme') as 'dark' | 'light') || 'dark',
+  theme: initialTheme,
   setTheme: (t) => {
     localStorage.setItem('opendraft:theme', t)
     document.documentElement.setAttribute('data-theme', t)
+    document.documentElement.classList.toggle('dark', t === 'dark')
     set({ theme: t })
   },
 
