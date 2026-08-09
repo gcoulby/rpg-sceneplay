@@ -216,3 +216,44 @@ binding would have collided with that. Go to Page currently has no keyboard
 shortcut as a result — only the toolbar/menu entry point. Let me know if
 you'd rather free up Cmd+G for Go-to-Page and move find-next to F3-only (it
 already responds to F3 too).
+
+## Second pass — collaboration-starting flow
+
+A follow-up review of `AssetManager`, `AssetViewer`, `BackupSettingsSection`,
+`CollabLoginDialog`, `DiffViewer`, `FontPicker`, `ProjectPropertiesDialog`,
+`SaveAsDialog`, `ScriptDiffView`, `ShareDialog`, `SynopsisModal`, and
+`VersionHistory` found and removed 7 more dead files:
+
+- `BackupSettingsSection.tsx`, `ProjectPropertiesDialog.tsx` — zero
+  references anywhere, and no history of ever being wired up.
+- `VersionHistory.tsx` — rendered unconditionally, but internally gated on
+  `versionHistoryOpen`. Repo-wide search found zero live callers of
+  `setVersionHistoryOpen(true)` — the old MenuBar was the only trigger, and
+  the new header menu never grew a "Version History" entry. Dead.
+- `DiffViewer.tsx`, `ScriptDiffView.tsx` — only used by `VersionHistory.tsx`,
+  so they went with it.
+- `ShareDialog.tsx`, `CollabLoginDialog.tsx` — subtler: their open-state
+  setters only exist inside an "Invite" button gated on `isCollabHost`, but
+  `isCollabHost` only ever becomes `true` inside `handleStartCollab`, which
+  is only reachable *through* `ShareDialog` itself (`onStartCollab` prop).
+  That's a closed loop with no live entry point — "become a host / start
+  sharing" was already fully dead, only "join an existing session via URL
+  token" (guest path) still works. Removed both dialogs plus the now-orphaned
+  `handleStartCollab` and the Invite-button block in
+  `ScreenplayEditor.tsx` that only ever called their setters.
+
+`AssetManager`/`AssetViewer`, `FontPicker`, `SaveAsDialog`, and
+`SynopsisModal` were checked the same way and confirmed genuinely live (real
+reachable triggers, not gated behind a dead boolean) — left untouched.
+
+**Deferred, not yet acted on:** `FormatPanel.tsx` (open-draft) and its child
+`FontPicker.tsx` (open-draft, distinct from the still-live
+`header-panel/toolbar/font-picker.tsx`) — you've replaced both with new
+logic, but asked to hold off on removing them for now. `FormatPanel` is only
+reachable via the "Font..." item in `ScriptContextMenu.tsx`; when you're
+ready, that context-menu entry will need either removal or repointing to the
+new logic as part of the same change.
+
+Verified after this pass: `tsc -b` clean (same one pre-existing unrelated
+`scroll-area.tsx` error), `vite build` succeeds, all 142 real tests still
+pass.

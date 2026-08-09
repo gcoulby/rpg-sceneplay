@@ -117,7 +117,6 @@ import { projectApi } from '@/services/projectApi'
 import { scriptApi } from '@/services/scriptApi'
 import { API_BASE, getCollabWsUrl } from '@/config'
 import { showToast } from './Toast'
-import VersionHistory from './VersionHistory'
 import AssetManager from './AssetManager'
 import { useParams, useNavigate } from 'react-router-dom'
 import WelcomeDialog, { type WelcomeChoice } from './WelcomeDialog'
@@ -131,8 +130,6 @@ import {
   clearSessionDoc,
 } from '@/utils/open-draft/sessionDoc'
 import SaveAsDialog from './SaveAsDialog'
-import ShareDialog from './ShareDialog'
-import CollabLoginDialog from './CollabLoginDialog'
 import { useIsTouchDevice, useSwipeEdge, usePinchZoom } from '@/hooks/useTouch'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { startCollabSync, stopCollabSync } from '@/services/collabSync'
@@ -140,7 +137,6 @@ import {
   collabAuthApi,
   setLogoutCollabTeardown,
   setLogoutEditorReset,
-  isCollabAuthenticated,
 } from '@/services/collabAuth'
 import { platformFetch, isTauri } from '@/services/platform'
 import { reportSaveError } from '@/stores/saveErrorStore'
@@ -614,8 +610,6 @@ const ScreenplayEditor: React.FC = () => {
   const [collabUserName, setCollabUserName] = useState('Owner')
   const [isCollabHost, setIsCollabHost] = useState(false)
   const [collabRole, setCollabRole] = useState<'editor' | 'viewer'>('editor')
-  const [shareDialogOpen, setShareDialogOpen] = useState(false)
-  const [collabLoginOpen, setCollabLoginOpen] = useState(false)
   const [collabUsers, setCollabUsers] = useState<
     { name: string; color: string }[]
   >([])
@@ -1247,8 +1241,6 @@ const ScreenplayEditor: React.FC = () => {
     setDocumentTitle,
     setupCollab,
   ])
-
-  // handleStartCollab is defined after the editor — see below useEditor
 
   const handleStopCollab = useCallback(async () => {
     const isHost = isCollabHost
@@ -2137,62 +2129,6 @@ const ScreenplayEditor: React.FC = () => {
       injectTemplateCss(null)
     }
   }, [activeTemplateId, templatesLoaded, templates, pageLayout])
-
-  // ── Owner starts collaboration — save current content, create own token, switch to collab mode ──
-  const handleStartCollab = useCallback(
-    async (guestSession: import('@/services/api').CollabSession) => {
-      if (!editor || !currentProject || !currentScriptId) return
-
-      // Save current editor content so it can seed the Yjs doc
-      const doc = editor.getJSON()
-      const {
-        _notes,
-        _generalNotes: _gn3,
-        _tags,
-        _tagCategories,
-        _characterProfiles,
-        _characterRelationships,
-        _templateId: _tpl3,
-        _pageLayout: _pl3,
-        ...pmDoc
-      } = doc as Record<string, unknown>
-      collabInitialContent.current = pmDoc
-
-      // The guest invite carries a session_nonce that makes the Yjs room unique
-      // per collab session, so stale state from previous sessions is never loaded.
-      const nonce = guestSession.session_nonce || ''
-
-      // Create a separate session token for the owner, sharing the same nonce
-      let ownerToken: string
-      try {
-        const ownerSession = await api.createCollabInvite(
-          currentProject.id,
-          currentScriptId,
-          'Host',
-          'editor',
-          1,
-          nonce,
-        )
-        ownerToken = ownerSession.token
-      } catch {
-        ownerToken = guestSession.token
-      }
-
-      // Include the nonce in the room name so each session gets a fresh Yjs document
-      const docName = `${currentProject.id}/${currentScriptId}/${nonce}`
-      // Use the logged-in user's display name so remote users see the real name
-      const hostDisplayName =
-        useSettingsStore.getState().collabAuth.user?.displayName || 'Host'
-      setupCollab(docName, ownerToken, hostDisplayName, true)
-
-      setCollabUserName(hostDisplayName)
-      setIsCollabHost(true)
-      setCollabMode(true)
-      // Keep ShareDialog open so the host can immediately copy the invite link
-      setEditorKey((k) => k + 1)
-    },
-    [editor, currentProject, currentScriptId, setupCollab],
-  )
 
   // --- Image insertion: upload to the project's assets, then insert a node that
   // references the asset (keeps the document small). Falls back to an inline data
@@ -4693,22 +4629,6 @@ const ScreenplayEditor: React.FC = () => {
               </span>
             ))}
           </div>
-          {isCollabHost && (
-            <button
-              className="collab-banner-btn"
-              onClick={() => {
-                // Close any stale login dialog before reopening share dialog
-                setCollabLoginOpen(false)
-                if (!isCollabAuthenticated()) {
-                  setCollabLoginOpen(true)
-                  return
-                }
-                setShareDialogOpen(true)
-              }}
-            >
-              Invite
-            </button>
-          )}
           <div className="collab-activity-wrapper">
             <button
               className="collab-banner-btn collab-activity-btn"
@@ -5214,7 +5134,6 @@ const ScreenplayEditor: React.FC = () => {
           onClose={() => setFormatPanelOpen(false)}
         />
       )}
-      {!isHistoryMode && <VersionHistory />}
       {!isHistoryMode && currentProject && (
         <AssetManager projectId={currentProject.id} />
       )}
@@ -5245,28 +5164,6 @@ const ScreenplayEditor: React.FC = () => {
         style={{ display: 'none' }}
         onChange={handleImageFileChange}
       />
-      {!isHistoryMode &&
-        shareDialogOpen &&
-        currentProject &&
-        currentScriptId && (
-          <ShareDialog
-            projectId={currentProject.id}
-            scriptId={currentScriptId}
-            scriptTitle={useEditorStore.getState().documentTitle}
-            isCollabActive={collabMode}
-            onStartCollab={handleStartCollab}
-            onClose={() => setShareDialogOpen(false)}
-          />
-        )}
-      {collabLoginOpen && (
-        <CollabLoginDialog
-          onClose={() => setCollabLoginOpen(false)}
-          onSuccess={() => {
-            setCollabLoginOpen(false)
-            setShareDialogOpen(true)
-          }}
-        />
-      )}
       {dragOverEditor && (
         <div
           style={{
