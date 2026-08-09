@@ -82,7 +82,6 @@ import {
   resolveMoresContds,
 } from '@/stores/editorStore'
 import type { ElementType } from '@/stores/editorStore'
-import MenuBar from './MenuBar'
 import Toolbar from './Toolbar'
 import SceneNavigator from './SceneNavigator'
 import IndexCards from './IndexCards'
@@ -5348,7 +5347,7 @@ const ScreenplayEditor: React.FC = () => {
           </button>
         </div>
       )}
-      {!isHistoryMode && (
+      {/* {!isHistoryMode && (
         <>
           <MenuBar
             editor={editor}
@@ -5373,7 +5372,7 @@ const ScreenplayEditor: React.FC = () => {
             isCollabGuest={collabMode && !isCollabHost}
           />
         </>
-      )}
+      )} */}
       {!isHistoryMode && <Toolbar editor={editor} />}
       <div className="flex flex-1 overflow-hidden editor-layout">
         {!isHistoryMode && (
