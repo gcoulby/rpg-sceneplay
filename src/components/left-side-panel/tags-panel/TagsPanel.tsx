@@ -67,11 +67,6 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor }) => {
     [occurrences],
   )
 
-  // Reacting to pendingTagSelection changing — both switching to the Manage
-  // tab and resetting the pending-category/new-entity-name fields are the
-  // same "adjust state when a prop changes" case, so they're one render-time
-  // comparison rather than two separate effects each calling setState
-  // synchronously in their body.
   const [prevPendingSelection, setPrevPendingSelection] =
     useState(pendingTagSelection)
   if (pendingTagSelection !== prevPendingSelection) {
@@ -81,12 +76,6 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor }) => {
     if (pendingTagSelection) setActiveTab('manage')
   }
 
-  // This effect is legitimate: editingTagId is a command arriving from
-  // outside React (a context-menu action), and scrolling/focusing a DOM
-  // node is a real side effect that can't happen during render. Every
-  // state update now lives inside the setTimeout callback rather than the
-  // effect body itself, matching the same fix used for the timing-report
-  // scroll handler elsewhere in this app.
   const lastEditingTagRef = useRef<string | null>(null)
   useEffect(() => {
     if (!editingTagId || editingTagId === lastEditingTagRef.current) return
@@ -268,9 +257,6 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor }) => {
     ],
   )
 
-  // Ref sync happens in an effect (runs after commit), not during render —
-  // writing ref.current while the component body executes is a separate
-  // error from what this ref is actually for.
   const newEntityNameRef = useRef(newEntityName)
   useEffect(() => {
     newEntityNameRef.current = newEntityName
