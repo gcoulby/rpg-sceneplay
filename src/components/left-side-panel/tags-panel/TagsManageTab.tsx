@@ -6,6 +6,7 @@ import ManageCategoryItem from './ManageCategoryItem'
 import AddCategoryForm from './AddCategoryForm'
 import type { TagOccurrence } from './tagOccurrences'
 import type { TagCategoryItem, TagItem, PendingTagSelection } from './tagTypes'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface TagsManageTabProps {
   tagCategories: TagCategoryItem[]
@@ -114,29 +115,31 @@ const TagsManageTab: React.FC<TagsManageTabProps> = (props) => {
             No categories yet. Add one below.
           </div>
         ) : (
-          <Accordion
-            multiple
-            value={expandedCats}
-            onValueChange={onExpandedCatsChange}
-          >
-            {tagCategories.map((cat) => (
-              <ManageCategoryItem
-                key={cat.id}
-                category={cat}
-                entities={tagsByCategory.get(cat.id) || []}
-                occurrencesByTag={occurrencesByTag}
-                expandedEntityId={expandedTagId}
-                onToggleEntity={onToggleEntity}
-                onUpdateEntityName={onUpdateEntityName}
-                onUpdateEntityNotes={onUpdateEntityNotes}
-                onDeleteEntity={onDeleteEntity}
-                onDeleteCategory={onDeleteCategory}
-                onNavigateToOccurrence={onNavigateToOccurrence}
-                onRemoveOccurrence={onRemoveOccurrence}
-                registerItemRef={registerItemRef}
-              />
-            ))}
-          </Accordion>
+          <ScrollArea className="w-full h-[calc(var(--app-h)-8dvh)]">
+            <Accordion
+              multiple
+              value={expandedCats}
+              onValueChange={onExpandedCatsChange}
+            >
+              {tagCategories.map((cat) => (
+                <ManageCategoryItem
+                  key={cat.id}
+                  category={cat}
+                  entities={tagsByCategory.get(cat.id) || []}
+                  occurrencesByTag={occurrencesByTag}
+                  expandedEntityId={expandedTagId}
+                  onToggleEntity={onToggleEntity}
+                  onUpdateEntityName={onUpdateEntityName}
+                  onUpdateEntityNotes={onUpdateEntityNotes}
+                  onDeleteEntity={onDeleteEntity}
+                  onDeleteCategory={onDeleteCategory}
+                  onNavigateToOccurrence={onNavigateToOccurrence}
+                  onRemoveOccurrence={onRemoveOccurrence}
+                  registerItemRef={registerItemRef}
+                />
+              ))}
+            </Accordion>
+          </ScrollArea>
         )}
       </div>
 

@@ -5,6 +5,7 @@ import DeleteNoteDialog from './DeleteNoteDialog'
 import type { NoteColor, NoteFilter } from '@/stores/editorStore'
 import type { Asset } from '@/stores/assetStore'
 import type { ScriptNote } from './noteTypes'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface ScriptNotesTabProps {
   notes: ScriptNote[]
@@ -135,34 +136,36 @@ const ScriptNotesTab: React.FC<ScriptNotesTabProps> = ({
       />
 
       <div className="flex-1 p-2 overflow-y-auto">
-        {filteredNotes.length === 0 ? (
-          <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-normal">
-            {notes.length === 0
-              ? 'No notes yet. Select text in the editor, right-click, and choose "Add Script Note".'
-              : 'No notes match this filter.'}
-          </div>
-        ) : (
-          filteredNotes.map((note) => (
-            <ScriptNoteCard
-              key={note.id}
-              note={note}
-              sceneName={getSceneName(note.sceneId)}
-              isEditing={editingNoteId === note.id}
-              assets={assets}
-              projectId={projectId}
-              onStartEdit={() => setEditingNoteId(note.id)}
-              onStopEdit={() =>
-                setEditingNoteId((cur) => (cur === note.id ? null : cur))
-              }
-              onContentChange={(content) => onContentChange(note.id, content)}
-              onColorChange={(color) => onColorChange(note.id, color)}
-              onDeleteRequest={() => setPendingDeleteId(note.id)}
-              onNavigateToNote={() => onNavigateToNote(note.id)}
-              onFilterByContext={handleContextLabelChange}
-              formatDate={formatDate}
-            />
-          ))
-        )}
+        <ScrollArea className="w-full h-[calc(var(--app-h)-14dvh)]">
+          {filteredNotes.length === 0 ? (
+            <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-normal">
+              {notes.length === 0
+                ? 'No notes yet. Select text in the editor, right-click, and choose "Add Script Note".'
+                : 'No notes match this filter.'}
+            </div>
+          ) : (
+            filteredNotes.map((note) => (
+              <ScriptNoteCard
+                key={note.id}
+                note={note}
+                sceneName={getSceneName(note.sceneId)}
+                isEditing={editingNoteId === note.id}
+                assets={assets}
+                projectId={projectId}
+                onStartEdit={() => setEditingNoteId(note.id)}
+                onStopEdit={() =>
+                  setEditingNoteId((cur) => (cur === note.id ? null : cur))
+                }
+                onContentChange={(content) => onContentChange(note.id, content)}
+                onColorChange={(color) => onColorChange(note.id, color)}
+                onDeleteRequest={() => setPendingDeleteId(note.id)}
+                onNavigateToNote={() => onNavigateToNote(note.id)}
+                onFilterByContext={handleContextLabelChange}
+                formatDate={formatDate}
+              />
+            ))
+          )}
+        </ScrollArea>
       </div>
 
       <DeleteNoteDialog

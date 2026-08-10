@@ -18,6 +18,7 @@ import { useGoToScene } from '../utils/useGoToScene'
 import SceneFilterPanel from './SceneFilterPanel'
 import SceneListItem from './SceneListItem'
 import SynopsisModal from '@/components/open-draft/SynopsisModal'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface ScenesPanelProps {
   editor: Editor | null
@@ -359,41 +360,42 @@ const ScenesPanel: React.FC<ScenesPanelProps> = ({
             </Button>
           )}
         </div>
-
-        {filteredIndices.length === 0 ? (
-          <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
-            {hasActiveFilter || searchQuery
-              ? 'No scenes match the current filters.'
-              : 'No scenes yet. Start writing a scene heading (INT. or EXT.)'}
-          </div>
-        ) : (
-          filteredIndices.map((sceneIdx) => (
-            <SceneListItem
-              key={scenes[sceneIdx].id}
-              scene={scenes[sceneIdx]}
-              detail={sceneDetails[sceneIdx]}
-              timing={sceneTimings[sceneIdx]}
-              actLabel={sceneActLabel(structure, sceneIdx)}
-              isExpanded={expandedSceneIdx === sceneIdx}
-              searchQuery={searchQuery}
-              onToggle={() => {
-                setExpandedSceneIdx(
-                  expandedSceneIdx === sceneIdx ? null : sceneIdx,
-                )
-                goToScene(sceneIdx)
-              }}
-              onEditSynopsis={() =>
-                setSynopsisModal({
-                  sceneIdx,
-                  id: scenes[sceneIdx].id,
-                  heading: scenes[sceneIdx].heading,
-                  synopsis: scenes[sceneIdx].synopsis,
-                  color: scenes[sceneIdx].color,
-                })
-              }
-            />
-          ))
-        )}
+        <ScrollArea className="w-full h-[calc(var(--app-h)-10dvh)]">
+          {filteredIndices.length === 0 ? (
+            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
+              {hasActiveFilter || searchQuery
+                ? 'No scenes match the current filters.'
+                : 'No scenes yet. Start writing a scene heading (INT. or EXT.)'}
+            </div>
+          ) : (
+            filteredIndices.map((sceneIdx) => (
+              <SceneListItem
+                key={scenes[sceneIdx].id}
+                scene={scenes[sceneIdx]}
+                detail={sceneDetails[sceneIdx]}
+                timing={sceneTimings[sceneIdx]}
+                actLabel={sceneActLabel(structure, sceneIdx)}
+                isExpanded={expandedSceneIdx === sceneIdx}
+                searchQuery={searchQuery}
+                onToggle={() => {
+                  setExpandedSceneIdx(
+                    expandedSceneIdx === sceneIdx ? null : sceneIdx,
+                  )
+                  goToScene(sceneIdx)
+                }}
+                onEditSynopsis={() =>
+                  setSynopsisModal({
+                    sceneIdx,
+                    id: scenes[sceneIdx].id,
+                    heading: scenes[sceneIdx].heading,
+                    synopsis: scenes[sceneIdx].synopsis,
+                    color: scenes[sceneIdx].color,
+                  })
+                }
+              />
+            ))
+          )}
+        </ScrollArea>
       </div>
 
       {synopsisModal &&

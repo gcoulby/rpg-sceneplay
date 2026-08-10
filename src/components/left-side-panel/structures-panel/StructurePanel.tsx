@@ -9,6 +9,7 @@ import {
 import { useGoToScene } from '../utils/useGoToScene'
 import { useDocVersion } from '../utils/useDocVersion'
 import ActGroupItem from './ActGroupItem'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface StructurePanelProps {
   editor: Editor | null
@@ -61,24 +62,26 @@ const StructurePanel: React.FC<StructurePanelProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {structure.acts.length === 0 ? (
-          <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
-            No structure yet. Insert an Act Break from the element selector, or
-            start writing scenes.
-          </div>
-        ) : (
-          <Accordion value={openActs} onValueChange={setOpenActs}>
-            {structure.acts.map((act) => (
-              <ActGroupItem
-                key={`act-${act.actNumber}-${act.docPos}`}
-                act={act}
-                openSequences={openSequences}
-                onOpenSequencesChange={setOpenSequences}
-                onSelectScene={goToScene}
-              />
-            ))}
-          </Accordion>
-        )}
+        <ScrollArea className="w-full h-[calc(var(--app-h)-3dvh)]">
+          {structure.acts.length === 0 ? (
+            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
+              No structure yet. Insert an Act Break from the element selector,
+              or start writing scenes.
+            </div>
+          ) : (
+            <Accordion value={openActs} onValueChange={setOpenActs}>
+              {structure.acts.map((act) => (
+                <ActGroupItem
+                  key={`act-${act.actNumber}-${act.docPos}`}
+                  act={act}
+                  openSequences={openSequences}
+                  onOpenSequencesChange={setOpenSequences}
+                  onSelectScene={goToScene}
+                />
+              ))}
+            </Accordion>
+          )}
+        </ScrollArea>
       </div>
     </div>
   )

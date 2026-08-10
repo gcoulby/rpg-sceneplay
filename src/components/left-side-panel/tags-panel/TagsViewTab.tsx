@@ -3,6 +3,7 @@ import { Accordion } from '@/components/ui/accordion'
 import ViewCategoryItem from './ViewCategoryItem'
 import type { TagOccurrence } from './tagOccurrences'
 import type { TagCategoryItem, TagItem } from './tagTypes'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface TagsViewTabProps {
   tagCategories: TagCategoryItem[]
@@ -34,26 +35,28 @@ const TagsViewTab: React.FC<TagsViewTabProps> = ({
   }
 
   return (
-    <Accordion multiple value={expandedCats} onValueChange={setExpandedCats}>
-      {tagCategories.map((cat) => {
-        const entities = tagsByCategory.get(cat.id) || []
-        if (entities.length === 0) return null
-        return (
-          <ViewCategoryItem
-            key={cat.id}
-            category={cat}
-            entities={entities}
-            occurrencesByTag={occurrencesByTag}
-            expandedEntityId={expandedEntityId}
-            onToggleEntity={(id) =>
-              setExpandedEntityId(expandedEntityId === id ? null : id)
-            }
-            onNavigateToEntity={onNavigateToEntity}
-            onNavigateToOccurrence={onNavigateToOccurrence}
-          />
-        )
-      })}
-    </Accordion>
+    <ScrollArea className="w-full h-[calc(var(--app-h)-8dvh)]">
+      <Accordion multiple value={expandedCats} onValueChange={setExpandedCats}>
+        {tagCategories.map((cat) => {
+          const entities = tagsByCategory.get(cat.id) || []
+          if (entities.length === 0) return null
+          return (
+            <ViewCategoryItem
+              key={cat.id}
+              category={cat}
+              entities={entities}
+              occurrencesByTag={occurrencesByTag}
+              expandedEntityId={expandedEntityId}
+              onToggleEntity={(id) =>
+                setExpandedEntityId(expandedEntityId === id ? null : id)
+              }
+              onNavigateToEntity={onNavigateToEntity}
+              onNavigateToOccurrence={onNavigateToOccurrence}
+            />
+          )
+        })}
+      </Accordion>
+    </ScrollArea>
   )
 }
 

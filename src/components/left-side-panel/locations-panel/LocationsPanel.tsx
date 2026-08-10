@@ -7,6 +7,7 @@ import { blockContentRange, singleLine } from '@/utils/open-draft/nodeText'
 import { useGoToScene } from '../utils/useGoToScene'
 import LocationGroupItem from './LocationGroupItem'
 import { showToast } from '@/components/open-draft/Toast'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface LocationsPanelProps {
   editor: Editor | null
@@ -105,39 +106,41 @@ const LocationsPanel: React.FC<LocationsPanelProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {locations.length === 0 ? (
-          <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
-            No locations yet. Scene headings like &ldquo;INT. COFFEE SHOP -
-            DAY&rdquo; will appear here.
-          </div>
-        ) : (
-          <Accordion
-            multiple
-            value={expandedLocation}
-            onValueChange={setExpandedLocation}
-          >
-            {locations.map((group) => {
-              const key = group.name.toUpperCase()
-              return (
-                <LocationGroupItem
-                  key={key}
-                  group={group}
-                  isRenaming={renamingLocation === key}
-                  renameValue={renameValue}
-                  onStartRename={() => {
-                    setRenamingLocation(key)
-                    setRenameValue(group.name)
-                  }}
-                  onRenameValueChange={setRenameValue}
-                  onRenameSubmit={handleRenameSubmit}
-                  onRenameCancel={() => setRenamingLocation(null)}
-                  renameInputRef={renameInputRef}
-                  onSelectScene={goToScene}
-                />
-              )
-            })}
-          </Accordion>
-        )}
+        <ScrollArea className="w-full h-[calc(var(--app-h)-3dvh)]">
+          {locations.length === 0 ? (
+            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
+              No locations yet. Scene headings like &ldquo;INT. COFFEE SHOP -
+              DAY&rdquo; will appear here.
+            </div>
+          ) : (
+            <Accordion
+              multiple
+              value={expandedLocation}
+              onValueChange={setExpandedLocation}
+            >
+              {locations.map((group) => {
+                const key = group.name.toUpperCase()
+                return (
+                  <LocationGroupItem
+                    key={key}
+                    group={group}
+                    isRenaming={renamingLocation === key}
+                    renameValue={renameValue}
+                    onStartRename={() => {
+                      setRenamingLocation(key)
+                      setRenameValue(group.name)
+                    }}
+                    onRenameValueChange={setRenameValue}
+                    onRenameSubmit={handleRenameSubmit}
+                    onRenameCancel={() => setRenamingLocation(null)}
+                    renameInputRef={renameInputRef}
+                    onSelectScene={goToScene}
+                  />
+                )
+              })}
+            </Accordion>
+          )}
+        </ScrollArea>
       </div>
     </div>
   )
