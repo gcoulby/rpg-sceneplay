@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { Clapperboard, FileText, MapPin, ListTree } from 'lucide-react'
+import { Clapperboard, FileText, MapPin, ListTree, Tags } from 'lucide-react'
 
 export type NavView =
   | ''
@@ -22,4 +22,5 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'pages', label: 'Pages', icon: FileText },
   { id: 'locations', label: 'Locations', icon: MapPin },
   { id: 'structure', label: 'Structure', icon: ListTree },
+  { id: 'tags', label: 'Tags', icon: Tags },
 ]

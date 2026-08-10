@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { NAV_VIEWS, type NavView } from './nav-views'
+import { Button } from '../ui/button'
 
 interface ActivityBarProps {
   activeView: NavView
@@ -30,18 +31,19 @@ const ActivityBar: React.FC<ActivityBarProps> = ({
   }
 
   return (
-    <div className="flex flex-col items-center w-12 shrink-0 bg-(--fd-navigator-bg) border-r border-(--fd-border) py-2 gap-1">
+    <div className="flex flex-col items-center w-12 shrink-0  border-r border-(--fd-border) py-2 gap-1">
       {NAV_VIEWS.map(({ id, label, icon: Icon }) => {
         const isActive = id === activeView && open
         return (
           <Tooltip key={id}>
             <TooltipTrigger
               render={
-                <button
+                <Button
                   type="button"
                   aria-label={label}
                   aria-pressed={isActive}
                   onClick={() => handleClick(id)}
+                  variant="ghost"
                   className={`relative flex items-center justify-center w-10 h-10 rounded-md transition-colors duration-100 ${
                     isActive
                       ? 'text-(--fd-text) bg-(--fd-overlay-subtle)'
@@ -51,8 +53,8 @@ const ActivityBar: React.FC<ActivityBarProps> = ({
                   {isActive && (
                     <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-(--fd-accent)" />
                   )}
-                  <Icon size={18} strokeWidth={1.75} />
-                </button>
+                  <Icon size={20} className="size-6" strokeWidth={1.75} />
+                </Button>
               }
             />
             <TooltipContent side="right">{label}</TooltipContent>

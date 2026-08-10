@@ -46,7 +46,7 @@ export function HeaderPanelToolbar({
 
   return (
     <div
-      className="flex flex-wrap items-center gap-1 px-3 py-1.5 h-10! toolbar"
+      className="flex flex-wrap items-center gap-1 px-3 py-1.5 border-b h-10! toolbar"
       role="toolbar"
     >
       <Button

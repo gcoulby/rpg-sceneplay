@@ -13,7 +13,7 @@ import {
 import type { PanelImperativeHandle } from 'react-resizable-panels'
 import LocationsPanel from './locations-panel/LocationsPanel'
 import StructurePanel from './structures-panel/StructurePanel'
-import TagsPanel from './TagPanel'
+import TagsPanel from './tags-panel/TagsPanel'
 
 interface AppNavigatorProps {
   editor: Editor | null
