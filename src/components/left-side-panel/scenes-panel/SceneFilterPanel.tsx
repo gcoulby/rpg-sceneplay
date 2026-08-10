@@ -73,8 +73,6 @@ const SceneFilterPanel: React.FC<SceneFilterPanelProps> = ({
 
   return (
     <div className="px-3.5 pt-2 pb-2.5 border-b border-(--fd-border) flex flex-col gap-1.5 shrink-0">
-      {/* Character — picking one adds it to the chip list below, so the
-          select itself always resets back to its placeholder. */}
       <div className="flex flex-col gap-1.5">
         <Select
           value=""

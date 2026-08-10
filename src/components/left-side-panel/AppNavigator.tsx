@@ -3,7 +3,7 @@ import type { Editor } from '@tiptap/react'
 import ActivityBar from './ActivityBar'
 import { type NavView } from './nav-views'
 import ScenesPanel from './scenes-panel/ScenesPanel'
-import PagesPanel from './PagesPanel'
+import PagesPanel from './pages-panel/PagesPanel'
 import LocationsPanel from './LocationsPanel'
 import StructurePanel from './StructurePanel'
 import {

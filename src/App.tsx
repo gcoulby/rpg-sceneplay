@@ -14,9 +14,9 @@ function App() {
       <div className="flex flex-row">
         <AppNavigator editor={editor}>
           <ScreenplayEditor />
+          <StatusBar editorDoc={editor?.getJSON()} />
         </AppNavigator>
       </div>
-      <StatusBar editorDoc={editor?.getJSON()} />
       <Toaster />
     </main>
   )

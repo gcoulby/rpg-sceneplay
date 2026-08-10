@@ -14,7 +14,7 @@ import {
 } from '@/utils/open-draft/scriptStructure'
 import { parseHeading } from './scene-utils'
 import { characterKey, singleLine } from '@/utils/open-draft/nodeText'
-import { useGoToScene } from './useGoToScene'
+import { useGoToScene } from '../utils/useGoToScene'
 import SceneFilterPanel from './SceneFilterPanel'
 import SceneListItem from './SceneListItem'
 import SynopsisModal from '@/components/open-draft/SynopsisModal'
@@ -62,7 +62,7 @@ const ScenesPanel: React.FC<ScenesPanelProps> = ({
     color: string
   } | null>(null)
 
-  const [, setDocVersion] = useState(0)
+  const [docVersion, setDocVersion] = useState(0)
   useEffect(() => {
     if (!editor) return
     const handleUpdate = () => setDocVersion((v) => v + 1)
@@ -125,6 +125,8 @@ const ScenesPanel: React.FC<ScenesPanelProps> = ({
 
   const sceneDetails = useMemo((): SceneDetail[] => {
     if (!editor) return []
+    void docVersion
+    void scenes
     const doc = editor.state.doc
     const lengths = computeSceneLengths(doc, pageLayout)
     const details: SceneDetail[] = []
@@ -164,25 +166,29 @@ const ScenesPanel: React.FC<ScenesPanelProps> = ({
       })
     }
     return details
-  }, [editor, pageLayout])
+  }, [editor, scenes, pageLayout, docVersion])
 
   const sceneTimings = useMemo(() => {
     if (!editor) return []
+    void docVersion
+    void scenes
     try {
       return computeSceneTiming(editor.getJSON()).scenes
     } catch {
       return []
     }
-  }, [editor])
+  }, [editor, scenes, docVersion])
 
   const structure: ScriptStructure = useMemo(() => {
     if (!editor) return { acts: [], sceneActMap: new Map(), totalScenes: 0 }
+    void docVersion
+    void scenes
     try {
       return computeScriptStructure(editor.getJSON())
     } catch {
       return { acts: [], sceneActMap: new Map(), totalScenes: 0 }
     }
-  }, [editor])
+  }, [editor, scenes, docVersion])
 
   const allCharacters = useMemo(() => {
     const chars = new Set<string>()
