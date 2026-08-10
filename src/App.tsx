@@ -3,9 +3,11 @@ import { Toaster } from '@/components/ui/toast'
 import HeaderPanel from '@/components/header-panel/header-panel'
 import StatusBar from '@/components/status-bar'
 import { useEditorStore } from './stores/editorStore'
+import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts'
 
 function App() {
   const editor = useEditorStore((s) => s.editor)
+  useGlobalShortcuts()
   return (
     <main className="w-dvw h-dvh overflow-hidden">
       <HeaderPanel />

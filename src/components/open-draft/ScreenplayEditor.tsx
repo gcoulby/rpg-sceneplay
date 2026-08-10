@@ -82,7 +82,6 @@ import {
   resolveMoresContds,
 } from '@/stores/editorStore'
 import type { ElementType } from '@/stores/editorStore'
-import Toolbar from './Toolbar'
 import SceneNavigator from './SceneNavigator'
 import IndexCards from './IndexCards'
 import BeatBoard from './BeatBoard'
@@ -92,16 +91,8 @@ import CharacterProfiles from './CharacterProfiles'
 import TagsPanel from './TagsPanel'
 import LocationDatabase from './LocationDatabase'
 import FormatPanel from './FormatPanel'
-import StatusBar from './StatusBar'
-import SearchReplace from './SearchReplace'
-
-import GoToPage from './GoToPage'
 import ElementPicker from './ElementPicker'
 import CharacterAutocomplete from './CharacterAutocomplete'
-import SpellCheckModal from './SpellCheckModal'
-import WritingSuggestionsModal from './WritingSuggestionsModal'
-import GrammarRulesPanel from './GrammarRulesPanel'
-// MobileAccessoryBar removed — context menu via 3-finger touch only
 import ScriptContextMenu from './ScriptContextMenu'
 import { SpellCheck, spellCheckPluginKey } from '@/editor/extensions/SpellCheck'
 import { Grammar, grammarPluginKey } from '@/editor/extensions/Grammar'
@@ -126,11 +117,8 @@ import { projectApi } from '@/services/projectApi'
 import { scriptApi } from '@/services/scriptApi'
 import { API_BASE, getCollabWsUrl } from '@/config'
 import { showToast } from './Toast'
-import VersionHistory from './VersionHistory'
 import AssetManager from './AssetManager'
 import { useParams, useNavigate } from 'react-router-dom'
-import OpenFile from './OpenFile'
-import type { OpenSource } from './OpenFile'
 import WelcomeDialog, { type WelcomeChoice } from './WelcomeDialog'
 import { parseFountain } from '@/utils/open-draft/fountainParser'
 import { parseFDXFull } from '@/utils/open-draft/fdxParser'
@@ -142,13 +130,6 @@ import {
   clearSessionDoc,
 } from '@/utils/open-draft/sessionDoc'
 import SaveAsDialog from './SaveAsDialog'
-import TitlePageEditor from './TitlePageEditor'
-import MoresContdsDialog from './MoresContdsDialog'
-import ShareDialog from './ShareDialog'
-import CollabLoginDialog from './CollabLoginDialog'
-import JoinCollabDialog from './JoinCollabDialog'
-import CompareVersionPicker from './CompareVersionPicker'
-import ZoomPanel from './ZoomPanel'
 import { useIsTouchDevice, useSwipeEdge, usePinchZoom } from '@/hooks/useTouch'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { startCollabSync, stopCollabSync } from '@/services/collabSync'
@@ -156,7 +137,6 @@ import {
   collabAuthApi,
   setLogoutCollabTeardown,
   setLogoutEditorReset,
-  isCollabAuthenticated,
 } from '@/services/collabAuth'
 import { platformFetch, isTauri } from '@/services/platform'
 import { reportSaveError } from '@/stores/saveErrorStore'
@@ -165,7 +145,6 @@ import {
   createTrackChangesPlugin,
   trackChangesPluginKey,
 } from '@/editor/trackChanges'
-import type { VersionInfo } from '@/services/api'
 
 //replacements
 import { createSearchPlugin } from '@/components/plugins/search-replace/search-replace-plugin'
@@ -608,13 +587,7 @@ const ScreenplayEditor: React.FC = () => {
     tagsPanelOpen,
     locationDatabaseOpen,
     spellCheckEnabled,
-    spellModalOpen,
-    setSpellModalOpen,
     grammarCheckEnabled,
-    grammarModalOpen,
-    setGrammarModalOpen,
-    grammarRulesPanelOpen,
-    setGrammarRulesPanelOpen,
     setDocumentTitle,
     sceneNumbersVisible,
     sceneNumbersLocked,
@@ -629,7 +602,6 @@ const ScreenplayEditor: React.FC = () => {
     setCurrentProject,
     setCurrentScriptId,
     scriptReloadKey,
-    markCloudScript,
     isCloudScript,
   } = useProjectStore()
 
@@ -638,9 +610,6 @@ const ScreenplayEditor: React.FC = () => {
   const [collabUserName, setCollabUserName] = useState('Owner')
   const [isCollabHost, setIsCollabHost] = useState(false)
   const [collabRole, setCollabRole] = useState<'editor' | 'viewer'>('editor')
-  const [shareDialogOpen, setShareDialogOpen] = useState(false)
-  const [collabLoginOpen, setCollabLoginOpen] = useState(false)
-  const [joinCollabOpen, setJoinCollabOpen] = useState(false)
   const [collabUsers, setCollabUsers] = useState<
     { name: string; color: string }[]
   >([])
@@ -1118,20 +1087,7 @@ const ScreenplayEditor: React.FC = () => {
 
   const [overlays, setOverlays] = useState<OverlayInfo[]>([])
 
-  const {
-    openFileOpen,
-    setOpenFileOpen,
-    saveAsOpen,
-    setSaveAsOpen,
-    titlePageEditorOpen,
-    setTitlePageEditorOpen,
-    moresContdsOpen,
-    setMoresContdsOpen,
-    compareVersionOpen,
-    setCompareVersionOpen,
-    setTrackChangesEnabled,
-    setTrackChangesLabel,
-  } = useEditorStore()
+  const { saveAsOpen, setSaveAsOpen } = useEditorStore()
 
   // Auto-fit page to viewport on mobile/tablet
   const autoZoomApplied = useRef(false)
@@ -1285,8 +1241,6 @@ const ScreenplayEditor: React.FC = () => {
     setDocumentTitle,
     setupCollab,
   ])
-
-  // handleStartCollab is defined after the editor — see below useEditor
 
   const handleStopCollab = useCallback(async () => {
     const isHost = isCollabHost
@@ -1480,78 +1434,6 @@ const ScreenplayEditor: React.FC = () => {
       setCurrentScriptId,
       setDocumentTitle,
     ],
-  )
-
-  // Join a collab session via pasted link/token (works from app without browser)
-  const handleJoinCollab = useCallback(
-    async (
-      session: import('@/services/api').CollabSession,
-      token: string,
-      collabServerUrl?: string,
-    ) => {
-      try {
-        // Determine the collab server to use: prefer URL extracted from invite link,
-        // fall back to local setting.
-        const collabWs = collabServerUrl || getCollabWsUrl()
-
-        // Connect to the collab WebSocket immediately — Yjs will sync content from the host.
-        // Do NOT wait for backend content loading (which may hang on unreachable ports).
-        const nonce = session.session_nonce || ''
-        const docName = `${session.project_id}/${session.script_id}${nonce ? `/${nonce}` : ''}`
-        setupCollab(docName, token, session.collaborator_name, false, collabWs)
-
-        setCollabUserName(session.collaborator_name)
-        setCollabRole((session.role as 'editor' | 'viewer') || 'editor')
-        setCollabMode(true)
-        setJoinCollabOpen(false)
-        setEditorKey((k) => k + 1)
-
-        // Set a placeholder project — Yjs will sync the actual content from the host
-        setCurrentProject({
-          id: session.project_id,
-          name: 'Collaboration',
-        } as any)
-        setCurrentScriptId(session.script_id)
-        setDocumentTitle('Untitled')
-
-        if (session.role === 'viewer') {
-          showToast('Connected as viewer (read-only)', 'info')
-        } else {
-          showToast(
-            `Joined collaboration as ${session.collaborator_name}`,
-            'success',
-          )
-        }
-
-        // Try to load project metadata in the background (non-blocking).
-        // This fills in the title and project name if reachable, but is not required.
-        try {
-          const pRes = await platformFetch(
-            `${API_BASE}/projects/${session.project_id}`,
-          )
-          if (pRes.ok) {
-            const project = await pRes.json()
-            setCurrentProject(project as any)
-            const sRes = await platformFetch(
-              `${API_BASE}/projects/${session.project_id}/scripts/${session.script_id}`,
-            )
-            if (sRes.ok) {
-              const scriptResp = await sRes.json()
-              setDocumentTitle(scriptResp?.meta?.title || 'Untitled')
-            }
-          }
-        } catch {
-          // Backend unreachable — fine, Yjs handles content sync
-        }
-      } catch (err) {
-        console.error('[Collab] handleJoinCollab failed:', err)
-        showToast(
-          `Failed to join collaboration: ${err instanceof Error ? err.message : String(err)}`,
-          'error',
-        )
-      }
-    },
-    [setupCollab, setCurrentProject, setCurrentScriptId, setDocumentTitle],
   )
 
   // Register collab teardown so performLogout can end the session before clearing auth.
@@ -2248,62 +2130,6 @@ const ScreenplayEditor: React.FC = () => {
     }
   }, [activeTemplateId, templatesLoaded, templates, pageLayout])
 
-  // ── Owner starts collaboration — save current content, create own token, switch to collab mode ──
-  const handleStartCollab = useCallback(
-    async (guestSession: import('@/services/api').CollabSession) => {
-      if (!editor || !currentProject || !currentScriptId) return
-
-      // Save current editor content so it can seed the Yjs doc
-      const doc = editor.getJSON()
-      const {
-        _notes,
-        _generalNotes: _gn3,
-        _tags,
-        _tagCategories,
-        _characterProfiles,
-        _characterRelationships,
-        _templateId: _tpl3,
-        _pageLayout: _pl3,
-        ...pmDoc
-      } = doc as Record<string, unknown>
-      collabInitialContent.current = pmDoc
-
-      // The guest invite carries a session_nonce that makes the Yjs room unique
-      // per collab session, so stale state from previous sessions is never loaded.
-      const nonce = guestSession.session_nonce || ''
-
-      // Create a separate session token for the owner, sharing the same nonce
-      let ownerToken: string
-      try {
-        const ownerSession = await api.createCollabInvite(
-          currentProject.id,
-          currentScriptId,
-          'Host',
-          'editor',
-          1,
-          nonce,
-        )
-        ownerToken = ownerSession.token
-      } catch {
-        ownerToken = guestSession.token
-      }
-
-      // Include the nonce in the room name so each session gets a fresh Yjs document
-      const docName = `${currentProject.id}/${currentScriptId}/${nonce}`
-      // Use the logged-in user's display name so remote users see the real name
-      const hostDisplayName =
-        useSettingsStore.getState().collabAuth.user?.displayName || 'Host'
-      setupCollab(docName, ownerToken, hostDisplayName, true)
-
-      setCollabUserName(hostDisplayName)
-      setIsCollabHost(true)
-      setCollabMode(true)
-      // Keep ShareDialog open so the host can immediately copy the invite link
-      setEditorKey((k) => k + 1)
-    },
-    [editor, currentProject, currentScriptId, setupCollab],
-  )
-
   // --- Image insertion: upload to the project's assets, then insert a node that
   // references the asset (keeps the document small). Falls back to an inline data
   // URL only when there is no project to upload to. ---
@@ -2653,28 +2479,6 @@ const ScreenplayEditor: React.FC = () => {
     editor.view.dispatch(tr)
   }, [editor, spellCheckEnabled])
 
-  // --- Spell modal needs decorations to highlight the active word.
-  //     If auto-check is off, enable the plugin while the modal is open and
-  //     restore the store's setting on close. ---
-  useEffect(() => {
-    if (!editor) return
-    if (!spellModalOpen) return
-    if (spellCheckEnabled) return // plugin already on via the toggle effect above
-    const tr1 = editor.state.tr.setMeta(spellCheckPluginKey, { toggle: true })
-    editor.view.dispatch(tr1)
-    return () => {
-      if (editor.isDestroyed) return
-      // Re-read the latest setting; if user turned auto-check on while the modal was open, leave it on.
-      const stillOff = !useEditorStore.getState().spellCheckEnabled
-      if (stillOff) {
-        const tr2 = editor.state.tr.setMeta(spellCheckPluginKey, {
-          toggle: false,
-        })
-        editor.view.dispatch(tr2)
-      }
-    }
-  }, [editor, spellModalOpen, spellCheckEnabled])
-
   // --- Register the local rule-based grammar providers exactly once. ---
   // retext: style/wordiness checks (passive voice, weak intensifiers, etc.)
   // harper: actual grammar (subject-verb agreement, tense, articles, ...)
@@ -2709,23 +2513,6 @@ const ScreenplayEditor: React.FC = () => {
     tr.setMeta(grammarPluginKey, { toggle: grammarCheckEnabled })
     editor.view.dispatch(tr)
   }, [editor, grammarCheckEnabled])
-
-  // --- If auto-grammar is off but the modal is open, enable it temporarily. ---
-  useEffect(() => {
-    if (!editor) return
-    if (!grammarModalOpen) return
-    if (grammarCheckEnabled) return
-    const tr1 = editor.state.tr.setMeta(grammarPluginKey, { toggle: true })
-    editor.view.dispatch(tr1)
-    return () => {
-      if (editor.isDestroyed) return
-      const stillOff = !useEditorStore.getState().grammarCheckEnabled
-      if (stillOff) {
-        const tr2 = editor.state.tr.setMeta(grammarPluginKey, { toggle: false })
-        editor.view.dispatch(tr2)
-      }
-    }
-  }, [editor, grammarModalOpen, grammarCheckEnabled])
 
   // Build a saveable content object: editor JSON + store metadata at top level.
   // The payload shape lives in utils/saveContent so MenuBar's Cmd+S and the
@@ -3803,308 +3590,6 @@ const ScreenplayEditor: React.FC = () => {
     editor?.commands.focus()
   }, [editor])
 
-  const handleOpenFile = useCallback(
-    async (
-      projectId: string,
-      project: import('@/services/api').ProjectInfo,
-      scriptId: string,
-      scriptTitle: string,
-      source: OpenSource = 'local',
-    ) => {
-      if (!editor) {
-        console.error('Editor not available')
-        return
-      }
-      setOpenFileOpen(false)
-      // Cloud files must be tagged before the load so scriptApi routes reads
-      // and subsequent saves to cloudApi rather than the local SQLite.
-      if (source === 'cloud') markCloudScript(projectId, scriptId)
-
-      // Host switching documents during collab
-      if (collabMode && isCollabHost) {
-        await switchCollabDocument(projectId, scriptId)
-        return
-      }
-
-      clearTrackChanges()
-      scriptSwitchingRef.current = true
-      try {
-        // Flush unsaved changes to the CURRENT script before switching
-        if (currentProject && currentScriptId) {
-          const pendingContent = buildSaveContent()
-          if (pendingContent) {
-            const pendingJson = JSON.stringify(pendingContent)
-            if (pendingJson !== lastSavedJsonRef.current) {
-              lastSavedJsonRef.current = pendingJson
-              try {
-                await scriptApi.saveScript(currentProject.id, currentScriptId, {
-                  content: pendingContent,
-                })
-              } catch {}
-            }
-          }
-        }
-
-        const scriptResp = await scriptApi.getScript(projectId, scriptId)
-        const content = scriptResp.content as Record<string, unknown> | null
-
-        // Switch the project context first so the dictionary-words save effect
-        // sees the new project before any spellChecker.setProjectWords() fires.
-        setCurrentProject(project)
-        setCurrentScriptId(scriptId)
-        // Opening a project script clears any prior "imported file" notice.
-        useEditorStore.getState().setImportedSource(null)
-
-        try {
-          if (
-            content &&
-            typeof content === 'object' &&
-            'type' in content &&
-            content.type === 'doc'
-          ) {
-            const {
-              _notes,
-              _generalNotes: _gn2,
-              _tags,
-              _tagCategories,
-              _characterProfiles,
-              _characterRelationships,
-              _beats,
-              _beatColumns,
-              _beatArrangeMode: _bam,
-              _templateId: _tpl2,
-              _ignoredWords: _iw2,
-              _ignoredOnce: _io2,
-              _customDictWords: _cdw2,
-              _enabledGlobalDicts: _egd2,
-              _projectDictEnabled: _pde2,
-              _enabledLanguages: _elx2,
-              _ignoredGrammarRules: _igr2,
-              _ignoredGrammarOnce: _igo2,
-              _spellCheckEnabled: _sce2,
-              _grammarCheckEnabled: _gce2,
-              _sceneNumbersVisible: _snv2,
-              _sceneNumbersLocked: _snl2,
-              _pageLayout: _pl2,
-              ...pmDoc
-            } = content as any
-            editor.commands.setContent(pmDoc)
-          } else if (
-            content &&
-            typeof content === 'object' &&
-            Object.keys(content).length > 0
-          ) {
-            editor.commands.setContent(content)
-          } else {
-            editor.commands.setContent({
-              type: 'doc',
-              content: [{ type: 'action', content: [] }],
-            })
-          }
-        } catch (setErr) {
-          console.error('setContent failed, using blank doc:', setErr)
-          showToast(
-            `Failed to render content: ${setErr instanceof Error ? setErr.message : String(setErr)}`,
-            'error',
-          )
-          editor.commands.setContent({
-            type: 'doc',
-            content: [{ type: 'action', content: [] }],
-          })
-        }
-        clearEditorHistory(editor)
-
-        // Restore metadata from top-level content keys
-        const store = useEditorStore.getState()
-        // Clear all per-file metadata first
-        store.setCharacterProfiles([])
-        store.setCharacterRelationships([])
-        store.setNotes([])
-        store.setGeneralNotes([])
-        store.setTags([])
-        store.setTagCategories([...DEFAULT_TAG_CATEGORIES])
-        store.setBeats([])
-        store.setBeatColumns([])
-        store.setPageLayout({ ...DEFAULT_PAGE_LAYOUT })
-        // Default per-doc spell/grammar to off; the block below overrides
-        // from the loaded content if the user had enabled them previously.
-        store.setSpellCheckEnabled(false)
-        store.setGrammarCheckEnabled(false)
-        const parseAttr2 = (val: unknown): unknown[] => {
-          if (typeof val === 'string') {
-            try {
-              const p = JSON.parse(val)
-              return Array.isArray(p) ? p : []
-            } catch {
-              return []
-            }
-          }
-          if (Array.isArray(val)) return val
-          return []
-        }
-        if (content) {
-          const c = content as Record<string, unknown>
-          const notes2 = parseAttr2(c._notes)
-          if (notes2.length > 0)
-            store.setNotes(notes2 as import('@/stores/editorStore').NoteInfo[])
-          const gNotes2 = parseAttr2(c._generalNotes)
-          if (gNotes2.length > 0)
-            store.setGeneralNotes(
-              gNotes2 as import('@/stores/editorStore').GeneralNote[],
-            )
-          const tags2 = parseAttr2(c._tags)
-          if (tags2.length > 0)
-            store.setTags(tags2 as import('@/stores/editorStore').TagItem[])
-          const tagCats2 = parseAttr2(c._tagCategories)
-          if (tagCats2.length > 0)
-            store.setTagCategories(
-              tagCats2 as import('@/stores/editorStore').TagCategory[],
-            )
-          const profiles2 = parseAttr2(c._characterProfiles)
-          if (profiles2.length > 0) {
-            for (const prof of profiles2 as Record<string, unknown>[]) {
-              if (prof.name && typeof prof.name === 'string') {
-                store.upsertCharacterProfile(prof.name, {
-                  description: (prof.description as string) || '',
-                  color: (prof.color as string) || '',
-                  highlighted: (prof.highlighted as boolean) || false,
-                  gender: (prof.gender as string) || '',
-                  age: (prof.age as string) || '',
-                  role: (prof.role as string) || '',
-                  backstory: (prof.backstory as string) || '',
-                  arc: (prof.arc as string) || '',
-                  speechPattern: (prof.speechPattern as string) || '',
-                  vocabulary: (prof.vocabulary as string) || '',
-                  verbalTics: (prof.verbalTics as string) || '',
-                  sampleDialogue: (prof.sampleDialogue as string) || '',
-                  images: Array.isArray(prof.images)
-                    ? (prof.images as string[])
-                    : [],
-                })
-              }
-            }
-          }
-          const rels2 = parseAttr2(c._characterRelationships)
-          if (rels2.length > 0) {
-            store.setCharacterRelationships(
-              rels2 as import('@/stores/editorStore').CharacterRelationship[],
-            )
-          }
-          const beatsArr2 = parseAttr2(c._beats)
-          store.setBeats(beatsArr2 as import('@/stores/editorStore').BeatInfo[])
-          const beatCols2 = parseAttr2(c._beatColumns)
-          store.setBeatColumns(
-            beatCols2 as import('@/stores/editorStore').BeatColumn[],
-          )
-          // Restore per-document template
-          if (c._templateId && typeof c._templateId === 'string') {
-            useFormattingTemplateStore
-              .getState()
-              .setActiveTemplateId(c._templateId)
-          } else {
-            useFormattingTemplateStore.getState().setActiveTemplateId(null)
-          }
-          // Restore per-document page layout (header/footer, margins)
-          if (c._pageLayout && typeof c._pageLayout === 'object') {
-            store.setPageLayout({
-              ...DEFAULT_PAGE_LAYOUT,
-              ...(c._pageLayout as Record<string, unknown>),
-            })
-          }
-          // Restore per-document spell/grammar check toggles
-          store.setSpellCheckEnabled(c._spellCheckEnabled === true)
-          store.setGrammarCheckEnabled(c._grammarCheckEnabled === true)
-          // Per-script project-dictionary toggle (default on).
-          spellChecker.setProjectDictionaryEnabled(
-            typeof c._projectDictEnabled === 'boolean'
-              ? c._projectDictEnabled
-              : true,
-          )
-          // Per-script enabled-languages (default: built-in only).
-          const langs2 = parseAttr2(c._enabledLanguages)
-          spellChecker.setEnabledLanguages(
-            langs2.length > 0 ? (langs2 as string[]) : [BUILTIN_LANGUAGE],
-          )
-          // Enabled global dictionaries.
-          if (c._enabledGlobalDicts === undefined) {
-            const lib = useEditorStore.getState().customDictionaries
-            spellChecker.setEnabledGlobalDicts(
-              lib['Personal'] ? ['Personal'] : [],
-            )
-          } else {
-            const enabledGlobals2 = parseAttr2(c._enabledGlobalDicts)
-            spellChecker.setEnabledGlobalDicts(enabledGlobals2 as string[])
-          }
-          // Ignored-words / ignored-once carry per document.
-          spellChecker.setIgnoredWords(parseAttr2(c._ignoredWords) as string[])
-          spellChecker.setIgnoredOnce(parseAttr2(c._ignoredOnce) as string[])
-          // Project dictionary: project entity is source of truth; merge with
-          // legacy per-script `_customDictWords` for back-compat.
-          const scriptDict2 = (parseAttr2(c._customDictWords) as string[]).map(
-            String,
-          )
-          const projDict2 = (
-            (project.properties?.dictionary_words ?? []) as string[]
-          ).map(String)
-          const merged2 = new Set<string>()
-          for (const w of projDict2)
-            if (typeof w === 'string') merged2.add(w.toLowerCase())
-          for (const w of scriptDict2)
-            if (typeof w === 'string') merged2.add(w.toLowerCase())
-          const mergedArr2 = [...merged2].sort()
-          spellChecker.setProjectWords(mergedArr2)
-          const needsMigration2 =
-            scriptDict2.length > 0 &&
-            JSON.stringify(mergedArr2) !== JSON.stringify([...projDict2].sort())
-          if (needsMigration2) {
-            try {
-              const updated = await projectApi.updateProject(project.id, {
-                properties: {
-                  ...project.properties,
-                  dictionary_words: mergedArr2,
-                } as any,
-              })
-              setCurrentProject(updated)
-            } catch (err) {
-              console.warn(
-                'Project dictionary migration save failed (open-file path)',
-                err,
-              )
-            }
-          }
-        }
-        setDocumentTitle(scriptTitle)
-        requestAnimationFrame(() => updateScenes())
-        // Back the newly opened script up right away rather than leaving it
-        // unprotected until the next interval tick.
-        useBackupStatusStore.getState().noteDocumentOpened()
-      } catch (err) {
-        console.error('Failed to open script:', err)
-        showToast(
-          'Failed to open script. Make sure the backend server is running on port 8000.',
-          'error',
-        )
-      } finally {
-        scriptSwitchingRef.current = false
-      }
-    },
-    [
-      editor,
-      collabMode,
-      collabUserName,
-      switchCollabDocument,
-      setOpenFileOpen,
-      setCurrentProject,
-      setCurrentScriptId,
-      setDocumentTitle,
-      updateScenes,
-      currentProject,
-      currentScriptId,
-      buildSaveContent,
-      markCloudScript,
-    ],
-  )
-
   const handleWelcomeChoice = useCallback(
     async (choice: WelcomeChoice) => {
       setShowWelcome(false)
@@ -4812,44 +4297,6 @@ const ScreenplayEditor: React.FC = () => {
     ],
   )
 
-  // ── Compare with Version picker callback ──
-  const handleCompareVersionSelect = useCallback(
-    async (version: VersionInfo) => {
-      if (!editor || !currentProject || !currentScriptId) return
-      setCompareVersionOpen(false)
-      try {
-        const scriptResp = await api.getScriptAtVersion(
-          currentProject.id,
-          version.hash,
-          currentScriptId,
-        )
-        setTrackChangesEnabled(true)
-        setTrackChangesLabel(version.short_hash)
-        const { tr } = editor.state
-        tr.setMeta(trackChangesPluginKey, {
-          enabled: true,
-          baseline: scriptResp.content,
-        })
-        editor.view.dispatch(tr)
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : ''
-        if (msg.includes('404')) {
-          showToast('This script did not exist in that version', 'info')
-        } else {
-          showToast('Failed to load version for comparison', 'error')
-        }
-      }
-    },
-    [
-      editor,
-      currentProject,
-      currentScriptId,
-      setCompareVersionOpen,
-      setTrackChangesEnabled,
-      setTrackChangesLabel,
-    ],
-  )
-
   const handleCharAutoSelect = useCallback(
     (name: string) => {
       if (!editor) return
@@ -5182,22 +4629,6 @@ const ScreenplayEditor: React.FC = () => {
               </span>
             ))}
           </div>
-          {isCollabHost && (
-            <button
-              className="collab-banner-btn"
-              onClick={() => {
-                // Close any stale login dialog before reopening share dialog
-                setCollabLoginOpen(false)
-                if (!isCollabAuthenticated()) {
-                  setCollabLoginOpen(true)
-                  return
-                }
-                setShareDialogOpen(true)
-              }}
-            >
-              Invite
-            </button>
-          )}
           <div className="collab-activity-wrapper">
             <button
               className="collab-banner-btn collab-activity-btn"
@@ -5347,33 +4778,6 @@ const ScreenplayEditor: React.FC = () => {
           </button>
         </div>
       )}
-      {/* {!isHistoryMode && (
-        <>
-          <MenuBar
-            editor={editor}
-            onCollaborate={() => {
-              if (!currentProject || !currentScriptId) {
-                showToast(
-                  'Save your screenplay to a project first — opening Save As...',
-                  'info',
-                )
-                useEditorStore.getState().setSaveAsOpen(true)
-                return
-              }
-              // Check if user is authenticated to the collab server (also clears expired tokens)
-              if (!isCollabAuthenticated()) {
-                setCollabLoginOpen(true)
-                return
-              }
-              setShareDialogOpen(true)
-            }}
-            onJoinCollab={() => setJoinCollabOpen(true)}
-            isCollabActive={collabMode}
-            isCollabGuest={collabMode && !isCollabHost}
-          />
-        </>
-      )} */}
-      {/* {!isHistoryMode && <Toolbar editor={editor} />} */}
       <div className="flex flex-1 overflow-hidden editor-layout">
         {!isHistoryMode && (
           <SceneNavigator
@@ -5683,17 +5087,6 @@ const ScreenplayEditor: React.FC = () => {
             .getPanels('right-sidebar')
             .map((p) => <p.component key={p.id} editor={editor} />)}
       </div>
-      {/* {!isHistoryMode && (
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <StatusBar editorDoc={editor?.getJSON()} />
-          {pluginRegistry.getPanels('status-bar').map((p) => (
-            <p.component key={p.id} />
-          ))}
-        </div>
-      )} */}
-      {!isHistoryMode && <SearchReplace editor={editor} />}
-      {!isHistoryMode && <GoToPage onGoToPage={handleGoToPage} />}
-      <ZoomPanel />
       {!isHistoryMode && pickerState.visible && (
         <ElementPicker
           position={pickerState.position}
@@ -5741,30 +5134,8 @@ const ScreenplayEditor: React.FC = () => {
           onClose={() => setFormatPanelOpen(false)}
         />
       )}
-      {!isHistoryMode && spellModalOpen && editor && (
-        <SpellCheckModal
-          editor={editor}
-          onClose={() => setSpellModalOpen(false)}
-        />
-      )}
-      {!isHistoryMode && grammarModalOpen && editor && (
-        <WritingSuggestionsModal
-          editor={editor}
-          onClose={() => setGrammarModalOpen(false)}
-        />
-      )}
-      {!isHistoryMode && grammarRulesPanelOpen && (
-        <GrammarRulesPanel onClose={() => setGrammarRulesPanelOpen(false)} />
-      )}
-      {!isHistoryMode && <VersionHistory />}
       {!isHistoryMode && currentProject && (
         <AssetManager projectId={currentProject.id} />
-      )}
-      {!isHistoryMode && openFileOpen && (
-        <OpenFile
-          onOpen={handleOpenFile}
-          onClose={() => setOpenFileOpen(false)}
-        />
       )}
       {!isHistoryMode && showWelcome && (
         <WelcomeDialog onChoice={handleWelcomeChoice} />
@@ -5786,21 +5157,6 @@ const ScreenplayEditor: React.FC = () => {
           buildContent={buildSaveContent}
         />
       )}
-      {!isHistoryMode && compareVersionOpen && (
-        <CompareVersionPicker
-          onSelect={handleCompareVersionSelect}
-          onClose={() => setCompareVersionOpen(false)}
-        />
-      )}
-      {!isHistoryMode && titlePageEditorOpen && editor && (
-        <TitlePageEditor
-          editor={editor}
-          onClose={() => setTitlePageEditorOpen(false)}
-        />
-      )}
-      {!isHistoryMode && moresContdsOpen && (
-        <MoresContdsDialog onClose={() => setMoresContdsOpen(false)} />
-      )}
       <input
         ref={imageFileInputRef}
         type="file"
@@ -5808,34 +5164,6 @@ const ScreenplayEditor: React.FC = () => {
         style={{ display: 'none' }}
         onChange={handleImageFileChange}
       />
-      {!isHistoryMode &&
-        shareDialogOpen &&
-        currentProject &&
-        currentScriptId && (
-          <ShareDialog
-            projectId={currentProject.id}
-            scriptId={currentScriptId}
-            scriptTitle={useEditorStore.getState().documentTitle}
-            isCollabActive={collabMode}
-            onStartCollab={handleStartCollab}
-            onClose={() => setShareDialogOpen(false)}
-          />
-        )}
-      {collabLoginOpen && (
-        <CollabLoginDialog
-          onClose={() => setCollabLoginOpen(false)}
-          onSuccess={() => {
-            setCollabLoginOpen(false)
-            setShareDialogOpen(true)
-          }}
-        />
-      )}
-      {joinCollabOpen && (
-        <JoinCollabDialog
-          onJoin={handleJoinCollab}
-          onClose={() => setJoinCollabOpen(false)}
-        />
-      )}
       {dragOverEditor && (
         <div
           style={{

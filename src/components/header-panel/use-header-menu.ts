@@ -47,7 +47,6 @@ import {
   FaFilm,
   FaHashtag,
   FaHighlighter,
-  FaHistory,
   FaImage,
   FaInfo,
   FaInfoCircle,
@@ -102,6 +101,7 @@ interface UseHeaderMenusArgs {
   onTemplateSelectOpen: () => void
   onAboutOpen: () => void
   onDiagnosticsOpen: () => void
+  onScriptStatisticsOpen: () => void
 }
 
 export function useHeaderMenus({
@@ -113,6 +113,7 @@ export function useHeaderMenus({
   onTemplateSelectOpen,
   onAboutOpen,
   onDiagnosticsOpen,
+  onScriptStatisticsOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
   //   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
@@ -567,30 +568,6 @@ export function useHeaderMenus({
           },
 
           {
-            icon: FaStream,
-            label: 'Analytics',
-            items: [
-              {
-                icon: FaStream,
-                label: 'Script Statistics',
-                action: () => {
-                  const s = useEditorStore.getState()
-                  s.setStatisticsScrollTo(null)
-                  s.setStatisticsOpen(true)
-                },
-              },
-              {
-                icon: FaHistory,
-                label: 'Timing Report',
-                action: () => {
-                  const s = useEditorStore.getState()
-                  s.setStatisticsScrollTo('stats-timing-report')
-                  s.setStatisticsOpen(true)
-                },
-              },
-            ],
-          },
-          {
             icon: FaHighlighter,
             label: 'Highlights',
             items: [
@@ -607,6 +584,15 @@ export function useHeaderMenus({
                 action: () => setTagsVisible(!tagsVisible),
               },
             ],
+          },
+          { separator: true, label: '' },
+          {
+            icon: FaStream,
+            label: 'Script Statistics',
+
+            action: () => {
+              onScriptStatisticsOpen()
+            },
           },
           { separator: true, label: '' },
           {
@@ -741,6 +727,7 @@ export function useHeaderMenus({
     [
       mod,
       onOpenPageSetup,
+      editor,
       onOpenGoToPage,
       spellCheckEnabled,
       toggleSpellCheck,
@@ -781,13 +768,13 @@ export function useHeaderMenus({
       zoomLevel,
       onAboutOpen,
       onDiagnosticsOpen,
-      editor,
       setSearchOpen,
       setSpellCheckOpen,
       setWritingSuggestionsOpen,
       toggleScriptNotes,
       setNotesVisible,
       setTagsVisible,
+      onScriptStatisticsOpen,
       setSceneNumbersVisible,
       setSceneNumbersLocked,
       setTheme,
