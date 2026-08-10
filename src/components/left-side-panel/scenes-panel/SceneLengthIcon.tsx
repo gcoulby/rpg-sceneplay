@@ -1,5 +1,5 @@
 import React from 'react'
-import { getPageFillStyle } from './scene-utils'
+import { getPageFillStyle } from '../utils/scene-utils'
 
 const SceneLengthIcon: React.FC<{ pages: number }> = React.memo(({ pages }) => {
   const wholePgs = Math.floor(pages)

@@ -12,7 +12,7 @@ import {
   sceneActLabel,
   type ScriptStructure,
 } from '@/utils/open-draft/scriptStructure'
-import { parseHeading } from './scene-utils'
+import { parseHeading } from '../utils/scene-utils'
 import { characterKey, singleLine } from '@/utils/open-draft/nodeText'
 import { useGoToScene } from '../utils/useGoToScene'
 import SceneFilterPanel from './SceneFilterPanel'

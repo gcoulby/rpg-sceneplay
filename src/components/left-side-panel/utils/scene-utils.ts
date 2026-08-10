@@ -71,3 +71,49 @@ export function formatPageLength(pages: number): string {
   const n = Number(pages.toFixed(2))
   return `${n} ${n <= 1 ? 'page' : 'pages'}`
 }
+
+export interface ParsedHeading {
+  preamble: string
+  prefix: string
+  location: string
+  timeOfDay: string
+  raw: string
+}
+
+export interface LocationGroup {
+  name: string
+  sceneIndices: number[]
+  headings: string[]
+  prefixes: string[]
+  times: string[]
+  preambles: string[]
+}
+
+export function groupByLocation(
+  scenes: Array<{ heading: string }>,
+): LocationGroup[] {
+  const map = new Map<string, LocationGroup>()
+  scenes.forEach((scene, index) => {
+    const parsed = parseHeading(scene.heading)
+    const key = parsed.location.toUpperCase()
+    if (!key) return
+    let group = map.get(key)
+    if (!group) {
+      group = {
+        name: parsed.location,
+        sceneIndices: [],
+        headings: [],
+        prefixes: [],
+        times: [],
+        preambles: [],
+      }
+      map.set(key, group)
+    }
+    group.sceneIndices.push(index)
+    group.headings.push(scene.heading)
+    group.prefixes.push(parsed.prefix)
+    group.times.push(parsed.timeOfDay)
+    group.preambles.push(parsed.preamble.replace(/[\s.]+$/, ''))
+  })
+  return Array.from(map.values())
+}

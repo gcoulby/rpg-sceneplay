@@ -5,7 +5,7 @@ import {
   formatSceneDuration,
   getTimingColor,
 } from '@/utils/open-draft/scriptTiming'
-import { formatPageLength } from './scene-utils'
+import { formatPageLength } from '../utils/scene-utils'
 
 interface SceneListItemScene {
   id: string
