@@ -1,7 +1,15 @@
 import type { LucideIcon } from 'lucide-react'
 import { Clapperboard, FileText, MapPin, ListTree } from 'lucide-react'
 
-export type NavView = '' | 'scenes' | 'pages' | 'locations' | 'structure'
+export type NavView =
+  | ''
+  | 'scenes'
+  | 'pages'
+  | 'locations'
+  | 'structure'
+  | 'tags'
+  | 'notes'
+  | 'characters'
 
 export interface NavViewConfig {
   id: NavView

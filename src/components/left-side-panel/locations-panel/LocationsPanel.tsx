@@ -55,9 +55,6 @@ const LocationsPanel: React.FC<LocationsPanelProps> = ({
     doc.descendants((node, pos) => {
       if (node.type.name !== 'sceneHeading') return true
       const heading = node.textContent
-      // A heading containing a hard break can't be rewritten: insertText
-      // over the inline range would flatten the break into plain text.
-      // Count it and tell the user rather than silently mangling it.
       if (heading.includes('\n')) {
         if (
           parseHeading(singleLine(heading)).location.toUpperCase() ===
@@ -115,6 +112,7 @@ const LocationsPanel: React.FC<LocationsPanelProps> = ({
           </div>
         ) : (
           <Accordion
+            multiple
             value={expandedLocation}
             onValueChange={setExpandedLocation}
           >

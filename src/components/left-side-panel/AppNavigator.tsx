@@ -5,7 +5,6 @@ import { type NavView } from './nav-views'
 import ScenesPanel from './scenes-panel/ScenesPanel'
 import PagesPanel from './pages-panel/PagesPanel'
 
-import StructurePanel from './StructurePanel'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -13,6 +12,8 @@ import {
 } from '../ui/resizable'
 import type { PanelImperativeHandle } from 'react-resizable-panels'
 import LocationsPanel from './locations-panel/LocationsPanel'
+import StructurePanel from './structures-panel/StructurePanel'
+import TagsPanel from './TagPanel'
 
 interface AppNavigatorProps {
   editor: Editor | null
@@ -57,6 +58,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
             <LocationsPanel editor={editor} scrollContainer={scrollContainer} />
           )}
           {activeView === 'structure' && <StructurePanel editor={editor} />}
+          {activeView === 'tags' && <TagsPanel editor={editor} />}
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>{children}</ResizablePanel>

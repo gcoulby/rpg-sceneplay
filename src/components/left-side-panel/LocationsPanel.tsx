@@ -6,10 +6,6 @@ interface LocationsPanelProps {
   scrollContainer?: HTMLDivElement | null
 }
 
-// TODO: port groupByLocation, the expand/rename UI, and the batch-rename
-// transaction logic (including the "heading has a hard break, skip it and
-// toast" guard — that was a real bug fix, not slop, keep it as-is).
-// Navigation should use useGoToScene rather than a local copy.
 const LocationsPanel: React.FC<LocationsPanelProps> = ({
   editor,
   scrollContainer,
