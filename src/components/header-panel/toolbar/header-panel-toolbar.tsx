@@ -185,43 +185,6 @@ export function HeaderPanelToolbar({
 
       <div className="w-px h-4 bg-(--fd-border) opacity-50 mx-1" />
 
-      {/* <label
-        title="Text Color"
-        className={`border-b-4 toolbar-btn flex items-center justify-center w-6.5 h-6 rounded-[5px] cursor-pointer hover:bg-(--fd-overlay-light) ${toolbar.colors.text.disabled ? 'opacity-30 pointer-events-none' : ''}`}
-        style={{ color: toolbar.colors.text.value }}
-      >
-        <BiFontColor
-          size={13}
-          style={{ color: toolbar.colors.text.value, filter: ICON_OUTLINE }}
-        />
-        <input
-          type="color"
-          disabled={toolbar.colors.text.disabled}
-          value={toolbar.colors.text.value}
-          onChange={(e) => toolbar.colors.text.onChange(e.target.value)}
-          className="sr-only"
-        />
-      </label>
-      <label
-        title="Highlight Color"
-        className={`toolbar-btn flex items-center justify-center w-6.5 h-6 rounded-[5px] cursor-pointer hover:bg-(--fd-overlay-light) ${toolbar.colors.background.disabled ? 'opacity-30 pointer-events-none' : ''}`}
-      >
-        <FaHighlighter
-          size={10}
-          style={{
-            color: toolbar.colors.background.value,
-            filter: ICON_OUTLINE,
-          }}
-        />
-        <input
-          type="color"
-          disabled={toolbar.colors.background.disabled}
-          value={toolbar.colors.background.value}
-          onChange={(e) => toolbar.colors.background.onChange(e.target.value)}
-          className="sr-only"
-        />
-      </label> */}
-
       <label
         title="Text Color"
         className={`toolbar-btn relative flex flex-col items-center justify-center gap-0.5 w-6.5 h-6 rounded-[5px] cursor-pointer hover:bg-(--fd-overlay-light) ${toolbar.colors.text.disabled ? 'opacity-30 pointer-events-none' : ''}`}
@@ -327,6 +290,7 @@ export function HeaderPanelToolbar({
       >
         <FaTags className="size-3" />
       </Toggle>
+      <div style={{ flex: 1 }} />
 
       <Toggle
         size="sm"
@@ -337,7 +301,6 @@ export function HeaderPanelToolbar({
       >
         {toolbar.theme.active === 'light' ? <FaSun /> : <FaMoon />}
       </Toggle>
-      <div style={{ flex: 1 }} />
 
       <ToolbarZoomControl />
     </div>
