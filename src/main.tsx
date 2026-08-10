@@ -5,6 +5,8 @@ import App from './App.tsx'
 import { initStorage } from './services/api'
 import { initDemoInfo } from './services/demoInfo'
 import './index.css'
+import { SidebarProvider } from './components/ui/sidebar.tsx'
+import { TooltipProvider } from './components/ui/tooltip.tsx'
 
 async function init() {
   // Apply saved theme before first render to avoid flash
@@ -65,9 +67,13 @@ async function init() {
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <SidebarProvider>
+        <TooltipProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </TooltipProvider>
+      </SidebarProvider>
     </StrictMode>,
   )
 }
