@@ -609,8 +609,8 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
     <div
       className={
         isFullscreen
-          ? 'fixed inset-0 z-50 bg-(--fd-navigator-bg) flex flex-col overflow-hidden'
-          : 'w-full h-full bg-(--fd-navigator-bg) flex flex-col overflow-hidden relative'
+          ? 'fixed inset-0 z-50 bg-background flex flex-col overflow-hidden'
+          : 'w-full h-full bg-background flex flex-col overflow-hidden relative'
       }
     >
       <input
