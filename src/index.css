@@ -208,8 +208,10 @@
   --menubar-h: calc(var(--spacing) * 6);
   --toolbar-h: calc(var(--spacing) * 10);
   --statusbar-h: calc(var(--spacing) * 6);
+  --tabbar-h: calc(var(--spacing) * 6);
   --app-h: calc(
-    100dvh - var(--menubar-h) - var(--toolbar-h) - var(--statusbar-h)
+    100dvh - var(--menubar-h) - var(--toolbar-h) - var(--statusbar-h) -
+      var(--tabbar-h) - 1dvh
   );
 }
 

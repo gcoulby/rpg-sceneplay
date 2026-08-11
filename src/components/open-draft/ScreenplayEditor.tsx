@@ -4552,7 +4552,7 @@ const ScreenplayEditor: React.FC = () => {
 
   return (
     <div
-      className={`app-container flex flex-col h-[var(--app-h)] overflow-hidden${isHistoryMode ? ' history-mode' : ''}`}
+      className={`app-container flex flex-col h-(--app-h) w-full overflow-hidden${isHistoryMode ? ' history-mode' : ''}`}
     >
       {isHistoryMode && (
         <div className="z-4000 flex justify-center items-center gap-2.5 bg-linear-to-br from-[#b8860b] to-[#8b6914] shadow-[0_2px_8px_rgba(0,0,0,.3)] px-5 py-2.5 font-medium text-[13px] text-white tracking-[0.3px] select-none history-banner shrink-0">
@@ -5057,7 +5057,7 @@ const ScreenplayEditor: React.FC = () => {
             style={{ touchAction: 'none' }}
           />
         )}
-        {!isHistoryMode && (
+        {/* {!isHistoryMode && (
           <ScriptNotes
             editor={editor}
             style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
@@ -5075,13 +5075,13 @@ const ScreenplayEditor: React.FC = () => {
             editor={editor}
             style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
           />
-        )}
+        )} 
         {!isHistoryMode && (
           <LocationDatabase
             editor={editor}
             style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
           />
-        )}
+        )} */}
         {!isHistoryMode &&
           pluginRegistry
             .getPanels('right-sidebar')

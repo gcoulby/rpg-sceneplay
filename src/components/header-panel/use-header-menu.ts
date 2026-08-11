@@ -33,13 +33,10 @@ import {
   FaColumns,
   FaCommentDots,
   FaCompass,
-  FaCompressArrowsAlt,
   FaCopy,
   FaCut,
   FaEdit,
-  FaExpandArrowsAlt,
   FaEye,
-  FaEyeSlash,
   FaFile,
   FaFileAlt,
   FaFileExport,
@@ -74,7 +71,6 @@ import {
   FaSuperscript,
   FaTags,
   FaTh,
-  FaToolbox,
   FaUnderline,
   FaUndo,
   FaUsers,
@@ -116,7 +112,6 @@ export function useHeaderMenus({
   onScriptStatisticsOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
-  //   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
 
   const {
     setSpellCheckOpen,
@@ -146,8 +141,6 @@ export function useHeaderMenus({
     toggleGrammarCheck,
     theme,
     setTheme,
-    toolbarMode,
-    setToolbarMode,
     zoomLevel,
     setZoomLevel,
     sceneNumbersVisible,
@@ -623,32 +616,7 @@ export function useHeaderMenus({
             action: () => setTheme(theme === 'light' ? 'dark' : 'light'),
           },
           { separator: true, label: '' },
-          {
-            icon: FaToolbox,
-            label: 'Menu & Toolbar',
-            items: [
-              {
-                icon: FaCompressArrowsAlt,
-                label: toolbarMode === 'compact' ? '\u2713 Compact' : 'Compact',
-                action: () => setToolbarMode('compact'),
-              },
-              {
-                icon: FaExpandArrowsAlt,
-                label:
-                  toolbarMode === 'comfortable'
-                    ? '\u2713 Comfortable'
-                    : 'Comfortable',
-                action: () => setToolbarMode('comfortable'),
-              },
-              {
-                icon: FaEyeSlash,
-                label: toolbarMode === 'hidden' ? '\u2713 Hidden' : 'Hidden',
-                action: () => {
-                  setToolbarMode('hidden')
-                },
-              },
-            ],
-          },
+
           {
             icon: FaSearchPlus,
             label: `Zoom (${zoomLevel}%)`,
@@ -764,7 +732,6 @@ export function useHeaderMenus({
       sceneNumbersVisible,
       sceneNumbersLocked,
       theme,
-      toolbarMode,
       zoomLevel,
       onAboutOpen,
       onDiagnosticsOpen,
@@ -778,7 +745,6 @@ export function useHeaderMenus({
       setSceneNumbersVisible,
       setSceneNumbersLocked,
       setTheme,
-      setToolbarMode,
       setZoomLevel,
     ],
   )
