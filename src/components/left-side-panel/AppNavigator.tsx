@@ -16,6 +16,7 @@ import StructurePanel from './structures-panel/StructurePanel'
 import TagsPanel from './tags-panel/TagsPanel'
 import NotesPanel from './notes-tab/NotesPanel'
 import CharacterProfilesPanel from './character-panel/CharacterProfilesPanel'
+import IndexCardsPanel from './index-card-panel/IndexCardsPanel'
 
 interface AppNavigatorProps {
   editor: Editor | null
@@ -65,6 +66,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
           {activeView === 'characters' && (
             <CharacterProfilesPanel editor={editor} projectId="" />
           )}
+          {activeView === 'index-cards' && <IndexCardsPanel editor={editor} />}
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>{children}</ResizablePanel>

@@ -7,6 +7,7 @@ import {
   Tags,
   StickyNote,
   Users,
+  NotebookTabs,
 } from 'lucide-react'
 
 export type NavView =
@@ -18,6 +19,7 @@ export type NavView =
   | 'tags'
   | 'notes'
   | 'characters'
+  | 'index-cards'
 
 export interface NavViewConfig {
   id: NavView
@@ -33,4 +35,5 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'tags', label: 'Tags', icon: Tags },
   { id: 'notes', label: 'Notes', icon: StickyNote },
   { id: 'characters', label: 'Characters', icon: Users },
+  { id: 'index-cards', label: 'Index Cards', icon: NotebookTabs },
 ]
