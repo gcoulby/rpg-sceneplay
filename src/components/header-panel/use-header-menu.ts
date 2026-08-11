@@ -32,7 +32,6 @@ import {
   FaCog,
   FaColumns,
   FaCommentDots,
-  FaCompass,
   FaCopy,
   FaCut,
   FaEdit,
@@ -64,16 +63,11 @@ import {
   FaSearchPlus,
   FaSpellCheck,
   FaStethoscope,
-  FaStickyNote,
-  FaStream,
   FaStrikethrough,
   FaSubscript,
   FaSuperscript,
-  FaTags,
-  FaTh,
   FaUnderline,
   FaUndo,
-  FaUsers,
 } from 'react-icons/fa'
 import {
   toggleBold,
@@ -109,27 +103,12 @@ export function useHeaderMenus({
   onTemplateSelectOpen,
   onAboutOpen,
   onDiagnosticsOpen,
-  onScriptStatisticsOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
 
   const {
     setSpellCheckOpen,
     setWritingSuggestionsOpen,
-    navigatorOpen,
-    toggleNavigator,
-    indexCardsOpen,
-    toggleIndexCards,
-    beatBoardOpen,
-    toggleBeatBoard,
-    scriptNotesOpen,
-    toggleScriptNotes,
-    characterProfilesOpen,
-    toggleCharacterProfiles,
-    tagsPanelOpen,
-    toggleTagsPanel,
-    locationDatabaseOpen,
-    toggleLocationDatabase,
     notesVisible,
     setNotesVisible,
     tagsVisible,
@@ -511,56 +490,6 @@ export function useHeaderMenus({
         icon: FaEye,
         items: [
           {
-            icon: FaColumns,
-            label: 'Panels',
-            items: [
-              {
-                icon: FaCompass,
-                label: navigatorOpen ? '\u2713 Navigator' : 'Navigator',
-                action: toggleNavigator,
-              },
-              {
-                icon: FaTh,
-                label: indexCardsOpen ? '\u2713 Index Cards' : 'Index Cards',
-                action: toggleIndexCards,
-              },
-              {
-                icon: FaStream,
-                label: beatBoardOpen ? '\u2713 Beat Board' : 'Beat Board',
-                action: toggleBeatBoard,
-              },
-              {
-                icon: FaStickyNote,
-                label: scriptNotesOpen ? '\u2713 Notes Panel' : 'Notes Panel',
-                action: () => {
-                  const hasSelection = editor && !editor.state.selection.empty
-                  useEditorStore
-                    .getState()
-                    .setNotesActiveTab(hasSelection ? 'script' : 'general')
-                  toggleScriptNotes()
-                },
-              },
-              {
-                icon: FaUsers,
-                label: characterProfilesOpen
-                  ? '\u2713 Characters'
-                  : 'Characters',
-                action: toggleCharacterProfiles,
-              },
-              {
-                icon: FaTags,
-                label: tagsPanelOpen ? '\u2713 Tags' : 'Tags',
-                action: toggleTagsPanel,
-              },
-              {
-                icon: FaCompass,
-                label: locationDatabaseOpen ? '\u2713 Locations' : 'Locations',
-                action: toggleLocationDatabase,
-              },
-            ],
-          },
-
-          {
             icon: FaHighlighter,
             label: 'Highlights',
             items: [
@@ -578,15 +507,7 @@ export function useHeaderMenus({
               },
             ],
           },
-          { separator: true, label: '' },
-          {
-            icon: FaStream,
-            label: 'Script Statistics',
 
-            action: () => {
-              onScriptStatisticsOpen()
-            },
-          },
           { separator: true, label: '' },
           {
             icon: FaFilm,
@@ -714,19 +635,6 @@ export function useHeaderMenus({
       onTitlePageEditorOpen,
       activeTemplateName,
       onTemplateSelectOpen,
-      navigatorOpen,
-      toggleNavigator,
-      indexCardsOpen,
-      toggleIndexCards,
-      beatBoardOpen,
-      toggleBeatBoard,
-      scriptNotesOpen,
-      characterProfilesOpen,
-      toggleCharacterProfiles,
-      tagsPanelOpen,
-      toggleTagsPanel,
-      locationDatabaseOpen,
-      toggleLocationDatabase,
       notesVisible,
       tagsVisible,
       sceneNumbersVisible,
@@ -738,10 +646,8 @@ export function useHeaderMenus({
       setSearchOpen,
       setSpellCheckOpen,
       setWritingSuggestionsOpen,
-      toggleScriptNotes,
       setNotesVisible,
       setTagsVisible,
-      onScriptStatisticsOpen,
       setSceneNumbersVisible,
       setSceneNumbersLocked,
       setTheme,
