@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import type { Editor } from '@tiptap/react'
 import { Filter, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,7 +16,7 @@ import { characterKey, singleLine } from '@/utils/open-draft/nodeText'
 import { useGoToScene } from '../utils/useGoToScene'
 import SceneFilterPanel from './SceneFilterPanel'
 import SceneListItem from './SceneListItem'
-import SynopsisModal from '@/components/open-draft/SynopsisModal'
+import SynopsisDialog from '@/components/plugins/synopsis-dialog/synopsis-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface ScenesPanelProps {
@@ -398,24 +397,32 @@ const ScenesPanel: React.FC<ScenesPanelProps> = ({
         </ScrollArea>
       </div>
 
-      {synopsisModal &&
-        createPortal(
-          <SynopsisModal
-            sceneHeading={synopsisModal.heading}
-            synopsis={synopsisModal.synopsis}
-            sceneColor={synopsisModal.color}
-            pageLength={sceneDetails[synopsisModal.sceneIdx]?.pageLength}
-            autoTimingSeconds={
-              sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
-            }
-            timingOverride={
-              sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds
-            }
-            onSave={handleSaveSynopsis}
-            onClose={() => setSynopsisModal(null)}
-          />,
-          document.body,
-        )}
+      <SynopsisDialog
+        key={synopsisModal?.id ?? 'none'}
+        open={synopsisModal !== null}
+        onOpenChange={(o) => {
+          if (!o) setSynopsisModal(null)
+        }}
+        sceneHeading={synopsisModal?.heading ?? ''}
+        synopsis={synopsisModal?.synopsis ?? ''}
+        sceneColor={synopsisModal?.color}
+        pageLength={
+          synopsisModal
+            ? sceneDetails[synopsisModal.sceneIdx]?.pageLength
+            : undefined
+        }
+        autoTimingSeconds={
+          synopsisModal
+            ? sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
+            : undefined
+        }
+        timingOverride={
+          synopsisModal
+            ? sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds
+            : undefined
+        }
+        onSave={handleSaveSynopsis}
+      />
     </div>
   )
 }

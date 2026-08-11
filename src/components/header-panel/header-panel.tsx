@@ -16,7 +16,6 @@ import AboutDialog from '../plugins/about/about-dialog'
 import DiagnosticsDialog from '../plugins/diagnostics/diagnostics-dialog'
 import { HeaderPanelMenuBar } from './header-panel-menubar'
 import { HeaderPanelToolbar } from './toolbar/header-panel-toolbar'
-import ScriptStatisticsDialog from '../plugins/analytics/ScriptStatisticsDialog'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
@@ -107,13 +106,6 @@ export default function AppShell() {
         open={diagnosticsOpen}
         onOpenChange={setDiagnosticsOpen}
       />
-      {editor && (
-        <ScriptStatisticsDialog
-          editor={editor}
-          open={scriptStatisticsOpen}
-          onOpenChange={setScriptStatisticsOpen}
-        />
-      )}
     </header>
   )
 }

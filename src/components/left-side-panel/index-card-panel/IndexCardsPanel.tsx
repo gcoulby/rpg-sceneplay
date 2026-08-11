@@ -22,32 +22,25 @@ import { useReorderHistory } from './useReorderHistory'
 import IndexCardsToolbar from './IndexCardsToolbar'
 import IndexCard from './IndexCard'
 import DragGhost from './DragGhost'
-import SynopsisModal from '@/components/open-draft/SynopsisModal'
+import SynopsisDialog from '@/components/plugins/synopsis-dialog/synopsis-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface IndexCardsPanelProps {
   editor: Editor | null
 }
 
-// No self-managed open/close — same call as every other panel; whatever
-// hosts this owns show/hide. `fullscreen` is a different concern (does this
-// panel expand to cover more of the screen) and stays, matching
-// CharacterProfilesPanel's fixed inset-0 z-50 pattern.
 const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
   const { scenes, updateSceneSynopsis, updateSceneColor, pageLayout } =
     useEditorStore()
 
   const [fullscreen, setFullscreen] = useState(false)
   const [dragMode, setDragMode] = useState(false)
-
-  // Deferred reorder state: pending changes are visual-only until Apply
   const [pendingScenes, setPendingScenes] = useState<SceneInfo[] | null>(null)
   const [originalScenes, setOriginalScenes] = useState<SceneInfo[] | null>(null)
 
   const { canUndo, canRedo, reset, clear, push, undo, redo } =
     useReorderHistory(dragMode, setPendingScenes)
 
-  // Keyboard shortcuts for undo/redo in reorder mode
   useEffect(() => {
     if (!dragMode) return
     const handleKey = (e: KeyboardEvent) => {
@@ -66,16 +59,13 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
         redo()
       }
     }
-    // Capture phase fires before ProseMirror's editor keymap handlers
+
     window.addEventListener('keydown', handleKey, true)
     return () => window.removeEventListener('keydown', handleKey, true)
   }, [dragMode, undo, redo])
 
-  // Custom drag state
   const [dragIdx, setDragIdx] = useState<number | null>(null)
-  // Computed and set from within the drag event handlers (a legitimate
-  // place to read gridRef.current), not derived by reading the ref during
-  // render — that read was the actual thing flagged.
+
   const [indicatorStyle, setIndicatorStyle] = useState<CSSProperties | null>(
     null,
   )
@@ -92,12 +82,10 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
   const gridRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll refs for drag
   const scrollSpeedRef = useRef(0)
   const scrollRafRef = useRef<number>(0)
   const lastClientPosRef = useRef<{ x: number; y: number } | null>(null)
 
-  // Synopsis modal state
   const [synopsisModal, setSynopsisModal] = useState<{
     sceneIdx: number
     id: string
@@ -143,7 +131,6 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
     [synopsisModal, editor, updateSceneSynopsis, updateSceneColor],
   )
 
-  // The cards to display: pending order during reorder mode, otherwise live scenes
   const displayScenes = pendingScenes ?? scenes
 
   const hasChanges = !!(
@@ -152,9 +139,6 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
     pendingScenes.some((s, i) => s.id !== originalScenes[i]?.id)
   )
 
-  // Scene page lengths and timing — these walk editor.state.doc directly,
-  // so they need docVersion the same way Scenes/Pages/Structure did:
-  // `scenes` alone doesn't reliably reflect every document change.
   const docVersion = useDocVersion(editor)
 
   const sceneLengths = useMemo(() => {
@@ -177,10 +161,6 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
     }
   }, [editor, docVersion])
 
-  // State, not a ref — this is read during render (to show "was #N" labels)
-  // and only changes at reorder-mode boundaries (enter/cancel/apply), so
-  // there's no high-frequency-update reason it needed to be a ref, and
-  // reading a ref during render is the thing that was actually flagged.
   const [originalIndexMap, setOriginalIndexMap] = useState<Map<string, number>>(
     new Map(),
   )
@@ -349,11 +329,6 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
     clear,
   ])
 
-  // Mouse handlers for custom drag — refs so native pointer event listeners
-  // always call the latest function versions. Sync happens in an effect
-  // (runs after commit), not during render — writing ref.current while the
-  // component body executes is a separate error from what these refs are
-  // actually for.
   const pendingScenesRef = useRef(pendingScenes)
   const pushRef = useRef(push)
   const fullscreenRef = useRef(fullscreen)
@@ -385,8 +360,6 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
       scrollSpeedRef.current = 0
       lastClientPosRef.current = { x: e.clientX, y: e.clientY }
 
-      // Reading gridRef.current here is fine — this only ever runs from
-      // inside a real pointer event handler, never during render.
       const calcGap = (clientX: number, clientY: number): number | null => {
         if (!gridRef.current) return null
         return fullscreenRef.current
@@ -568,20 +541,30 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
         </ScrollArea>
       </div>
 
-      {synopsisModal && (
-        <SynopsisModal
-          sceneHeading={synopsisModal.heading}
-          synopsis={synopsisModal.synopsis}
-          sceneColor={synopsisModal.color}
-          pageLength={sceneLengths[synopsisModal.sceneIdx]}
-          autoTimingSeconds={
-            sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
-          }
-          timingOverride={sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds}
-          onSave={handleSaveSynopsis}
-          onClose={() => setSynopsisModal(null)}
-        />
-      )}
+      <SynopsisDialog
+        key={synopsisModal?.id ?? 'none'}
+        open={synopsisModal !== null}
+        onOpenChange={(o) => {
+          if (!o) setSynopsisModal(null)
+        }}
+        sceneHeading={synopsisModal?.heading ?? ''}
+        synopsis={synopsisModal?.synopsis ?? ''}
+        sceneColor={synopsisModal?.color}
+        pageLength={
+          synopsisModal ? sceneLengths[synopsisModal.sceneIdx] : undefined
+        }
+        autoTimingSeconds={
+          synopsisModal
+            ? sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
+            : undefined
+        }
+        timingOverride={
+          synopsisModal
+            ? sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds
+            : undefined
+        }
+        onSave={handleSaveSynopsis}
+      />
 
       {dragIdx !== null && dragPos && dragCardHtml && (
         <DragGhost
