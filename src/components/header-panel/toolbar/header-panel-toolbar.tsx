@@ -13,8 +13,6 @@ import {
   FaAlignJustify,
   FaSearch,
   FaHashtag,
-  FaStickyNote,
-  FaTags,
   FaMoon,
   FaSun,
   FaHighlighter,
@@ -192,7 +190,7 @@ export function HeaderPanelToolbar({
         <RiFontSize size={12} />
         {/* <BiFontColor size={12} /> */}
         <span
-          className="w-3.5 h-[3px] rounded-[1px] border border-(--fd-border)"
+          className="w-3.5 h-0.75 rounded-[1px] border border-(--fd-border)"
           style={{ backgroundColor: toolbar.colors.text.value }}
         />
         <input
@@ -209,7 +207,7 @@ export function HeaderPanelToolbar({
       >
         <FaHighlighter size={9} />
         <span
-          className="w-3.5 h-[3px] rounded-[1px] border border-(--fd-border)"
+          className="w-3.5 h-0.75 rounded-[1px] border border-(--fd-border)"
           style={{ backgroundColor: toolbar.colors.background.value }}
         />
         <input
@@ -272,24 +270,6 @@ export function HeaderPanelToolbar({
 
       <div className="w-px h-4 bg-(--fd-border) opacity-50 mx-1" />
 
-      <Toggle
-        size="sm"
-        pressed={toolbar.notes.active}
-        onPressedChange={toolbar.notes.toggle}
-        aria-label="Script Notes"
-        className="cursor-pointer"
-      >
-        <FaStickyNote className="size-3" />
-      </Toggle>
-      <Toggle
-        size="sm"
-        pressed={toolbar.tags.active}
-        onPressedChange={toolbar.tags.toggle}
-        aria-label="Production Tags"
-        className="cursor-pointer"
-      >
-        <FaTags className="size-3" />
-      </Toggle>
       <div style={{ flex: 1 }} />
 
       <Toggle

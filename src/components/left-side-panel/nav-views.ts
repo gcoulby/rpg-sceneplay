@@ -6,6 +6,7 @@ import {
   ListTree,
   Tags,
   StickyNote,
+  Users,
 } from 'lucide-react'
 
 export type NavView =
@@ -31,4 +32,5 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'structure', label: 'Structure', icon: ListTree },
   { id: 'tags', label: 'Tags', icon: Tags },
   { id: 'notes', label: 'Notes', icon: StickyNote },
+  { id: 'characters', label: 'Characters', icon: Users },
 ]

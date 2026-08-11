@@ -5057,7 +5057,7 @@ const ScreenplayEditor: React.FC = () => {
             style={{ touchAction: 'none' }}
           />
         )}
-        {!isHistoryMode && (
+        {/* {!isHistoryMode && (
           <ScriptNotes
             editor={editor}
             style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
@@ -5075,13 +5075,13 @@ const ScreenplayEditor: React.FC = () => {
             editor={editor}
             style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
           />
-        )}
+        )} 
         {!isHistoryMode && (
           <LocationDatabase
             editor={editor}
             style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
           />
-        )}
+        )} */}
         {!isHistoryMode &&
           pluginRegistry
             .getPanels('right-sidebar')

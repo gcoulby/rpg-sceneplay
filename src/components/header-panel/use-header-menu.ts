@@ -623,32 +623,7 @@ export function useHeaderMenus({
             action: () => setTheme(theme === 'light' ? 'dark' : 'light'),
           },
           { separator: true, label: '' },
-          {
-            icon: FaToolbox,
-            label: 'Menu & Toolbar',
-            items: [
-              {
-                icon: FaCompressArrowsAlt,
-                label: toolbarMode === 'compact' ? '\u2713 Compact' : 'Compact',
-                action: () => setToolbarMode('compact'),
-              },
-              {
-                icon: FaExpandArrowsAlt,
-                label:
-                  toolbarMode === 'comfortable'
-                    ? '\u2713 Comfortable'
-                    : 'Comfortable',
-                action: () => setToolbarMode('comfortable'),
-              },
-              {
-                icon: FaEyeSlash,
-                label: toolbarMode === 'hidden' ? '\u2713 Hidden' : 'Hidden',
-                action: () => {
-                  setToolbarMode('hidden')
-                },
-              },
-            ],
-          },
+
           {
             icon: FaSearchPlus,
             label: `Zoom (${zoomLevel}%)`,
