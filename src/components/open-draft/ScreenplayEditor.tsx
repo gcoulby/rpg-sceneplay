@@ -82,14 +82,6 @@ import {
   resolveMoresContds,
 } from '@/stores/editorStore'
 import type { ElementType } from '@/stores/editorStore'
-import SceneNavigator from './SceneNavigator'
-import IndexCards from './IndexCards'
-import BeatBoard from './BeatBoard'
-import ScriptStatistics from './ScriptStatistics'
-import ScriptNotes from './ScriptNotes'
-import CharacterProfiles from './CharacterProfiles'
-import TagsPanel from './TagsPanel'
-import LocationDatabase from './LocationDatabase'
 import FormatPanel from './FormatPanel'
 import ElementPicker from './ElementPicker'
 import CharacterAutocomplete from './CharacterAutocomplete'
@@ -130,7 +122,7 @@ import {
   clearSessionDoc,
 } from '@/utils/open-draft/sessionDoc'
 import SaveAsDialog from './SaveAsDialog'
-import { useIsTouchDevice, useSwipeEdge, usePinchZoom } from '@/hooks/useTouch'
+import { useIsTouchDevice, usePinchZoom } from '@/hooks/useTouch'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { startCollabSync, stopCollabSync } from '@/services/collabSync'
 import {
@@ -577,15 +569,6 @@ const ScreenplayEditor: React.FC = () => {
     pageLayout,
     tagsVisible,
     notesVisible,
-    beatBoardOpen,
-    statisticsOpen,
-    navigatorOpen,
-    toggleNavigator,
-    scriptNotesOpen,
-    toggleScriptNotes,
-    characterProfilesOpen,
-    tagsPanelOpen,
-    locationDatabaseOpen,
     spellCheckEnabled,
     grammarCheckEnabled,
     setDocumentTitle,
@@ -628,60 +611,6 @@ const ScreenplayEditor: React.FC = () => {
       { time: new Date(), message },
     ])
   }, [])
-
-  // ── Panel resize state ──
-  const [navWidth, setNavWidth] = useState(240)
-  const [rightPanelWidth, setRightPanelWidth] = useState(300)
-
-  // Sync nav width to store for floating menu positioning
-  useEffect(() => {
-    useEditorStore.getState().setNavPanelWidth(navigatorOpen ? navWidth : 0)
-  }, [navWidth, navigatorOpen])
-  const resizingRef = useRef<'left' | 'right' | null>(null)
-  const resizeStartXRef = useRef(0)
-  const resizeStartWidthRef = useRef(0)
-
-  const handleResizePointerDown = useCallback(
-    (side: 'left' | 'right', e: React.PointerEvent) => {
-      e.preventDefault()
-      resizingRef.current = side
-      resizeStartXRef.current = e.clientX
-      resizeStartWidthRef.current = side === 'left' ? navWidth : rightPanelWidth
-
-      const handlePointerMove = (ev: PointerEvent) => {
-        const delta = ev.clientX - resizeStartXRef.current
-        if (resizingRef.current === 'left') {
-          setNavWidth(
-            Math.max(160, Math.min(500, resizeStartWidthRef.current + delta)),
-          )
-        } else {
-          setRightPanelWidth(
-            Math.max(200, Math.min(600, resizeStartWidthRef.current - delta)),
-          )
-        }
-      }
-
-      const handlePointerUp = () => {
-        resizingRef.current = null
-        document.removeEventListener('pointermove', handlePointerMove)
-        document.removeEventListener('pointerup', handlePointerUp)
-        document.body.style.cursor = ''
-        document.body.style.userSelect = ''
-      }
-
-      document.addEventListener('pointermove', handlePointerMove)
-      document.addEventListener('pointerup', handlePointerUp)
-      document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none'
-    },
-    [navWidth, rightPanelWidth],
-  )
-
-  const rightPanelVisible =
-    scriptNotesOpen ||
-    characterProfilesOpen ||
-    tagsPanelOpen ||
-    locationDatabaseOpen
 
   // Yjs document & provider — stable across renders while collab is active
   const ydocRef = useRef<Y.Doc | null>(null)
@@ -1015,24 +944,10 @@ const ScreenplayEditor: React.FC = () => {
 
   // ── Touch gestures (must be after editorMainRef) ──
   const isTouch = useIsTouchDevice()
-  useSwipeEdge({
-    edge: 'left',
-    onSwipe: toggleNavigator,
-    enabled:
-      isTouch &&
-      !navigatorOpen &&
-      typeof window !== 'undefined' &&
-      window.innerWidth <= 1100,
-  })
-  useSwipeEdge({
-    edge: 'right',
-    onSwipe: toggleScriptNotes,
-    enabled: isTouch && !rightPanelVisible,
-  })
   usePinchZoom(editorMainRef, {
     currentZoom: zoomLevel,
     onZoomChange: setZoomLevel,
-    enabled: isTouch && !beatBoardOpen,
+    enabled: isTouch,
   })
 
   // 3-finger touch opens context menu on touch devices
@@ -2025,14 +1940,10 @@ const ScreenplayEditor: React.FC = () => {
         ContdCaseExtension,
         SearchExtension,
         TrackChangesExtension,
-        ...(isHistoryMode
-          ? []
-          : [
-              EnforceGuardExtension,
-              EnterHandlerExtension,
-              TabHandlerExtension,
-              ElementShortcutExtension,
-            ]),
+        EnforceGuardExtension,
+        EnterHandlerExtension,
+        TabHandlerExtension,
+        ElementShortcutExtension,
         SpellCheck,
         Grammar,
         ...pluginRegistry.getEditorExtensions(),
@@ -2047,10 +1958,10 @@ const ScreenplayEditor: React.FC = () => {
         : urlScriptId || urlCommitHash
           ? undefined
           : { type: 'doc', content: [{ type: 'action', content: [] }] },
-      editable: !isHistoryMode && !(collabMode && collabRole === 'viewer'),
+      editable: !(collabMode && collabRole === 'viewer'),
       editorProps: {
         attributes: {
-          class: `screenplay-content${isHistoryMode ? ' history-readonly' : ''}`,
+          class: 'screenplay-content',
           spellcheck: 'false',
         },
       },
@@ -2642,7 +2553,6 @@ const ScreenplayEditor: React.FC = () => {
     projectTitle: currentProject?.name,
     scriptSwitchingRef,
     isCollabGuest,
-    isHistoryMode,
   })
 
   useEffect(() => {
@@ -2923,7 +2833,7 @@ const ScreenplayEditor: React.FC = () => {
   // come back blank. TipTap schedules the destroy a tick after unmount, so the
   // document is still readable from this cleanup.
   useEffect(() => {
-    if (!editor || collabMode || isHistoryMode) return
+    if (!editor || collabMode) return
     return () => {
       if (editor.isDestroyed) return
       try {
@@ -2940,7 +2850,7 @@ const ScreenplayEditor: React.FC = () => {
         console.warn('Could not stash the open document:', err)
       }
     }
-  }, [editor, collabMode, isHistoryMode, currentProject, currentScriptId])
+  }, [editor, collabMode, currentProject, currentScriptId])
 
   // Put it back on the way in. Skipped when the URL carries script ids — that
   // load path owns the content and reads the saved version, which is newer than
@@ -2952,7 +2862,7 @@ const ScreenplayEditor: React.FC = () => {
   // script that has since been loaded from the library.
   const sessionRestoreDoneRef = useRef(false)
   useEffect(() => {
-    if (!editor || collabMode || isHistoryMode) return
+    if (!editor || collabMode) return
     if (sessionRestoreDoneRef.current) return
     sessionRestoreDoneRef.current = true
     if (urlScriptId || urlCommitHash) return
@@ -2974,7 +2884,6 @@ const ScreenplayEditor: React.FC = () => {
   }, [
     editor,
     collabMode,
-    isHistoryMode,
     urlScriptId,
     urlCommitHash,
     currentProject,
@@ -2986,7 +2895,6 @@ const ScreenplayEditor: React.FC = () => {
   // Reset the guard when the editor instance changes so we reload
   // content if TipTap recreates the editor.
   const loadedScriptRef = useRef<string | null>(null)
-  const [historyVersionLabel, setHistoryVersionLabel] = useState('')
   useEffect(() => {
     // Allow re-load for new editor instance, but NOT during collab —
     // switchCollabDocument already handles content seeding via collabInitialContent.
@@ -3009,7 +2917,7 @@ const ScreenplayEditor: React.FC = () => {
     if (loadedScriptRef.current === loadKey) return
 
     // Host switching documents during collab — redirect through switchCollabDocument
-    if (collabMode && isCollabHost && !isHistoryMode) {
+    if (collabMode && isCollabHost) {
       const isNewScript = currentScriptId && currentScriptId !== urlScriptId
       if (isNewScript) {
         loadedScriptRef.current = loadKey
@@ -3050,22 +2958,12 @@ const ScreenplayEditor: React.FC = () => {
 
         const project = await projectApi.getProject(urlProjectId)
         setCurrentProject(project)
-        setCurrentScriptId(isHistoryMode ? null : urlScriptId)
+        setCurrentScriptId(urlScriptId)
         // Loading a project-backed script means we're no longer editing an
         // imported standalone file — drop the source-file notice.
         useEditorStore.getState().setImportedSource(null)
 
-        let scriptResp
-        if (isHistoryMode && urlCommitHash) {
-          scriptResp = await api.getScriptAtVersion(
-            urlProjectId,
-            urlCommitHash,
-            urlScriptId,
-          )
-          setHistoryVersionLabel(urlCommitHash.slice(0, 7))
-        } else {
-          scriptResp = await scriptApi.getScript(urlProjectId, urlScriptId)
-        }
+        const scriptResp = await scriptApi.getScript(urlProjectId, urlScriptId)
         const content = scriptResp.content as Record<string, unknown> | null
 
         // Strip app metadata keys before feeding to ProseMirror
@@ -4551,29 +4449,7 @@ const ScreenplayEditor: React.FC = () => {
   }
 
   return (
-    <div
-      className={`app-container flex flex-col h-(--app-h) w-full overflow-hidden${isHistoryMode ? ' history-mode' : ''}`}
-    >
-      {isHistoryMode && (
-        <div className="z-4000 flex justify-center items-center gap-2.5 bg-linear-to-br from-[#b8860b] to-[#8b6914] shadow-[0_2px_8px_rgba(0,0,0,.3)] px-5 py-2.5 font-medium text-[13px] text-white tracking-[0.3px] select-none history-banner shrink-0">
-          <span className="text-base">&#128337;</span>
-          <span className="shrink-0 [&_strong]:font-mono [&_strong]:text-xs [&_strong]:bg-(--fd-input-bg) [&_strong]:py-px [&_strong]:px-1.5 [&_strong]:rounded-[3px]">
-            Viewing version <strong>{historyVersionLabel}</strong> — Read Only
-          </span>
-          <button
-            className="bg-white/15 hover:bg-white/25 ml-4 px-3.5 py-1 border border-white/30 hover:border-white/50 rounded font-medium text-white text-xs transition-all duration-150 cursor-pointer"
-            onClick={() => {
-              if (urlProjectId && urlScriptId) {
-                navigate(`/project/${urlProjectId}/edit/${urlScriptId}`)
-              } else {
-                navigate(-1)
-              }
-            }}
-          >
-            Back to Current Version
-          </button>
-        </div>
-      )}
+    <div className="app-container flex flex-col h-(--app-h) w-full overflow-hidden">
       {collabMode && (
         <div className="collab-banner">
           <span
@@ -4779,32 +4655,8 @@ const ScreenplayEditor: React.FC = () => {
         </div>
       )}
       <div className="flex flex-1 overflow-hidden editor-layout">
-        {!isHistoryMode && (
-          <SceneNavigator
-            editor={editor}
-            scrollContainer={editorMainRef.current}
-            style={{ width: navWidth, minWidth: navWidth }}
-          />
-        )}
-        {!isHistoryMode && navigatorOpen && (
-          <div
-            className="panel-resize-handle w-1 cursor-col-resize bg-(--fd-bg) shrink-0 relative z-10 hover:bg-(--fd-accent) hover:opacity-50 active:bg-(--fd-accent) active:opacity-50"
-            onPointerDown={(e) => handleResizePointerDown('left', e)}
-            style={{ touchAction: 'none' }}
-          />
-        )}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden editor-center">
           {!isHistoryMode && (
-            <IndexCards
-              editor={editor}
-              scrollContainer={editorMainRef.current}
-            />
-          )}
-          {!isHistoryMode && statisticsOpen && editor ? (
-            <ScriptStatistics editor={editor} />
-          ) : !isHistoryMode && beatBoardOpen ? (
-            <BeatBoard />
-          ) : (
             <div
               className="editor-main flex-1 overflow-y-auto overflow-x-auto bg-(--fd-bg) flex justify-center pt-[30px] pb-[60px]"
               ref={editorMainRef}
@@ -4830,7 +4682,7 @@ const ScreenplayEditor: React.FC = () => {
                   }}
                 >
                   <div
-                    className={`page${!tagsVisible ? ' tags-hidden' : ''}${!notesVisible ? ' notes-hidden' : ''}${isHistoryMode ? ' history-readonly' : ''}${sceneNumbersVisible ? ' show-scene-numbers' : ''}`}
+                    className={`page${!tagsVisible ? ' tags-hidden' : ''}${!notesVisible ? ' notes-hidden' : ''}${sceneNumbersVisible ? ' show-scene-numbers' : ''}`}
                     ref={pageRef}
                     style={{
                       fontFamily: `'${fontFamily}', 'Courier New', Courier, monospace`,
@@ -5050,38 +4902,6 @@ const ScreenplayEditor: React.FC = () => {
             </div>
           )}
         </div>
-        {!isHistoryMode && rightPanelVisible && (
-          <div
-            className="panel-resize-handle bg-(--fd-bg) w-1 cursor-col-resize  shrink-0 relative z-10 hover:bg-(--fd-accent) hover:opacity-50 active:bg-(--fd-accent) active:opacity-50"
-            onPointerDown={(e) => handleResizePointerDown('right', e)}
-            style={{ touchAction: 'none' }}
-          />
-        )}
-        {/* {!isHistoryMode && (
-          <ScriptNotes
-            editor={editor}
-            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
-          />
-        )}
-        {!isHistoryMode && (
-          <CharacterProfiles
-            editor={editor}
-            projectId={currentProject?.id || ''}
-            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
-          />
-        )}
-        {!isHistoryMode && (
-          <TagsPanel
-            editor={editor}
-            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
-          />
-        )} 
-        {!isHistoryMode && (
-          <LocationDatabase
-            editor={editor}
-            style={{ width: rightPanelWidth, minWidth: rightPanelWidth }}
-          />
-        )} */}
         {!isHistoryMode &&
           pluginRegistry
             .getPanels('right-sidebar')

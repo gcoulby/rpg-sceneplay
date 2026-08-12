@@ -35,10 +35,6 @@ interface UseToolbarArgs {
 export function useToolbar({ onOpenGoToPage }: UseToolbarArgs) {
   const editor = useEditorStore((s) => s.editor)
   const setSearchOpen = useEditorStore((s) => s.setSearchOpen)
-  const scriptNotesOpen = useEditorStore((s) => s.scriptNotesOpen)
-  const toggleScriptNotes = useEditorStore((s) => s.toggleScriptNotes)
-  const tagsPanelOpen = useEditorStore((s) => s.tagsPanelOpen)
-  const toggleTagsPanel = useEditorStore((s) => s.toggleTagsPanel)
   const activeElement = useEditorStore((s) => s.activeElement)
   const setActiveElement = useEditorStore((s) => s.setActiveElement)
   const fontFamily = useEditorStore((s) => s.fontFamily)
@@ -278,8 +274,6 @@ export function useToolbar({ onOpenGoToPage }: UseToolbarArgs) {
 
     search: { action: () => setSearchOpen(true) },
     goto: { action: onOpenGoToPage },
-    notes: { active: scriptNotesOpen, toggle: toggleScriptNotes },
-    tags: { active: tagsPanelOpen, toggle: toggleTagsPanel },
     theme: {
       active: theme,
       toggle: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
