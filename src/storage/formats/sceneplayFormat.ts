@@ -1,10 +1,10 @@
 /**
- * OpenDraft native format (.odraft) — import/export utilities.
+ * Sceneplay native format — import/export utilities.
  *
- * An .odraft file is a JSON document containing the script metadata and
- * TipTap content, designed for lossless round-tripping. It is also the format
- * automatic backups are written in, which is why fidelity matters here: a
- * snapshot that can't be fully restored is not a backup.
+ * A `.sceneplay` file is a JSON document containing the script metadata and
+ * TipTap content, designed for lossless round-tripping. `.odraft` is the same
+ * schema under the historical extension: both are read and written here, and
+ * both parse identically.
  *
  * ## Versions
  *
@@ -14,13 +14,39 @@
  * - **v2** — `content` is the full `buildSaveContent()` payload (document plus
  *   every `_`-prefixed store key), `meta` carries provenance, and `assets` may
  *   embed the images the document references. Images live outside the document
- *   as `assetId` references into `$APPDATA/assets/`, so without embedding them
- *   a restored script comes back with every image broken.
+ *   as `assetId` references, so without embedding them a restored script comes
+ *   back with every image broken.
  */
 
-import type { ScriptMeta } from '@/services/api'
+/**
+ * The metadata half of a saved script. Previously the server's `ScriptMeta`
+ * row; kept as the serializer's input shape so the exported JSON schema is
+ * unchanged. Only `title`/`author`/`color`/`page_count` are actually read.
+ */
+export interface ScriptMeta {
+  id: string
+  title: string
+  author: string
+  format: string
+  created_at: string
+  updated_at: string
+  page_count: number
+  size_bytes: number
+  color: string
+  pinned: boolean
+  sort_order: number
+  preview: string
+}
 
-export const ODRAFT_VERSION = 2
+import { saveFile } from '../fileOps'
+
+export const SCENEPLAY_VERSION = 2
+/** Historical name for the same version number — kept so downstream callers
+ *  that already import `ODRAFT_VERSION` don't have to be renamed. */
+export const ODRAFT_VERSION = SCENEPLAY_VERSION
+
+export const SCENEPLAY_EXTENSION = 'sceneplay'
+export const ODRAFT_EXTENSION = 'odraft'
 
 export type BackupKind = 'auto' | 'manual' | 'crash'
 
@@ -76,7 +102,14 @@ export interface ExportOdraftOptions {
   exportedAt?: string
 }
 
-/** Build an .odraft JSON blob from script metadata and content. */
+/** True for either native extension — `.sceneplay` going forward, `.odraft`
+ *  for files written by earlier builds. */
+export function isSceneplayFile(filename: string): boolean {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  return ext === SCENEPLAY_EXTENSION || ext === ODRAFT_EXTENSION
+}
+
+/** Build a native-format JSON blob from script metadata and content. */
 export function exportOdraft(
   meta: ScriptMeta,
   content: Record<string, unknown>,
@@ -87,15 +120,15 @@ export function exportOdraft(
   })
 }
 
-/** The .odraft JSON text. Separated from the Blob so callers that write to a
- *  file (backups) don't have to round-trip through Blob.text(). */
+/** The native-format JSON text. Separated from the Blob so callers that write
+ *  to a file don't have to round-trip through Blob.text(). */
 export function serializeOdraft(
   meta: ScriptMeta,
   content: Record<string, unknown>,
   options: ExportOdraftOptions = {},
 ): string {
   const data: OdraftFile = {
-    odraft_version: ODRAFT_VERSION,
+    odraft_version: SCENEPLAY_VERSION,
     format: 'opendraft-script',
     exported_at: options.exportedAt || new Date().toISOString(),
     meta: {
@@ -122,38 +155,51 @@ export function serializeOdraft(
   return JSON.stringify(data, null, 2)
 }
 
-/** Download a script as an .odraft file. */
+/** Download a script as an `.odraft` file. Kept for interop with older files. */
 export async function downloadOdraft(
   meta: ScriptMeta,
   content: Record<string, unknown>,
   options: ExportOdraftOptions = {},
 ): Promise<void> {
   const text = serializeOdraft(meta, content, options)
-  const filename = `${meta.title || 'Untitled'}.odraft`
-  const { saveFile } = await import('./fileOps')
+  const filename = `${meta.title || 'Untitled'}.${ODRAFT_EXTENSION}`
   await saveFile(text, filename, [
-    { name: 'OpenDraft', extensions: ['odraft'] },
+    { name: 'OpenDraft', extensions: [ODRAFT_EXTENSION] },
   ])
 }
 
-/** Parse an .odraft JSON string back into meta + content. */
+/** Download a script as a `.sceneplay` file — the native format going forward.
+ *  Byte-identical payload to `downloadOdraft`, only the extension differs. */
+export async function downloadSceneplay(
+  meta: ScriptMeta,
+  content: Record<string, unknown>,
+  options: ExportOdraftOptions = {},
+): Promise<void> {
+  const text = serializeOdraft(meta, content, options)
+  const filename = `${meta.title || 'Untitled'}.${SCENEPLAY_EXTENSION}`
+  await saveFile(text, filename, [
+    { name: 'Sceneplay', extensions: [SCENEPLAY_EXTENSION] },
+  ])
+}
+
+/** Parse native-format JSON back into meta + content. */
 export function parseOdraft(jsonText: string): ParsedOdraft {
   let data: any
   try {
     data = JSON.parse(jsonText)
   } catch {
-    throw new Error('Invalid .odraft file: not valid JSON')
+    throw new Error('Invalid .sceneplay file: not valid JSON')
   }
 
   if (data.format !== 'opendraft-script') {
-    throw new Error('Invalid .odraft file: unrecognized format')
+    throw new Error('Invalid .sceneplay file: unrecognized format')
   }
   if (typeof data.odraft_version !== 'number') {
-    throw new Error('Invalid .odraft file: missing version')
+    throw new Error('Invalid .sceneplay file: missing version')
   }
-  if (data.odraft_version > ODRAFT_VERSION) {
+  if (data.odraft_version > SCENEPLAY_VERSION) {
     throw new Error(
-      `This .odraft file was created by a newer version of OpenDraft (format v${data.odraft_version}). Update OpenDraft to open it.`,
+      `This file was created by a newer version of Sceneplay (format v${data.odraft_version}). Update Sceneplay to open it.`,
     )
   }
 
@@ -177,20 +223,20 @@ export function parseOdraft(jsonText: string): ParsedOdraft {
 }
 
 /**
- * Parse an .odraft file, falling back to accepting a bare payload.
+ * Parse a native-format file, falling back to accepting a bare payload.
  *
  * Older builds wrote crash backups as the raw `buildSaveContent()` object with
- * no envelope, which `parseOdraft` rejects — meaning OpenDraft could not open
- * its own emergency backup. Any such file already on a user's disk is
- * recoverable here: if the JSON has no envelope but looks like a ProseMirror
- * document, treat the whole object as the content.
+ * no envelope, which `parseOdraft` rejects — meaning the app could not open its
+ * own emergency backup. Any such file already on a user's disk is recoverable
+ * here: if the JSON has no envelope but looks like a ProseMirror document,
+ * treat the whole object as the content.
  */
 export function parseOdraftLoose(jsonText: string): ParsedOdraft {
   let data: any
   try {
     data = JSON.parse(jsonText)
   } catch {
-    throw new Error('Invalid .odraft file: not valid JSON')
+    throw new Error('Invalid .sceneplay file: not valid JSON')
   }
 
   if (data?.format === 'opendraft-script') return parseOdraft(jsonText)
@@ -211,5 +257,5 @@ export function parseOdraftLoose(jsonText: string): ParsedOdraft {
     }
   }
 
-  throw new Error('Invalid .odraft file: unrecognized format')
+  throw new Error('Invalid .sceneplay file: unrecognized format')
 }

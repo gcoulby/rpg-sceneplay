@@ -3,7 +3,6 @@ import type { Editor } from '@tiptap/react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useEditorStore, type NoteColor } from '@/stores/editorStore'
 import { useAssetStore } from '@/stores/assetStore'
-import { useProjectStore } from '@/stores/projectStore'
 import { getNoteColorHex } from './noteTypes'
 import ScriptNotesTab from './ScriptNotesTab'
 import GeneralNotesTab from './GeneralNotesTab'
@@ -29,8 +28,6 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ editor }) => {
   } = useEditorStore()
 
   const { assets } = useAssetStore()
-  const { currentProject } = useProjectStore()
-  const projectId = currentProject?.id ?? null
 
   const getSceneName = useCallback(
     (sceneId: string | null) => {
@@ -188,7 +185,6 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ editor }) => {
           <GeneralNotesTab
             generalNotes={generalNotes}
             assets={assets}
-            projectId={projectId}
             onAdd={handleAddGeneralNote}
             onUpdateTitle={(id, title) => updateGeneralNote(id, { title })}
             onUpdateContent={(id, content) =>
@@ -210,7 +206,6 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ editor }) => {
             onFilterChange={setNoteFilter}
             getSceneName={getSceneName}
             assets={assets}
-            projectId={projectId}
             onContentChange={(id, content) => updateNote(id, { content })}
             onColorChange={handleColorChange}
             onDelete={handleDeleteNote}

@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAssetStore } from '@/stores/assetStore'
 import type { Asset } from '@/stores/assetStore'
 import AssetViewer from './AssetViewer'
-import { api } from '@/services/api'
+import {
+  addAssetFile,
+  listAssets,
+  removeAsset,
+  setAssetTags,
+  getAssetObjectUrl,
+} from '@/storage/assetStore'
 import { showToast } from './Toast'
 
 interface AssetManagerProps {
@@ -30,8 +36,8 @@ const AssetManager: React.FC<AssetManagerProps> = ({
 
   const fetchAssets = useCallback(async () => {
     try {
-      const list = await api.listAssets(projectId)
-      setAssets(list)
+      const list = await listAssets(projectId)
+      setAssets(list as Asset[])
     } catch {
       // silently fail
     }
@@ -42,68 +48,6 @@ const AssetManager: React.FC<AssetManagerProps> = ({
       fetchAssets()
     }
   }, [embedded, assetManagerOpen, fetchAssets])
-
-  // Handle Tauri native drag-and-drop forwarded from ScreenplayEditor
-  useEffect(() => {
-    if (!embedded && !assetManagerOpen) return
-    const handler = async (e: Event) => {
-      const paths = (e as CustomEvent).detail?.paths as string[] | undefined
-      if (!paths || paths.length === 0) return
-      try {
-        const { readFile } = await import('@tauri-apps/plugin-fs')
-        setUploading(true)
-        let failed = 0
-        for (const filePath of paths) {
-          const filename = filePath.replace(/^.*[\\/]/, '') || 'file'
-          try {
-            const data = await readFile(filePath)
-            const ext = filename.split('.').pop()?.toLowerCase() || ''
-            const mimeMap: Record<string, string> = {
-              png: 'image/png',
-              jpg: 'image/jpeg',
-              jpeg: 'image/jpeg',
-              gif: 'image/gif',
-              webp: 'image/webp',
-              svg: 'image/svg+xml',
-              pdf: 'application/pdf',
-              mp3: 'audio/mpeg',
-              wav: 'audio/wav',
-              mp4: 'video/mp4',
-              webm: 'video/webm',
-              txt: 'text/plain',
-            }
-            const mime = mimeMap[ext] || 'application/octet-stream'
-            const file = new File([data], filename, { type: mime })
-            const tags = tagInput.trim()
-              ? tagInput
-                  .trim()
-                  .split(',')
-                  .map((t) => t.trim())
-                  .filter(Boolean)
-              : []
-            await api.uploadAsset(projectId, file, tags)
-          } catch {
-            failed++
-            showToast(`Failed to upload "${filename}"`, 'error')
-          }
-        }
-        setTagInput('')
-        await fetchAssets()
-        setUploading(false)
-        const succeeded = paths.length - failed
-        if (succeeded > 0) {
-          showToast(
-            `Uploaded ${succeeded} file${succeeded !== 1 ? 's' : ''} successfully`,
-            'success',
-          )
-        }
-      } catch {
-        setUploading(false)
-      }
-    }
-    window.addEventListener('tauri-asset-drop', handler)
-    return () => window.removeEventListener('tauri-asset-drop', handler)
-  }, [embedded, assetManagerOpen, projectId, tagInput, fetchAssets])
 
   const handleUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -119,7 +63,7 @@ const AssetManager: React.FC<AssetManagerProps> = ({
             .filter(Boolean)
         : []
       try {
-        await api.uploadAsset(projectId, file, tags)
+        await addAssetFile(file, { docId: projectId, tags })
       } catch (err) {
         failed++
         showToast(
@@ -143,7 +87,7 @@ const AssetManager: React.FC<AssetManagerProps> = ({
   const handleDelete = async (assetId: string) => {
     setDeletingId(assetId)
     try {
-      await api.deleteAsset(projectId, assetId)
+      await removeAsset(assetId)
       await fetchAssets()
       showToast('Asset deleted', 'success')
     } catch (err) {
@@ -156,12 +100,18 @@ const AssetManager: React.FC<AssetManagerProps> = ({
     }
   }
 
-  const handleDownload = (asset: Asset) => {
-    const url = api.getAssetUrl(projectId, asset.id, asset.filename)
+  const handleDownload = async (asset: Asset) => {
+    const url = await getAssetObjectUrl(asset.id)
+    if (!url) {
+      showToast('That file is no longer stored on this device', 'error')
+      return
+    }
     const a = document.createElement('a')
     a.href = url
     a.download = asset.original_name
     a.click()
+    // Give the download a moment to start before dropping the URL.
+    setTimeout(() => URL.revokeObjectURL(url), 2000)
   }
 
   const handleSaveTags = async (assetId: string) => {
@@ -171,7 +121,7 @@ const AssetManager: React.FC<AssetManagerProps> = ({
       .filter(Boolean)
     setSavingTagsId(assetId)
     try {
-      await api.updateAssetTags(projectId, assetId, tags)
+      await setAssetTags(assetId, tags)
       await fetchAssets()
       showToast('Tags updated', 'success')
     } catch (err) {
@@ -371,7 +321,7 @@ const AssetManager: React.FC<AssetManagerProps> = ({
                   <td className="px-2.5 py-2 w-20 whitespace-nowrap">
                     <button
                       className="bg-transparent border-none text-(--fd-text-muted) text-sm cursor-pointer px-1.5 py-0.5 rounded-[3px] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:text-(--fd-accent) enabled:hover:bg-[rgba(74,158,255,0.1)]"
-                      onClick={() => handleDownload(asset)}
+                      onClick={() => void handleDownload(asset)}
                       title="Download"
                       disabled={deletingId === asset.id}
                     >
@@ -397,7 +347,6 @@ const AssetManager: React.FC<AssetManagerProps> = ({
       {previewAsset && (
         <AssetViewer
           asset={previewAsset}
-          projectId={projectId}
           onClose={() => setPreviewAsset(null)}
         />
       )}

@@ -32,7 +32,6 @@ import {
   type BeatInfo,
   type BeatLinkPreview,
 } from '@/stores/editorStore'
-import { api } from '@/services/api'
 
 const BEAT_COLORS = [
   '',
@@ -56,8 +55,32 @@ function extractUrls(text: string): string[] {
   return matches ? [...new Set(matches)] : []
 }
 
-/* ─── Link Preview fetcher with in-memory cache ─── */
-const _previewCache = new Map<string, BeatLinkPreview | 'loading' | 'error'>()
+/**
+ * Link "previews" — now just the link itself.
+ *
+ * Rich previews needed a server to fetch the target page and read its OpenGraph
+ * tags: the browser can't do it, because the sites being linked don't send
+ * permissive CORS headers. With no server there is no local replacement, so a
+ * card is built from what the URL itself tells us — the host as the site name,
+ * the URL as the title — and nothing is fetched.
+ *
+ * Previews saved by an earlier build keep their fetched title/description/image;
+ * this only governs how new ones are created.
+ */
+
+/** URLs the user dismissed. The link stays in the description text, so without
+ *  this the effect below would put the card straight back. */
+const _dismissedPreviews = new Set<string>()
+
+function previewFromUrl(url: string): BeatLinkPreview {
+  let siteName = ''
+  try {
+    siteName = new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    /* not parseable — leave the site name blank */
+  }
+  return { url, title: '', description: '', image: '', siteName }
+}
 
 function useLinkPreviews(
   beatId: string,
@@ -69,49 +92,17 @@ function useLinkPreviews(
 
   useEffect(() => {
     if (urls.length === 0) return
-
     const existingUrls = new Set((existingPreviews || []).map((p) => p.url))
     const newUrls = urls.filter(
-      (u) => !existingUrls.has(u) && _previewCache.get(u) !== 'loading',
+      (u) => !existingUrls.has(u) && !_dismissedPreviews.has(u),
     )
-
-    if (newUrls.length === 0) {
-      const cached = urls
-        .map((u) => _previewCache.get(u))
-        .filter((v): v is BeatLinkPreview => !!v && typeof v === 'object')
-      if (
-        cached.length > 0 &&
-        cached.length > (existingPreviews || []).length
-      ) {
-        onUpdate(beatId, { linkPreviews: cached })
-      }
-      return
-    }
-
-    for (const url of newUrls) {
-      _previewCache.set(url, 'loading')
-      api
-        .fetchLinkPreview(url)
-        .then((resp) => {
-          const preview: BeatLinkPreview = {
-            url: resp.url,
-            title: resp.title,
-            description: resp.description,
-            image: resp.image,
-            siteName: resp.site_name,
-          }
-          _previewCache.set(url, preview)
-          const store = useEditorStore.getState()
-          const beat = store.beats.find((b) => b.id === beatId)
-          const current = beat?.linkPreviews || []
-          if (!current.some((p) => p.url === url)) {
-            onUpdate(beatId, { linkPreviews: [...current, preview] })
-          }
-        })
-        .catch(() => {
-          _previewCache.set(url, 'error')
-        })
-    }
+    if (newUrls.length === 0) return
+    onUpdate(beatId, {
+      linkPreviews: [
+        ...(existingPreviews || []),
+        ...newUrls.map(previewFromUrl),
+      ],
+    })
   }, [beatId, urls, existingPreviews, onUpdate])
 
   return useMemo(() => {
@@ -304,7 +295,7 @@ const BeatCardContent: React.FC<BeatCardContentProps> = ({
     (url: string) => {
       const updated = (beat.linkPreviews || []).filter((p) => p.url !== url)
       onUpdate(beat.id, { linkPreviews: updated })
-      _previewCache.set(url, 'error')
+      _dismissedPreviews.add(url)
     },
     [beat.id, beat.linkPreviews, onUpdate],
   )

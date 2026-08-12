@@ -53,10 +53,9 @@ if (typeof globalThis.sessionStorage === 'undefined') {
 }
 
 /**
- * `config.ts` reads `window.__TAURI_INTERNALS__` and `window.location.origin`
- * at module scope to decide the API base URL. Exporters reach it transitively
- * via `imageAsset`. A plain (non-Tauri) origin is the right shape for tests —
- * nothing under test makes a network call.
+ * A minimal `window` for the node test environment. Modules under test reach for
+ * it at import time (the storage layer, and the exporters transitively via
+ * `imageAsset`); nothing under test makes a network call.
  */
 if (typeof globalThis.window === 'undefined') {
   Object.defineProperty(globalThis, 'window', {

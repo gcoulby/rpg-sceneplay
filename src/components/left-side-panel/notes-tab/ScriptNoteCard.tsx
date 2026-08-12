@@ -17,7 +17,6 @@ interface ScriptNoteCardProps {
   sceneName: string | null
   isEditing: boolean
   assets: Asset[]
-  projectId: string | null
   onStartEdit: () => void
   onStopEdit: () => void
   onContentChange: (content: string) => void
@@ -33,7 +32,6 @@ const ScriptNoteCard: React.FC<ScriptNoteCardProps> = ({
   sceneName,
   isEditing,
   assets,
-  projectId,
   onStartEdit,
   onStopEdit,
   onContentChange,
@@ -208,7 +206,6 @@ const ScriptNoteCard: React.FC<ScriptNoteCardProps> = ({
             <NoteContentDisplay
               content={note.content}
               assets={assets}
-              projectId={projectId}
             />
           ) : (
             <span className="text-(--fd-text-muted) text-[11px] italic">

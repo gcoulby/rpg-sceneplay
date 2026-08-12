@@ -10,7 +10,7 @@ import {
 } from '@/stores/editorStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { useAssetStore } from '@/stores/assetStore'
-import { api } from '@/services/api'
+import { addAssetFile, listAssets, useAssetUrls } from '@/storage/assetStore'
 import { characterKey, singleLine } from '@/utils/open-draft/nodeText'
 import { showToast } from '@/components/open-draft/Toast'
 import { useDocVersion } from '../utils/useDocVersion'
@@ -49,7 +49,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
     setSelectedCharacter,
   } = useEditorStore()
 
-  const currentScriptId = useProjectStore((s) => s.currentScriptId)
+  const currentScriptId = useProjectStore((s) => s.currentDocId)
   const { assets, setAssets } = useAssetStore()
 
   const [activeTab, setActiveTab] = useState<'profiles' | 'map'>('profiles')
@@ -79,7 +79,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
   const fetchAssets = useCallback(async () => {
     if (!projectId) return
     try {
-      const list = await api.listAssets(projectId)
+      const list = await listAssets(projectId)
       setAssets(list)
     } catch (err) {
       console.warn('Failed to fetch assets:', err)
@@ -511,17 +511,36 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
     [characterProfiles],
   )
 
-  const getAssetUrl = useCallback(
-    (image: string) => {
-      if (image.startsWith('data:')) return image
-      if (!projectId) return image
-      return api.getAssetUrl(projectId, image)
-    },
-    [projectId],
-  )
   const imageAssets = useMemo(
     () => assets.filter((a) => a.mime_type.startsWith('image/')),
     [assets],
+  )
+
+  // Every asset id this panel can display — the ids on profile portraits plus
+  // everything offered by the image picker — resolved to object URLs for as long
+  // as the panel is mounted (see assetStore's lifecycle note).
+  const displayableAssetIds = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...characterProfiles
+            .flatMap((p) => p.images || [])
+            .filter(
+              (img): img is string =>
+                typeof img === 'string' && !img.startsWith('data:'),
+            ),
+          ...imageAssets.map((a) => a.id),
+        ]),
+      ),
+    [characterProfiles, imageAssets],
+  )
+  const assetUrls = useAssetUrls(displayableAssetIds)
+  const getAssetUrl = useCallback(
+    (image: string) => {
+      if (image.startsWith('data:')) return image
+      return assetUrls[image] || ''
+    },
+    [assetUrls],
   )
 
   const handleUploadImage = useCallback(
@@ -530,17 +549,15 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
       try {
         let imageValue: string
         if (projectId) {
-          const data = await api.uploadAsset(projectId, file, [
-            `character:${charName}`,
-          ])
-          const assetId = data.id || data.asset?.id
-          if (!assetId)
-            throw new Error('Upload succeeded but no asset id was returned')
-          imageValue = assetId
+          const stored = await addAssetFile(file, {
+            docId: projectId,
+            tags: [`character:${charName}`],
+          })
+          imageValue = stored.id
           await fetchAssets()
         } else {
-          // No active project — embed the image directly, same fallback
-          // TitlePageEditor uses when there's no currentProject.
+          // No document id yet — embed the image directly, the same fallback
+          // TitlePageEditor uses.
           imageValue = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader()
             reader.onload = () => resolve(reader.result as string)

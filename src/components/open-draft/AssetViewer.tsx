@@ -1,22 +1,25 @@
 import React from 'react'
 import type { Asset } from '@/stores/assetStore'
-import { api } from '@/services/api'
+import { useAssetUrl } from '@/storage/assetStore'
 
 interface AssetViewerProps {
   asset: Asset
-  projectId: string
   onClose: () => void
 }
 
-const AssetViewer: React.FC<AssetViewerProps> = ({
-  asset,
-  projectId,
-  onClose,
-}) => {
-  const assetUrl = api.getAssetUrl(projectId, asset.id, asset.filename)
+const AssetViewer: React.FC<AssetViewerProps> = ({ asset, onClose }) => {
+  // Object URL held for as long as the viewer is open, then revoked.
+  const assetUrl = useAssetUrl(asset.id)
   const mime = asset.mime_type
 
   const renderPreview = () => {
+    if (!assetUrl) {
+      return (
+        <div className="p-6 text-center text-(--fd-text-muted) text-[13px] italic">
+          Loading&hellip;
+        </div>
+      )
+    }
     if (mime.startsWith('image/')) {
       return (
         <img
@@ -27,13 +30,10 @@ const AssetViewer: React.FC<AssetViewerProps> = ({
       )
     }
     if (mime === 'application/pdf') {
-      // Use ?disposition=inline for backend URLs; asset:// protocol serves inline by default
-      const pdfUrl = assetUrl.startsWith('asset://')
-        ? assetUrl
-        : assetUrl + (assetUrl.includes('?') ? '&' : '?') + 'disposition=inline'
+      // A blob: URL serves inline, so no disposition hint is needed.
       return (
         <embed
-          src={pdfUrl}
+          src={assetUrl}
           type="application/pdf"
           className="border-none rounded w-full h-[60vh]"
           title={asset.original_name}

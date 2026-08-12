@@ -4,7 +4,6 @@ import {
   ELEMENT_LABELS,
   type BuiltInElementType,
 } from '@/stores/editorStore'
-import { useProjectStore } from '@/stores/projectStore'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import {
   computeSceneTiming,
@@ -39,7 +38,6 @@ const StatusBar: React.FC<StatusBarProps> = ({ editorDoc = null }) => {
     saveStatus,
   } = useEditorStore()
 
-  const { currentProject } = useProjectStore()
   const getActiveTemplate = useFormattingTemplateStore(
     (s) => s.getActiveTemplate,
   )
@@ -85,16 +83,6 @@ const StatusBar: React.FC<StatusBarProps> = ({ editorDoc = null }) => {
   return (
     <div className="status-bar flex items-center justify-between h-6 flex-1 shrink-0 select-none  border-t border-(--fd-border) px-3">
       <div className="flex flex-1 items-center gap-4">
-        {currentProject && (
-          <span className="text-[11px] whitespace-nowrap text-(--fd-text) font-medium">
-            {currentProject.name}
-          </span>
-        )}
-        {currentProject && (
-          <span className="text-(--fd-text-muted) text-[10px] -mx-1.5 opacity-50">
-            /
-          </span>
-        )}
         <span className="text-[11px] text-(--fd-text-muted) whitespace-nowrap">
           {documentTitle}
         </span>
