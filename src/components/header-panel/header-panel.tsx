@@ -44,6 +44,8 @@ export default function AppShell() {
   const menus = useHeaderMenus({
     onOpenStorageDialog: () =>
       useEditorStore.getState().setStoragePickerOpen(true),
+    onSwitchStorageMode: (mode) =>
+      useEditorStore.getState().setSwitchStorageModeRequest(mode),
     onOpenPageSetup: () => setPageSetupOpen(true),
     onOpenGoToPage: () => setGoToPageOpen(true),
     onOpenGrammarPanel: () => setGrammarPanelOpen(true),

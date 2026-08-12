@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { newScreenplay } from '@/actions/new-screenplay'
 import { useEditorStore } from '@/stores/editorStore'
+import { useBrowserStorageStatusStore } from '@/stores/browserStorageStatusStore'
 import { type HeaderMenuBarModel } from '@/types'
+import type { StorageMode } from '@/storage/types'
 import { handleImport, handleImportDocx } from '@/actions/file-import'
 import {
   handleExportDocx,
@@ -36,6 +38,7 @@ import {
   FaCopy,
   FaCut,
   FaEdit,
+  FaExchangeAlt,
   FaEye,
   FaFile,
   FaFileAlt,
@@ -85,6 +88,7 @@ import { showToast } from '@/actions/show-toast'
 
 interface UseHeaderMenusArgs {
   onOpenStorageDialog: () => void
+  onSwitchStorageMode: (mode: StorageMode) => void
   onOpenPageSetup: () => void
   onOpenGoToPage: () => void
   onOpenGrammarPanel: () => void
@@ -97,6 +101,7 @@ interface UseHeaderMenusArgs {
 
 export function useHeaderMenus({
   onOpenStorageDialog,
+  onSwitchStorageMode,
   onOpenPageSetup,
   onOpenGoToPage,
   onOpenGrammarPanel,
@@ -107,6 +112,7 @@ export function useHeaderMenus({
   onDiagnosticsOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
+  const activeStorageMode = useBrowserStorageStatusStore((s) => s.mode)
 
   const {
     setSpellCheckOpen,
@@ -194,6 +200,30 @@ export function useHeaderMenus({
             label: 'Open…',
             icon: FaFile,
             action: onOpenStorageDialog,
+          },
+          {
+            label: 'Switch Storage',
+            icon: FaExchangeAlt,
+            items: [
+              {
+                label: 'Browser',
+                icon: FaFile,
+                disabled: activeStorageMode === 'browser',
+                action: () => onSwitchStorageMode('browser'),
+              },
+              {
+                label: 'Disk Persistence',
+                icon: FaFile,
+                disabled: activeStorageMode === 'disk',
+                action: () => onSwitchStorageMode('disk'),
+              },
+              {
+                label: 'No Persistence',
+                icon: FaFile,
+                disabled: activeStorageMode === 'memory',
+                action: () => onSwitchStorageMode('memory'),
+              },
+            ],
           },
           { separator: true, label: '' },
           {
@@ -630,6 +660,8 @@ export function useHeaderMenus({
     [
       mod,
       onOpenStorageDialog,
+      onSwitchStorageMode,
+      activeStorageMode,
       onOpenPageSetup,
       editor,
       onOpenGoToPage,

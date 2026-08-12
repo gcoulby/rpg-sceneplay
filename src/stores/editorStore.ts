@@ -3,6 +3,7 @@ import { uuid } from '../utils/open-draft/uuid'
 import { spellChecker, PROJECT_DICT_TARGET } from '../editor/spellchecker'
 import { findLanguage, urlsFor } from '../editor/languageCatalog'
 import type { Editor } from '@tiptap/core'
+import type { StorageMode } from '@/storage/types'
 
 // ── View-state persistence helpers ──
 const VIEW_STATE_KEY = 'opendraft:viewState'
@@ -865,6 +866,11 @@ interface EditorState {
    *  first-run dialog has been dismissed. */
   storagePickerOpen: boolean
   setStoragePickerOpen: (open: boolean) => void
+  /** File → Switch Storage — requests moving the CURRENT document into a
+   *  different storage mode (unlike storagePickerOpen, which opens/browses a
+   *  different document). null when no request is pending. */
+  switchStorageModeRequest: StorageMode | null
+  setSwitchStorageModeRequest: (mode: StorageMode | null) => void
 }
 
 const BEAT_UNDO_MAX = 50
@@ -1600,4 +1606,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   storagePickerOpen: false,
   setStoragePickerOpen: (open) => set({ storagePickerOpen: open }),
+  switchStorageModeRequest: null,
+  setSwitchStorageModeRequest: (mode) =>
+    set({ switchStorageModeRequest: mode }),
 }))

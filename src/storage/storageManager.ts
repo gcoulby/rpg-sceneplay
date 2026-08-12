@@ -86,6 +86,38 @@ export async function chooseMode(
   return true
 }
 
+/** Disk Persistence's "Open Existing File" — as opposed to `chooseMode('disk',
+ *  …)`, which always creates/overwrites via `showSaveFilePicker`. */
+export async function openExistingDiskFile(): Promise<StorageDoc | null> {
+  const doc = await diskHandleProvider.open()
+  if (!doc) return null
+  activeMode = 'disk'
+  await setPersistedMode('disk')
+  return doc
+}
+
+/**
+ * "Save As"-style mode switch: acquire the new provider WITHOUT loading
+ * whatever it's already holding, so the caller can write the document
+ * that's currently open into it — as opposed to `chooseMode`, which
+ * `restoreStorageOnBoot`/the first-run dialog follow with a load that would
+ * otherwise clobber the in-progress document.
+ *
+ * `memory` needs no acquisition step at all: there's nothing to pick, it's
+ * just "stop auto-saving, hold the document in memory from here on."
+ */
+export async function switchModeKeepingDoc(
+  mode: StorageMode,
+  suggestedTitle?: string,
+): Promise<boolean> {
+  if (mode === 'memory') {
+    activeMode = 'memory'
+    await setPersistedMode('memory')
+    return true
+  }
+  return chooseMode(mode, suggestedTitle)
+}
+
 export async function reconnectDisk(): Promise<boolean> {
   const ok = await diskHandleProvider.reconnect()
   if (ok) activeMode = 'disk'

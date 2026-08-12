@@ -12,7 +12,11 @@
  */
 import React, { useCallback, useEffect, useState } from 'react'
 import type { StorageDocSummary, StorageMode } from './types'
-import { availableModes, chooseMode } from './storageManager'
+import {
+  availableModes,
+  chooseMode,
+  openExistingDiskFile,
+} from './storageManager'
 import { indexedDbProvider } from './providers/indexedDbProvider'
 import { relativeTime } from '@/utils/open-draft/relativeTime'
 
@@ -35,7 +39,7 @@ const StorageModeDialog: React.FC<StorageModeDialogProps> = ({
   suggestedTitle,
   onModeChosen,
 }) => {
-  const [view, setView] = useState<'modes' | 'browser'>('modes')
+  const [view, setView] = useState<'modes' | 'browser' | 'disk'>('modes')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [docs, setDocs] = useState<StorageDocSummary[] | null>(null)
@@ -63,15 +67,19 @@ const StorageModeDialog: React.FC<StorageModeDialogProps> = ({
   const pick = useCallback(
     async (mode: StorageMode) => {
       if (busy) return
+      if (mode === 'browser') {
+        setView('browser')
+        return
+      }
+      if (mode === 'disk') {
+        setView('disk')
+        return
+      }
       setBusy(true)
       setError(null)
       try {
         const ok = await chooseMode(mode, suggestedTitle)
         if (!ok) return // user cancelled the picker — stay on the dialog
-        if (mode === 'browser') {
-          setView('browser')
-          return
-        }
         onModeChosen(mode)
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err))
@@ -81,6 +89,36 @@ const StorageModeDialog: React.FC<StorageModeDialogProps> = ({
     },
     [busy, suggestedTitle, onModeChosen],
   )
+
+  const pickDiskNew = useCallback(async () => {
+    if (busy) return
+    setBusy(true)
+    setError(null)
+    try {
+      const ok = await chooseMode('disk', suggestedTitle)
+      if (!ok) return // user cancelled the picker — stay on the dialog
+      onModeChosen('disk')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusy(false)
+    }
+  }, [busy, suggestedTitle, onModeChosen])
+
+  const pickDiskOpen = useCallback(async () => {
+    if (busy) return
+    setBusy(true)
+    setError(null)
+    try {
+      const doc = await openExistingDiskFile()
+      if (!doc) return // user cancelled the picker — stay on the dialog
+      onModeChosen('disk')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusy(false)
+    }
+  }, [busy, onModeChosen])
 
   return (
     <div className="dialog-overlay fixed inset-x-0 top-0 z-3000 flex items-start justify-center h-(--vv-height,100dvh) px-4 pt-[5vh] pb-4 overflow-y-auto bg-black/50">
@@ -98,11 +136,45 @@ const StorageModeDialog: React.FC<StorageModeDialogProps> = ({
           <p className="text-[13px] text-(--fd-text-muted) m-0">
             {view === 'modes'
               ? 'Everything stays on this device — pick where your work is kept'
-              : 'Saved in this browser'}
+              : view === 'disk'
+                ? 'Save automatically into a file on disk'
+                : 'Saved in this browser'}
           </p>
         </div>
 
-        {view === 'modes' ? (
+        {view === 'disk' ? (
+          <>
+            <p className="mt-4 mx-6 text-xs font-semibold text-(--fd-text-muted) uppercase tracking-[0.5px]">
+              New or existing file?
+            </p>
+
+            <div className="flex flex-col gap-2 px-6 pt-3">
+              <button
+                className={OPTION_BUTTON_CLASS}
+                disabled={busy}
+                onClick={() => void pickDiskNew()}
+              >
+                <span className={OPTION_ICON_CLASS}>&#128196;</span>
+                <span className={OPTION_LABEL_CLASS}>
+                  <strong>New File</strong>
+                  <small>Create a file to save into</small>
+                </span>
+              </button>
+
+              <button
+                className={OPTION_BUTTON_CLASS}
+                disabled={busy}
+                onClick={() => void pickDiskOpen()}
+              >
+                <span className={OPTION_ICON_CLASS}>&#128193;</span>
+                <span className={OPTION_LABEL_CLASS}>
+                  <strong>Open Existing File</strong>
+                  <small>Continue saving into a .sceneplay file</small>
+                </span>
+              </button>
+            </div>
+          </>
+        ) : view === 'modes' ? (
           <>
             <p className="mt-4 mx-6 text-xs font-semibold text-(--fd-text-muted) uppercase tracking-[0.5px]">
               Where should your work be saved?

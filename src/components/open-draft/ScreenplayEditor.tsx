@@ -106,11 +106,12 @@ import { useProjectStore } from '@/stores/projectStore'
 import type { StorageDoc } from '@/storage/types'
 import {
   restoreStorageOnBoot,
-  chooseMode,
   getActiveMode,
   saveActiveDoc,
   loadActiveDoc,
+  switchModeKeepingDoc,
 } from '@/storage/storageManager'
+import type { StorageMode } from '@/storage/types'
 import { buildStorageDoc as buildStorageDocFromEditor } from '@/storage/buildStorageDoc'
 import { diskHandleProvider } from '@/storage/providers/diskHandleProvider'
 import { useStorageAutoSave } from '@/storage/useStorageAutoSave'
@@ -123,7 +124,12 @@ import AssetManager from './AssetManager'
 import WelcomeDialog, { type WelcomeChoice } from './WelcomeDialog'
 import { parseFountain } from '@/utils/open-draft/fountainParser'
 import { parseFDXFull } from '@/utils/open-draft/fdxParser'
-import { parseOdraft, downloadOdraft } from '@/storage/formats/sceneplayFormat'
+import {
+  parseOdraft,
+  downloadOdraft,
+  parseOdraftLoose,
+  isSceneplayFile,
+} from '@/storage/formats/sceneplayFormat'
 import { hydrateEditorStoresFromContent } from '@/storage/hydrateStores'
 import {
   stashSessionDoc,
@@ -2026,29 +2032,68 @@ const ScreenplayEditor: React.FC = () => {
   const setStoragePickerOpen = useEditorStore((s) => s.setStoragePickerOpen)
 
   /**
-   * "Save to a file" — switch into Disk Persistence. No dialog of our own: the
-   * browser's save picker is the dialog, and once a file is connected autosave
-   * is already writing to it, so this is a no-op when already in disk mode.
+   * Switch storage mode mid-document — the current document moves with it,
+   * same idea as "Save As" but for any target mode, not just disk. No load
+   * happens here (that would clobber what's on screen): the new provider is
+   * acquired, then what's currently open is written straight into it.
    */
-  const handleSaveAs = useCallback(async () => {
-    if (getActiveMode() === 'disk') return
-    const title = useEditorStore.getState().documentTitle
-    const ok = await chooseMode('disk', title)
-    if (!ok) return
-    useBrowserStorageStatusStore.getState().setMode('disk')
-    const doc = buildStorageDoc()
-    if (!doc) return
-    try {
-      await saveActiveDoc(doc)
-      useBrowserStorageStatusStore.getState().noteSuccess()
-      showToast('Now saving to that file automatically', 'success')
-    } catch (err) {
-      showToast(
-        `Could not write the file: ${err instanceof Error ? err.message : String(err)}`,
-        'error',
-      )
-    }
-  }, [buildStorageDoc])
+  const handleSwitchStorageMode = useCallback(
+    async (mode: StorageMode) => {
+      if (getActiveMode() === mode) return
+      const title = useEditorStore.getState().documentTitle
+      const ok = await switchModeKeepingDoc(mode, title)
+      if (!ok) return
+      useBrowserStorageStatusStore.getState().setMode(mode)
+      if (mode === 'memory') {
+        showToast(
+          'Now editing without automatic saving — use File → Export to save',
+          'info',
+        )
+        return
+      }
+      const doc = buildStorageDoc()
+      if (!doc) return
+      try {
+        await saveActiveDoc(doc)
+        useBrowserStorageStatusStore.getState().noteSuccess()
+        showToast(
+          mode === 'disk'
+            ? 'Now saving to that file automatically'
+            : 'Now saving automatically in this browser',
+          'success',
+        )
+      } catch (err) {
+        showToast(
+          `Could not switch storage: ${err instanceof Error ? err.message : String(err)}`,
+          'error',
+        )
+      }
+    },
+    [buildStorageDoc],
+  )
+
+  /** "Save to a file" — the disk-specific shorthand used by the save-failure
+   *  recovery banner below. */
+  const handleSaveAs = useCallback(
+    () => handleSwitchStorageMode('disk'),
+    [handleSwitchStorageMode],
+  )
+
+  // File → Switch Storage — consumes a pending request set from the header
+  // menu (a different component; this is the same store-flag bridge as
+  // storagePickerOpen above).
+  const switchStorageModeRequest = useEditorStore(
+    (s) => s.switchStorageModeRequest,
+  )
+  const setSwitchStorageModeRequest = useEditorStore(
+    (s) => s.setSwitchStorageModeRequest,
+  )
+  useEffect(() => {
+    if (!switchStorageModeRequest) return
+    const mode = switchStorageModeRequest
+    setSwitchStorageModeRequest(null)
+    void handleSwitchStorageMode(mode)
+  }, [switchStorageModeRequest, setSwitchStorageModeRequest, handleSwitchStorageMode])
 
   /** A mode was picked in the first-run dialog. */
   const handleStorageModeChosen = useCallback(
@@ -2324,11 +2369,40 @@ const ScreenplayEditor: React.FC = () => {
       } else if (choice === 'import') {
         if (!editor) return
         const result = await openTextFile([
-          { name: 'Screenplay', extensions: ['fountain', 'fdx', 'txt'] },
+          {
+            name: 'Screenplay',
+            extensions: ['fountain', 'fdx', 'txt', 'sceneplay', 'odraft'],
+          },
         ])
         if (!result) return
 
         const { name, content: text } = result
+
+        if (isSceneplayFile(name)) {
+          // Full document, not a plain-content import — restore everything
+          // (notes, tags, characters, layout, embedded assets) the same way
+          // opening a stored document does.
+          const parsed = parseOdraftLoose(text)
+          applyStoredDoc({
+            id: '',
+            meta: parsed.meta,
+            content: parsed.content,
+            assets: parsed.assets,
+            updatedAt: new Date().toISOString(),
+          })
+          // An imported file is a new, unsaved document — drop the id
+          // applyStoredDoc just set so the next autosave mints a fresh one
+          // instead of overwriting whatever the source file's own id was.
+          setCurrentDocId(null)
+          useEditorStore.getState().setImportedSource({
+            name,
+            format: name.toLowerCase().endsWith('.odraft')
+              ? 'OpenDraft (.odraft)'
+              : 'Sceneplay (.sceneplay)',
+          })
+          return
+        }
+
         const ext = name.split('.').pop()?.toLowerCase()
         let doc
         if (ext === 'fdx') {
@@ -2393,7 +2467,7 @@ const ScreenplayEditor: React.FC = () => {
       }
       // 'blank' — editor already has empty content, nothing to do
     },
-    [editor],
+    [editor, applyStoredDoc, setCurrentDocId],
   )
 
   // ── Drag-and-drop file import ─────────────────────────────────────────
