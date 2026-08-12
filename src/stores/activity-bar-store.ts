@@ -9,6 +9,7 @@ import {
   Users,
   NotebookTabs,
 } from 'lucide-react'
+import { create } from 'zustand'
 
 export type NavView =
   | ''
@@ -37,3 +38,13 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'characters', label: 'Characters', icon: Users },
   { id: 'index-cards', label: 'Index Cards', icon: NotebookTabs },
 ]
+
+interface ActivityBarState {
+  activeView: NavView
+  setActiveView: (view: NavView) => void
+}
+
+export const useActivityBarStore = create<ActivityBarState>((set) => ({
+  activeView: '',
+  setActiveView: (view) => set({ activeView: view }),
+}))
