@@ -5,7 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { NAV_VIEWS, type NavView } from './nav-views'
+import { NAV_VIEWS, type NavView } from '@/stores/activity-bar-store'
 import { Button } from '../ui/button'
 
 interface ActivityBarProps {
@@ -20,7 +20,6 @@ const ActivityBar: React.FC<ActivityBarProps> = ({
   const { open, setOpen } = useSidebar()
 
   const handleClick = (view: NavView) => {
-    console.log('VIEW', view)
     if (view === activeView) {
       setOpen(!open)
       onSelectView('')

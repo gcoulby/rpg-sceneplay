@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
 import ActivityBar from './ActivityBar'
-import { type NavView } from './nav-views'
 import ScenesPanel from './scenes-panel/ScenesPanel'
 import PagesPanel from './pages-panel/PagesPanel'
 
@@ -17,18 +16,21 @@ import TagsPanel from './tags-panel/TagsPanel'
 import NotesPanel from './notes-tab/NotesPanel'
 import CharacterProfilesPanel from './character-panel/CharacterProfilesPanel'
 import IndexCardsPanel from './index-card-panel/IndexCardsPanel'
+import { useActivityBarStore } from '@/stores/activity-bar-store'
 
 interface AppNavigatorProps {
   editor: Editor | null
   scrollContainer?: HTMLDivElement | null
   children: React.ReactNode
 }
+
 const AppNavigator: React.FC<AppNavigatorProps> = ({
   editor,
   scrollContainer,
   children,
 }) => {
-  const [activeView, setActiveView] = useState<NavView>('')
+  const activeView = useActivityBarStore((state) => state.activeView)
+  const setActiveView = useActivityBarStore((state) => state.setActiveView)
   const panelRef = useRef<PanelImperativeHandle>(null)
 
   useEffect(() => {

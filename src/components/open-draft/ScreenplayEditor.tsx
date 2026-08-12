@@ -4286,119 +4286,119 @@ const ScreenplayEditor: React.FC = () => {
   }, [editor])
 
   // --- Script context menu (right-click) ---
-  useEffect(() => {
-    if (!editor) return
-    const isTouchDevice = navigator.maxTouchPoints > 0
-    const handleContextMenu = (e: MouseEvent) => {
-      const editorDom = editor.view.dom
-      if (!editorDom.contains(e.target as Node)) return
-      e.preventDefault()
-      // No context menu on touch devices — use 3-finger touch instead
-      if (isTouchDevice) return
+  // useEffect(() => {
+  //   if (!editor) return
+  //   const isTouchDevice = navigator.maxTouchPoints > 0
+  //   const handleContextMenu = (e: MouseEvent) => {
+  //     const editorDom = editor.view.dom
+  //     if (!editorDom.contains(e.target as Node)) return
+  //     e.preventDefault()
+  //     // No context menu on touch devices — use 3-finger touch instead
+  //     if (isTouchDevice) return
 
-      // Move cursor to click position only if no text is selected,
-      // or if the click is outside the current selection
-      const pos = editor.view.posAtCoords({ left: e.clientX, top: e.clientY })
-      if (pos) {
-        const { from, to } = editor.state.selection
-        const clickInSelection = pos.pos >= from && pos.pos <= to && from !== to
-        if (!clickInSelection) {
-          editor.commands.setTextSelection(pos.pos)
-        }
-      }
+  //     // Move cursor to click position only if no text is selected,
+  //     // or if the click is outside the current selection
+  //     const pos = editor.view.posAtCoords({ left: e.clientX, top: e.clientY })
+  //     if (pos) {
+  //       const { from, to } = editor.state.selection
+  //       const clickInSelection = pos.pos >= from && pos.pos <= to && from !== to
+  //       if (!clickInSelection) {
+  //         editor.commands.setTextSelection(pos.pos)
+  //       }
+  //     }
 
-      // Check if clicked on a misspelled word
-      let spellInfo: {
-        word: string
-        from: number
-        to: number
-        suggestions: string[]
-      } | null = null
-      const target = e.target as HTMLElement
-      if (
-        target.classList.contains('spell-error') ||
-        target.closest('.spell-error')
-      ) {
-        const spellEl = target.classList.contains('spell-error')
-          ? target
-          : target.closest('.spell-error')
-        if (spellEl && pos) {
-          // Find the decoration range by examining the spell error text
-          const pluginState = spellCheckPluginKey.getState(editor.state) as
-            | {
-                decorations: import('@tiptap/pm/view').DecorationSet
-                enabled: boolean
-              }
-            | undefined
-          if (pluginState?.enabled) {
-            const decos = pluginState.decorations.find(pos.pos, pos.pos)
-            if (decos.length > 0) {
-              const deco = decos[0]
-              const word = editor.state.doc.textBetween(deco.from, deco.to)
-              spellInfo = {
-                word,
-                from: deco.from,
-                to: deco.to,
-                suggestions: spellChecker.suggest(word),
-              }
-            }
-          }
-        }
-      }
+  //     // Check if clicked on a misspelled word
+  //     let spellInfo: {
+  //       word: string
+  //       from: number
+  //       to: number
+  //       suggestions: string[]
+  //     } | null = null
+  //     const target = e.target as HTMLElement
+  //     if (
+  //       target.classList.contains('spell-error') ||
+  //       target.closest('.spell-error')
+  //     ) {
+  //       const spellEl = target.classList.contains('spell-error')
+  //         ? target
+  //         : target.closest('.spell-error')
+  //       if (spellEl && pos) {
+  //         // Find the decoration range by examining the spell error text
+  //         const pluginState = spellCheckPluginKey.getState(editor.state) as
+  //           | {
+  //               decorations: import('@tiptap/pm/view').DecorationSet
+  //               enabled: boolean
+  //             }
+  //           | undefined
+  //         if (pluginState?.enabled) {
+  //           const decos = pluginState.decorations.find(pos.pos, pos.pos)
+  //           if (decos.length > 0) {
+  //             const deco = decos[0]
+  //             const word = editor.state.doc.textBetween(deco.from, deco.to)
+  //             spellInfo = {
+  //               word,
+  //               from: deco.from,
+  //               to: deco.to,
+  //               suggestions: spellChecker.suggest(word),
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
 
-      // Check if clicked on a grammar issue.
-      let grammarInfo: {
-        from: number
-        to: number
-        ruleId: string
-        message: string
-        severity: 'style' | 'grammar'
-        suggestions: string[]
-      } | null = null
-      if (
-        pos &&
-        (target.classList.contains('grammar-issue') ||
-          target.closest('.grammar-issue'))
-      ) {
-        const ps = grammarPluginKey.getState(editor.state) as
-          | {
-              enabled: boolean
-              issues: import('@/plugins/registry').GrammarIssue[]
-            }
-          | undefined
-        if (ps?.enabled && Array.isArray(ps.issues)) {
-          const hit = ps.issues.find(
-            (i) => pos.pos >= i.from && pos.pos <= i.to,
-          )
-          if (hit) {
-            grammarInfo = {
-              from: hit.from,
-              to: hit.to,
-              ruleId: hit.ruleId,
-              message: hit.message,
-              severity: hit.severity,
-              suggestions: hit.suggestions ?? [],
-            }
-          }
-        }
-      }
+  //     // Check if clicked on a grammar issue.
+  //     let grammarInfo: {
+  //       from: number
+  //       to: number
+  //       ruleId: string
+  //       message: string
+  //       severity: 'style' | 'grammar'
+  //       suggestions: string[]
+  //     } | null = null
+  //     if (
+  //       pos &&
+  //       (target.classList.contains('grammar-issue') ||
+  //         target.closest('.grammar-issue'))
+  //     ) {
+  //       const ps = grammarPluginKey.getState(editor.state) as
+  //         | {
+  //             enabled: boolean
+  //             issues: import('@/plugins/registry').GrammarIssue[]
+  //           }
+  //         | undefined
+  //       if (ps?.enabled && Array.isArray(ps.issues)) {
+  //         const hit = ps.issues.find(
+  //           (i) => pos.pos >= i.from && pos.pos <= i.to,
+  //         )
+  //         if (hit) {
+  //           grammarInfo = {
+  //             from: hit.from,
+  //             to: hit.to,
+  //             ruleId: hit.ruleId,
+  //             message: hit.message,
+  //             severity: hit.severity,
+  //             suggestions: hit.suggestions ?? [],
+  //           }
+  //         }
+  //       }
+  //     }
 
-      setCtxMenuState({
-        visible: true,
-        position: { x: e.clientX, y: e.clientY },
-        spellInfo,
-        grammarInfo,
-      })
-    }
+  //     setCtxMenuState({
+  //       visible: true,
+  //       position: { x: e.clientX, y: e.clientY },
+  //       spellInfo,
+  //       grammarInfo,
+  //     })
+  //   }
 
-    // Attach to the editor's parent to catch all right-clicks in the editor area
-    const editorEl = editor.view.dom.parentElement
-    if (editorEl) {
-      editorEl.addEventListener('contextmenu', handleContextMenu)
-      return () =>
-        editorEl.removeEventListener('contextmenu', handleContextMenu)
-    }
-  }, [editor])
+  //   // Attach to the editor's parent to catch all right-clicks in the editor area
+  //   const editorEl = editor.view.dom.parentElement
+  //   if (editorEl) {
+  //     editorEl.addEventListener('contextmenu', handleContextMenu)
+  //     return () =>
+  //       editorEl.removeEventListener('contextmenu', handleContextMenu)
+  //   }
+  // }, [editor])
 
   const handleCtxMenuClose = useCallback(() => {
     setCtxMenuState((s) => ({ ...s, visible: false }))

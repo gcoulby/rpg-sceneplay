@@ -6,9 +6,10 @@ import { useEditorStore } from './stores/editorStore'
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts'
 import AppNavigator from './components/left-side-panel/AppNavigator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
-import { ChartAreaIcon, PencilLine, SquareKanban } from 'lucide-react'
+import { ChartAreaIcon, MapIcon, PencilLine, SquareKanban } from 'lucide-react'
 import BeatBoard from './components/screens/beat-board'
 import ScriptStatistics from './components/screens/analytics/ScriptStatistics'
+import { ScriptContextMenuController } from '@/components/context-menu/ScriptContextMenuController'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   useGlobalShortcuts()
@@ -26,6 +27,10 @@ function App() {
                 <PencilLine />
                 Editor
               </TabsTrigger>
+              <TabsTrigger value="map">
+                <MapIcon />
+                Map
+              </TabsTrigger>
               <TabsTrigger value="beat-board">
                 <SquareKanban />
                 Beat Board
@@ -38,6 +43,11 @@ function App() {
             <TabsContent value="editor" keepMounted>
               <div className="h-(--app-h)! w-full overflow-hidden">
                 <ScreenplayEditor />
+              </div>
+            </TabsContent>
+            <TabsContent value="map">
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                Not implemented yet
               </div>
             </TabsContent>
             <TabsContent value="beat-board">
@@ -55,6 +65,7 @@ function App() {
         </AppNavigator>
       </div>
       <Toaster />
+      <ScriptContextMenuController />
     </main>
   )
 }
