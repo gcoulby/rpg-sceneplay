@@ -592,7 +592,7 @@ export function useHeaderMenus({
         items: [
           {
             icon: FaInfoCircle,
-            label: 'About Open Draft',
+            label: 'About RPG Sceneplay',
             action: onAboutOpen,
           },
           {
