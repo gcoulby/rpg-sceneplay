@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useProjectStore } from '@/stores/projectStore'
+import { addAssetFile, useAssetUrl } from '@/storage/assetStore'
 import { useMapStore } from './useMapStore'
 import { coordKey } from './coordKey'
 import type { MapCoord, MapType } from './types'
@@ -20,8 +22,8 @@ interface MapCellDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-/** Add/edit the feature (label + notes) on a single cell. Open state is driven
- *  by `coord` being non-null, matching the click-a-cell interaction. */
+/** Add/edit the feature (label + notes + image) on a single cell. Open state
+ *  is driven by `coord` being non-null, matching the click-a-cell interaction. */
 export default function MapCellDialog({
   coord,
   mapType,
@@ -40,10 +42,35 @@ export default function MapCellDialog({
   // changes, so lazy initial state is enough — no effect needed to resync.
   const [label, setLabel] = useState(() => cell?.label ?? '')
   const [notes, setNotes] = useState(() => cell?.notes ?? '')
+  const [imageAssetId, setImageAssetId] = useState(() => cell?.imageAssetId ?? '')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageUrl = useAssetUrl(imageAssetId || null)
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setUploading(true)
+    try {
+      const docId = useProjectStore.getState().currentDocId
+      const stored = await addAssetFile(file, {
+        docId,
+        tags: ['map-cell'],
+      })
+      setImageAssetId(stored.id)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSave = () => {
     if (!coord) return
-    upsertCellFeature(coord, { label: label.trim(), notes: notes.trim() })
+    upsertCellFeature(coord, {
+      label: label.trim(),
+      notes: notes.trim(),
+      imageAssetId: imageAssetId || undefined,
+    })
     onOpenChange(false)
   }
 
@@ -81,6 +108,45 @@ export default function MapCellDialog({
               placeholder="Anything worth remembering about this location."
             />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Image</Label>
+            {imageUrl ? (
+              <div className="space-y-1.5">
+                <img
+                  src={imageUrl}
+                  alt=""
+                  className="rounded border border-border w-full h-28 object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-7"
+                  onClick={() => setImageAssetId('')}
+                >
+                  Remove Image
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs h-7"
+                disabled={uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? 'Uploading…' : 'Upload Image'}
+              </Button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+          </div>
         </div>
 
         <DialogFooter>
@@ -92,7 +158,10 @@ export default function MapCellDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!label.trim()}>
+          <Button
+            onClick={handleSave}
+            disabled={!label.trim() && !imageAssetId}
+          >
             Save
           </Button>
         </DialogFooter>

@@ -1,13 +1,23 @@
 import { create } from 'zustand'
 import { uuid } from '@/utils/open-draft/uuid'
 import { coordKey } from './coordKey'
-import type { MapCoord, MapRef, MapType, ProjectMap } from './types'
+import type { MapBackground, MapCoord, MapRef, MapType, ProjectMap } from './types'
+
+const ZOOM_MIN = 50
+const ZOOM_MAX = 300
+const ZOOM_STEP = 10
 
 interface MapState {
   /** Single map for the current project. Null until the user picks hex/grid. */
   map: ProjectMap | null
   setMap: (map: ProjectMap | null) => void
   createMap: (type: MapType) => void
+  /** Destructive: drops the current map and every location's link to it. */
+  resetMap: () => void
+  updateMapSize: (
+    updates: Partial<Pick<ProjectMap, 'gridColumns' | 'gridRows' | 'hexRadius'>>,
+  ) => void
+  setMapBackground: (background: MapBackground | null) => void
 
   /** Location mapRefs keyed by uppercased location name — locations are derived
    *  from scene headings, not stored entities, so the name is the only stable key. */
@@ -24,9 +34,15 @@ interface MapState {
   settingsOpen: boolean
   setSettingsOpen: (open: boolean) => void
 
+  zoom: number
+  setZoom: (zoom: number) => void
+  zoomIn: () => void
+  zoomOut: () => void
+  resetZoom: () => void
+
   upsertCellFeature: (
     coord: MapCoord,
-    updates: { label: string; notes: string },
+    updates: { label: string; notes: string; imageAssetId?: string },
   ) => void
   deleteCellFeature: (coord: MapCoord) => void
 }
@@ -35,6 +51,13 @@ export const useMapStore = create<MapState>((set, get) => ({
   map: null,
   setMap: (map) => set({ map }),
   createMap: (type) => set({ map: { id: uuid(), type, cells: [] } }),
+  resetMap: () => set({ map: null, locationMapRefs: {} }),
+  updateMapSize: (updates) =>
+    set((s) => (s.map ? { map: { ...s.map, ...updates } } : s)),
+  setMapBackground: (background) =>
+    set((s) =>
+      s.map ? { map: { ...s.map, background: background ?? undefined } } : s,
+    ),
 
   locationMapRefs: {},
   setLocationMapRefs: (refs) => set({ locationMapRefs: refs }),
@@ -59,21 +82,30 @@ export const useMapStore = create<MapState>((set, get) => ({
   settingsOpen: false,
   setSettingsOpen: (open) => set({ settingsOpen: open }),
 
+  zoom: 100,
+  setZoom: (zoom) =>
+    set({ zoom: Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoom)) }),
+  zoomIn: () =>
+    set((s) => ({ zoom: Math.min(ZOOM_MAX, s.zoom + ZOOM_STEP) })),
+  zoomOut: () =>
+    set((s) => ({ zoom: Math.max(ZOOM_MIN, s.zoom - ZOOM_STEP) })),
+  resetZoom: () => set({ zoom: 100 }),
+
   upsertCellFeature: (coord, updates) => {
     const map = get().map
     if (!map) return
     const key = coordKey(map.type, coord)
     const idx = map.cells.findIndex((c) => coordKey(map.type, c.coord) === key)
     const cells = [...map.cells]
-    if (idx >= 0) {
-      cells[idx] = {
-        ...cells[idx],
-        label: updates.label,
-        notes: updates.notes,
-      }
-    } else {
-      cells.push({ id: key, coord, label: updates.label, notes: updates.notes })
+    const nextCell = {
+      id: key,
+      coord,
+      label: updates.label,
+      notes: updates.notes,
+      imageAssetId: updates.imageAssetId,
     }
+    if (idx >= 0) cells[idx] = { ...cells[idx], ...nextCell }
+    else cells.push(nextCell)
     set({ map: { ...map, cells } })
   },
   deleteCellFeature: (coord) => {

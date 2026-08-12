@@ -1,8 +1,11 @@
 import type { MapCoord } from './types'
 
-/** Flat-top axial hex grid, fixed radius — no pan/zoom, the whole map always fits. */
-export const HEX_RADIUS = 5
+/** Flat-top axial hex grid — radius is configurable per map in Map Settings,
+ *  this is just the fallback for maps saved before that. */
+export const DEFAULT_HEX_RADIUS = 5
 export const HEX_SIZE = 32
+export const HEX_RADIUS_MIN = 1
+export const HEX_RADIUS_MAX = 20
 
 export function hexCellId(q: number, r: number): string {
   return `${q},${r}`
@@ -26,7 +29,7 @@ export function hexPolygonPoints(cx: number, cy: number): string {
   return points.join(' ')
 }
 
-export function generateHexCoords(radius: number = HEX_RADIUS): MapCoord[] {
+export function generateHexCoords(radius: number = DEFAULT_HEX_RADIUS): MapCoord[] {
   const coords: MapCoord[] = []
   for (let q = -radius; q <= radius; q++) {
     const r1 = Math.max(-radius, -q - radius)

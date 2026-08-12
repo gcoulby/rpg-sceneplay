@@ -245,6 +245,23 @@ export function collectAssetRefs(
     }
   }
 
+  // The project map's background image and any per-cell images.
+  const map = content._map
+  if (map && typeof map === 'object') {
+    const m = map as Record<string, unknown>
+    const background = m.background
+    if (background && typeof background === 'object') {
+      addRef(out, (background as Record<string, unknown>).assetId, undefined)
+    }
+    const cells = m.cells
+    if (Array.isArray(cells)) {
+      for (const cell of cells) {
+        const rec = cell as Record<string, unknown>
+        addRef(out, rec.imageAssetId, undefined)
+      }
+    }
+  }
+
   return Array.from(out.values())
 }
 
