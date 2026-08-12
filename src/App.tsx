@@ -6,8 +6,9 @@ import { useEditorStore } from './stores/editorStore'
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts'
 import AppNavigator from './components/left-side-panel/AppNavigator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
-import { PencilLine, SquareKanban } from 'lucide-react'
+import { ChartAreaIcon, PencilLine, SquareKanban } from 'lucide-react'
 import BeatBoard from './components/screens/beat-board'
+import ScriptStatistics from './components/screens/analytics/ScriptStatistics'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   useGlobalShortcuts()
@@ -29,8 +30,12 @@ function App() {
                 <SquareKanban />
                 Beat Board
               </TabsTrigger>
+              <TabsTrigger value="statistics">
+                <ChartAreaIcon />
+                Script Statistics
+              </TabsTrigger>
             </TabsList>
-            <TabsContent value="editor">
+            <TabsContent value="editor" keepMounted>
               <div className="h-(--app-h)! w-full overflow-hidden">
                 <ScreenplayEditor />
               </div>
@@ -38,6 +43,11 @@ function App() {
             <TabsContent value="beat-board">
               <div className="h-(--app-h)! w-full overflow-hidden">
                 <BeatBoard />
+              </div>
+            </TabsContent>
+            <TabsContent value="statistics">
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                {editor && <ScriptStatistics editor={editor} />}
               </div>
             </TabsContent>
           </Tabs>

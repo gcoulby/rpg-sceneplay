@@ -38,7 +38,6 @@ export interface BackupSchedulerOptions {
   /** Shared with auto-save: true while the editor is swapping documents. */
   scriptSwitchingRef: React.MutableRefObject<boolean>
   isCollabGuest: boolean
-  isHistoryMode: boolean
 }
 
 export function useBackupScheduler(opts: BackupSchedulerOptions): void {
@@ -79,7 +78,7 @@ export function useBackupScheduler(opts: BackupSchedulerOptions): void {
      */
     const tick = async (): Promise<boolean> => {
       const current = optsRef.current
-      if (current.isCollabGuest || current.isHistoryMode) return true
+      if (current.isCollabGuest) return true
       if (current.scriptSwitchingRef.current) return false
       if (isWritingRef.current) return false
 
