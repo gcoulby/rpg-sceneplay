@@ -88,7 +88,7 @@ const ScriptStatistics: React.FC<Props> = ({ editor }) => {
           </span>
 
           <span className="text-[11px] text-(--fd-text-muted)">
-            {timingResult.totalSeconds / 60}m runtime
+            {(timingResult.totalSeconds / 60).toFixed()}m runtime
           </span>
         </div>
         <div className="flex flex-col flex-1 gap-6 p-5">

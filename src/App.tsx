@@ -8,7 +8,7 @@ import AppNavigator from './components/left-side-panel/AppNavigator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
 import { ChartAreaIcon, PencilLine, SquareKanban } from 'lucide-react'
 import BeatBoard from './components/screens/beat-board'
-import ScriptStatistics from './components/plugins/analytics/ScriptStatistics'
+import ScriptStatistics from './components/screens/analytics/ScriptStatistics'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   useGlobalShortcuts()
