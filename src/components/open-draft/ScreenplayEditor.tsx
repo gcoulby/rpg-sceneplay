@@ -1970,11 +1970,15 @@ const ScreenplayEditor: React.FC = () => {
   useEffect(() => {
     if (!editor || storageBootedRef.current) return
     storageBootedRef.current = true
-    let cancelled = false
+    // No cancellation guard: this effect is a run-once (via the ref above),
+    // not a per-render subscription, and the editor it applies results to
+    // outlives the whole session — there's nothing to race against. Dev-only
+    // StrictMode remounts the effect but doesn't really unmount the
+    // component, so bailing out on "cancelled" here would just discard the
+    // one real boot outcome.
     ;(async () => {
       try {
         const boot = await restoreStorageOnBoot()
-        if (cancelled) return
         const status = useBrowserStorageStatusStore.getState()
         status.setMode(boot.mode)
         status.setNeedsDiskReconnect(boot.needsDiskReconnect)
@@ -1988,7 +1992,7 @@ const ScreenplayEditor: React.FC = () => {
         // welcome dialog still decides blank/sample/import.
         if (boot.mode === 'disk' && !boot.needsDiskReconnect) {
           const doc = await diskHandleProvider.load()
-          if (doc && !cancelled) {
+          if (doc) {
             applyStoredDoc(doc)
             setShowWelcome(false)
           }
@@ -1997,9 +2001,6 @@ const ScreenplayEditor: React.FC = () => {
         console.error('Storage boot failed:', err)
       }
     })()
-    return () => {
-      cancelled = true
-    }
   }, [editor, applyStoredDoc])
 
   // Autosave into whichever provider is active. Replaces the old 30s
@@ -2016,6 +2017,13 @@ const ScreenplayEditor: React.FC = () => {
   }, [editor])
 
   useStorageAutoSave({ buildDoc: buildStorageDoc, scriptSwitchingRef })
+
+  // File → Open… — the only way back to the storage/document picker once the
+  // first-run dialog has been dismissed (Browser mode otherwise has no menu
+  // path to a previously saved document). Read directly at render time rather
+  // than mirrored into local state, so there's nothing to keep in sync.
+  const storagePickerOpen = useEditorStore((s) => s.storagePickerOpen)
+  const setStoragePickerOpen = useEditorStore((s) => s.setStoragePickerOpen)
 
   /**
    * "Save to a file" — switch into Disk Persistence. No dialog of our own: the
@@ -2046,6 +2054,7 @@ const ScreenplayEditor: React.FC = () => {
   const handleStorageModeChosen = useCallback(
     async (_mode: unknown, docId?: string) => {
       setShowStorageModes(false)
+      setStoragePickerOpen(false)
       if (docId) {
         // An existing Browser document — open it and skip blank/sample/import.
         try {
@@ -2078,7 +2087,7 @@ const ScreenplayEditor: React.FC = () => {
       }
       setShowWelcome(true)
     },
-    [applyStoredDoc],
+    [applyStoredDoc, setStoragePickerOpen],
   )
 
   // --- Sync orphaned marks: runs ONCE after editor is ready, not on every doc change ---
@@ -3183,13 +3192,13 @@ const ScreenplayEditor: React.FC = () => {
         />
       )}
       {currentDocId && <AssetManager projectId={currentDocId} />}
-      {showStorageModes && (
+      {(showStorageModes || storagePickerOpen) && (
         <StorageModeDialog
           suggestedTitle={useEditorStore.getState().documentTitle}
           onModeChosen={handleStorageModeChosen}
         />
       )}
-      {!showStorageModes && showWelcome && (
+      {!showStorageModes && !storagePickerOpen && showWelcome && (
         <WelcomeDialog onChoice={handleWelcomeChoice} />
       )}
       <input

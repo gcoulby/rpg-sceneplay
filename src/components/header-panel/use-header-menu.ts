@@ -84,6 +84,7 @@ import {
 import { showToast } from '@/actions/show-toast'
 
 interface UseHeaderMenusArgs {
+  onOpenStorageDialog: () => void
   onOpenPageSetup: () => void
   onOpenGoToPage: () => void
   onOpenGrammarPanel: () => void
@@ -95,6 +96,7 @@ interface UseHeaderMenusArgs {
 }
 
 export function useHeaderMenus({
+  onOpenStorageDialog,
   onOpenPageSetup,
   onOpenGoToPage,
   onOpenGrammarPanel,
@@ -187,6 +189,11 @@ export function useHeaderMenus({
             action: () => {
               newScreenplay(editor)
             },
+          },
+          {
+            label: 'Open…',
+            icon: FaFile,
+            action: onOpenStorageDialog,
           },
           { separator: true, label: '' },
           {
@@ -622,6 +629,7 @@ export function useHeaderMenus({
     ],
     [
       mod,
+      onOpenStorageDialog,
       onOpenPageSetup,
       editor,
       onOpenGoToPage,

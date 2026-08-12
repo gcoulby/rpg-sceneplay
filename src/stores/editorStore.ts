@@ -860,6 +860,11 @@ interface EditorState {
   setPageSetupOpen: (open: boolean) => void
   scriptStatisticsOpen: boolean
   setScriptStatisticsOpen: (open: boolean) => void
+  /** File → Open… reopens the storage-mode/document picker after the initial
+   *  boot — it's the only way back to a saved Browser-mode document once the
+   *  first-run dialog has been dismissed. */
+  storagePickerOpen: boolean
+  setStoragePickerOpen: (open: boolean) => void
 }
 
 const BEAT_UNDO_MAX = 50
@@ -1592,4 +1597,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   writingSuggestionsOpen: false,
   setWritingSuggestionsOpen: (open: boolean) =>
     set({ writingSuggestionsOpen: open }),
+
+  storagePickerOpen: false,
+  setStoragePickerOpen: (open) => set({ storagePickerOpen: open }),
 }))
