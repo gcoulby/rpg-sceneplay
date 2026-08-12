@@ -13,7 +13,6 @@ interface ScriptNotesTabProps {
   onFilterChange: (filter: NoteFilter) => void
   getSceneName: (sceneId: string | null) => string | null
   assets: Asset[]
-  projectId: string | null
   onContentChange: (id: string, content: string) => void
   onColorChange: (id: string, color: NoteColor) => void
   onDelete: (id: string) => void
@@ -27,7 +26,6 @@ const ScriptNotesTab: React.FC<ScriptNotesTabProps> = ({
   onFilterChange,
   getSceneName,
   assets,
-  projectId,
   onContentChange,
   onColorChange,
   onDelete,
@@ -151,7 +149,6 @@ const ScriptNotesTab: React.FC<ScriptNotesTabProps> = ({
                 sceneName={getSceneName(note.sceneId)}
                 isEditing={editingNoteId === note.id}
                 assets={assets}
-                projectId={projectId}
                 onStartEdit={() => setEditingNoteId(note.id)}
                 onStopEdit={() =>
                   setEditingNoteId((cur) => (cur === note.id ? null : cur))

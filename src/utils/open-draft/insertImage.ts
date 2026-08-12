@@ -1,6 +1,6 @@
 import type { Editor } from '@tiptap/react'
 import { NodeSelection } from '@tiptap/pm/state'
-import { api } from '@/services/api'
+import { addAssetFile } from '@/storage/assetStore'
 import { useProjectStore } from '@/stores/projectStore'
 
 /**
@@ -31,21 +31,21 @@ export function insertImageNode(
 
 /**
  * Build screenplayImage node attrs for a chosen/pasted/dropped image file.
- * Uploads to the project's assets when a project exists (keeps the document
- * small); otherwise embeds the image as a data URL.
+ * Stores the bytes in the asset store when a document id exists (keeps the
+ * document JSON small); otherwise embeds the image as a data URL.
  */
 export async function buildImageAttrs(
   file: File,
 ): Promise<Record<string, unknown>> {
-  const currentProject = useProjectStore.getState().currentProject
-  if (currentProject) {
-    const asset = await api.uploadAsset(currentProject.id, file, [
-      'inline-image',
-    ])
+  const docId = useProjectStore.getState().currentDocId
+  if (docId) {
+    const asset = await addAssetFile(file, {
+      docId,
+      tags: ['inline-image'],
+    })
     return {
       assetId: asset.id,
-      projectId: currentProject.id,
-      filename: asset.filename ?? file.name,
+      filename: asset.original_name,
       align: 'center',
     }
   }

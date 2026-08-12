@@ -819,9 +819,9 @@ interface EditorState {
   postSaveAction: (() => void) | null
   setPostSaveAction: (action: (() => void) | null) => void
   /** If the current unsaved document was imported from an external file
-   *  (.fdx, .fountain, .docx, etc.), tracks the source filename. Used by
-   *  SaveAsDialog to clarify that saves go to OpenDraft's library rather than
-   *  writing back to the source file. Cleared on successful save. */
+   *  (.fdx, .fountain, .docx, etc.), tracks the source filename. Shown in the
+   *  UI to clarify that automatic saving does not write back to the source
+   *  file. Cleared on successful save. */
   importedSource: { name: string; format: string } | null
   setImportedSource: (src: { name: string; format: string } | null) => void
 
@@ -900,18 +900,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setActiveElement: (el) => set({ activeElement: el }),
 
   documentTitle: 'Untitled Screenplay',
-  setDocumentTitle: (title) => {
-    set({ documentTitle: title })
-    // Update native window title on desktop so macOS Window menu shows file names
-    import('../services/platform').then(({ isDesktopTauri }) => {
-      if (!isDesktopTauri()) return
-      import('@tauri-apps/api/core')
-        .then(({ invoke }) => {
-          invoke('set_window_title', { title: title || '' }).catch(() => {})
-        })
-        .catch(() => {})
-    })
-  },
+  setDocumentTitle: (title) => set({ documentTitle: title }),
   pageCount: 1,
   setPageCount: (count) => set({ pageCount: count }),
   currentPage: 1,

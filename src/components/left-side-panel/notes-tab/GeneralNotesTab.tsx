@@ -10,7 +10,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 interface GeneralNotesTabProps {
   generalNotes: GeneralNote[]
   assets: Asset[]
-  projectId: string | null
   onAdd: () => string
   onUpdateTitle: (id: string, title: string) => void
   onUpdateContent: (id: string, content: string) => void
@@ -22,7 +21,6 @@ interface GeneralNotesTabProps {
 const GeneralNotesTab: React.FC<GeneralNotesTabProps> = ({
   generalNotes,
   assets,
-  projectId,
   onAdd,
   onUpdateTitle,
   onUpdateContent,
@@ -59,7 +57,6 @@ const GeneralNotesTab: React.FC<GeneralNotesTabProps> = ({
                 note={gn}
                 isEditing={editingId === gn.id}
                 assets={assets}
-                projectId={projectId}
                 onStartEdit={() => setEditingId(gn.id)}
                 onStopEdit={() =>
                   setEditingId((cur) => (cur === gn.id ? null : cur))

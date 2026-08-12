@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Asset } from '@/stores/assetStore'
-import { api } from '@/services/api'
+import { useAssetUrls } from '@/storage/assetStore'
 import { isImageUrl, isVideoUrl, toEmbedUrl, openInBrowser } from './noteMedia'
 
 const MEDIA_EMBED_CLASS =
@@ -9,14 +9,16 @@ const MEDIA_EMBED_CLASS =
 interface NoteContentDisplayProps {
   content: string
   assets: Asset[]
-  projectId: string | null
 }
 
 const NoteContentDisplay: React.FC<NoteContentDisplayProps> = ({
   content,
   assets,
-  projectId,
 }) => {
+  // Object URLs for every asset a note could reference by @name. Resolved for
+  // the panel as a whole and released together when it unmounts.
+  const assetUrls = useAssetUrls(React.useMemo(() => assets.map((a) => a.id), [assets]))
+
   if (!content) return null
 
   const lines = content.split('\n')
@@ -66,7 +68,7 @@ const NoteContentDisplay: React.FC<NoteContentDisplayProps> = ({
         )
         if (asset) {
           const isImg = asset.mime_type.startsWith('image/')
-          const url = projectId ? api.getAssetUrl(projectId, asset.id) : '#'
+          const url = assetUrls[asset.id] || '#'
           if (isImg) {
             lineElements.push(
               <span

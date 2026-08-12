@@ -8,6 +8,7 @@ import {
   handleExportFDX,
   handleExportFountain,
   handleExportOdraft,
+  handleExportSceneplay,
   handleExportPDF,
 } from '@/actions/file-export'
 import {
@@ -243,6 +244,13 @@ export function useHeaderMenus({
                 icon: FaRegFileWord,
                 action: () => {
                   handleExportDocx(editor)
+                },
+              },
+              {
+                label: 'Sceneplay (.sceneplay)',
+                icon: FaRegFileCode,
+                action: () => {
+                  handleExportSceneplay(editor)
                 },
               },
               {

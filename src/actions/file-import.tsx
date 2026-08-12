@@ -1,14 +1,17 @@
 import { DEFAULT_TAG_CATEGORIES, useEditorStore } from '@/stores/editorStore'
 import { clearTrackChanges } from './shared'
 import type { Editor } from '@tiptap/react'
-import { openBinaryFile, openTextFile } from '@/utils/open-draft/fileOps'
+import { openBinaryFile, openTextFile } from '@/storage/fileOps'
 import { parseFDXFull } from '@/utils/open-draft/fdxParser'
-import { parseOdraft } from '@/utils/open-draft/odraftFormat'
-import { hydrateEditorStoresFromContent } from '@/utils/open-draft/hydrateStores'
+import {
+  parseOdraft,
+  isSceneplayFile,
+} from '@/storage/formats/sceneplayFormat'
+import { hydrateEditorStoresFromContent } from '@/storage/hydrateStores'
+import { unpackAssets } from '@/storage/assetStore'
 import { showToast } from '@/components/open-draft/Toast'
 import { parseFountain } from '@/utils/open-draft/fountainParser'
 import { clearEditorHistory } from '@/editor/clearHistory'
-import { useBackupStatusStore } from '@/stores/backupStatusStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { parseDocx } from '@/utils/open-draft/docxImporter'
 
@@ -30,20 +33,19 @@ function getStore(editor: Editor | null) {
 export const handleImport = async (editor: Editor | null) => {
   if (!editor) return
 
-  const { setCurrentProject, setCurrentScriptId, setScripts } =
-    useProjectStore.getState()
-
   try {
     const result = await openTextFile([
       {
         name: 'Screenplay',
-        extensions: ['fountain', 'fdx', 'odraft', 'txt'],
+        extensions: ['sceneplay', 'fountain', 'fdx', 'odraft', 'txt'],
       },
     ])
     if (!result) return
 
     const { name, content: text } = result
     const ext = name.split('.').pop()?.toLowerCase()
+    // `.sceneplay` and `.odraft` are the same schema under two extensions.
+    const isNative = isSceneplayFile(name)
 
     const store = getStore(editor)
 
@@ -89,19 +91,24 @@ export const handleImport = async (editor: Editor | null) => {
           })
         }
       }
-    } else if (ext === 'odraft') {
+    } else if (isNative) {
       try {
         const parsed = parseOdraft(text)
         doc = parsed.content
         // Restore the script's notes, tags, beats and character profiles —
-        // otherwise an imported .odraft loses everything but the text.
+        // otherwise an imported file loses everything but the text.
         hydrateEditorStoresFromContent(parsed.content)
         if (parsed.meta.title) {
           store.setDocumentTitle(parsed.meta.title)
         }
+        // Decode any embedded images back into local storage, keeping their ids
+        // so the document's `assetId` references still resolve. The document has
+        // no id until the first autosave, so the assets are stored unscoped and
+        // still resolve by id.
+        await unpackAssets(parsed.assets, null)
       } catch (parseErr) {
         showToast(
-          `Invalid .odraft file: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
+          `Invalid .${ext} file: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
           'error',
         )
         return
@@ -113,29 +120,25 @@ export const handleImport = async (editor: Editor | null) => {
     clearEditorHistory(editor)
 
     // Open as unsaved document — user can save later via Cmd+S
-    const scriptTitle =
-      ext === 'odraft'
-        ? store.documentTitle || name.replace(/\.\w+$/, '') || 'Untitled'
-        : name.replace(/\.\w+$/, '') || 'Untitled'
+    const scriptTitle = isNative
+      ? store.documentTitle || name.replace(/\.\w+$/, '') || 'Untitled'
+      : name.replace(/\.\w+$/, '') || 'Untitled'
     store.setDocumentTitle(scriptTitle)
-    setCurrentProject(null)
-    setCurrentScriptId(null)
-    setScripts([])
-    // Track that this is an imported document so Save As can warn the user
-    // that the save goes to OpenDraft's library, not back to the source file.
+    // An imported file is a new document — drop the id so the first autosave
+    // creates a fresh row rather than overwriting whatever was open.
+    useProjectStore.getState().setCurrentDocId(null)
+    // Track that this is an imported document so the UI can note that
+    // automatic saving does not write back to the source file.
+    const FORMAT_LABELS: Record<string, string> = {
+      fdx: 'Final Draft (.fdx)',
+      fountain: 'Fountain (.fountain)',
+      sceneplay: 'Sceneplay (.sceneplay)',
+      odraft: 'OpenDraft (.odraft)',
+    }
     const fmtLabel =
-      ext === 'fdx'
-        ? 'Final Draft (.fdx)'
-        : ext === 'fountain'
-          ? 'Fountain (.fountain)'
-          : ext === 'odraft'
-            ? 'OpenDraft (.odraft)'
-            : ext
-              ? `.${ext}`
-              : 'imported file'
+      (ext && FORMAT_LABELS[ext]) ||
+      (ext ? `.${ext}` : 'imported file')
     store.setImportedSource({ name, format: fmtLabel })
-    // Imported files have no library copy — snapshot immediately.
-    useBackupStatusStore.getState().noteDocumentOpened()
   } catch (err) {
     console.error('Import failed:', err)
     showToast(
@@ -147,9 +150,6 @@ export const handleImport = async (editor: Editor | null) => {
 
 export const handleImportDocx = async (editor: Editor | null) => {
   if (!editor) return
-  const { setCurrentProject, setCurrentScriptId, setScripts } =
-    useProjectStore.getState()
-
   try {
     const result = await openBinaryFile([
       { name: 'Word Document', extensions: ['docx'] },
@@ -167,9 +167,9 @@ export const handleImportDocx = async (editor: Editor | null) => {
     const scriptTitle =
       parsed.scriptTitle || name.replace(/\.\w+$/, '') || 'Untitled'
     store.setDocumentTitle(scriptTitle)
-    setCurrentProject(null)
-    setCurrentScriptId(null)
-    setScripts([])
+    // An imported file is a new document — drop the id so the first autosave
+    // creates a fresh row rather than overwriting whatever was open.
+    useProjectStore.getState().setCurrentDocId(null)
     store.setImportedSource({ name, format: 'Microsoft Word (.docx)' })
 
     if (parsed.warnings.length > 0) {

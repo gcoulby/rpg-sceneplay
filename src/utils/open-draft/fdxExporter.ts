@@ -10,6 +10,7 @@ import type {
 } from '@/stores/editorStore'
 import { CUSTOM_TYPE_TO_FDX } from './fdxParser'
 import { jsonBlockText } from './nodeText'
+import { saveFile } from '@/storage/fileOps'
 
 const NODE_TO_FDX: Record<string, string> = {
   sceneHeading: 'Scene Heading',
@@ -579,6 +580,5 @@ export async function downloadFDX(
     pageLayout,
   )
   const filename = `${title.replace(/[^a-zA-Z0-9_\- ]/g, '')}.fdx`
-  const { saveFile } = await import('./fileOps')
   await saveFile(xml, filename, [{ name: 'Final Draft', extensions: ['fdx'] }])
 }

@@ -12,11 +12,9 @@ function resetForNewScreenplay(editor: Editor) {
   clearEditorHistory(editor)
   clearSessionDoc()
 
-  const { setCurrentProject, setCurrentScriptId, setScripts } =
-    useProjectStore.getState()
-  setCurrentProject(null)
-  setCurrentScriptId(null)
-  setScripts([])
+  // A new screenplay is a new document — drop the id so the first autosave
+  // creates a fresh row instead of overwriting the one just closed.
+  useProjectStore.getState().setCurrentDocId(null)
 
   const store = useEditorStore.getState()
   store.setDocumentTitle('Untitled Screenplay')

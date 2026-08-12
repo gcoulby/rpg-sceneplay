@@ -13,7 +13,7 @@ export const toEmbedUrl = (url: string): string | null => {
   return null
 }
 
-/** Open a URL in the default browser. Uses Tauri invoke on desktop, window.open on web. */
+/** Open a URL in a new browser tab. */
 export const openInBrowser = (url: string) => {
   window.open(url, '_blank', 'noref noopenner')
 }
