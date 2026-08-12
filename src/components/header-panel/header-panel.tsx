@@ -20,7 +20,6 @@ import { HeaderPanelToolbar } from './toolbar/header-panel-toolbar'
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
   const [pageSetupOpen, setPageSetupOpen] = useState(false)
-  const [scriptStatisticsOpen, setScriptStatisticsOpen] = useState(false)
   const [grammarPanelOpen, setGrammarPanelOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [goToPageOpen, setGoToPageOpen] = useState(false)
@@ -51,7 +50,6 @@ export default function AppShell() {
     onTemplateSelectOpen: () => setTemplateSelectOpen(true),
     onAboutOpen: () => setAboutOpen(true),
     onDiagnosticsOpen: () => setDiagnosticsOpen(true),
-    onScriptStatisticsOpen: () => setScriptStatisticsOpen(true),
   })
 
   return (

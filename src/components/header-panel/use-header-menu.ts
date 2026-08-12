@@ -91,7 +91,6 @@ interface UseHeaderMenusArgs {
   onTemplateSelectOpen: () => void
   onAboutOpen: () => void
   onDiagnosticsOpen: () => void
-  onScriptStatisticsOpen: () => void
 }
 
 export function useHeaderMenus({
