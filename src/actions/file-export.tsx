@@ -1,12 +1,12 @@
 import { showToast } from '@/components/open-draft/Toast'
 import { useEditorStore } from '@/stores/editorStore'
-import { useProjectStore } from '@/stores/projectStore'
 import { downloadDocx } from '@/utils/open-draft/docxExporter'
 import { downloadFDX } from '@/utils/open-draft/fdxExporter'
 import { downloadFountain } from '@/utils/open-draft/fountainExporter'
-import { downloadOdraft } from '@/utils/open-draft/odraftFormat'
+import { downloadOdraft, downloadSceneplay } from '@/storage/formats/sceneplayFormat'
 import { exportPDF } from '@/utils/open-draft/pdfExporter'
-import { buildSaveContent } from '@/utils/open-draft/saveContent'
+import { buildSaveContent } from '@/storage/saveContent'
+import { packAssets } from '@/storage/assetStore'
 import type { Editor } from '@tiptap/react'
 
 export const handleExportFDX = async (editor: Editor | null) => {
@@ -88,7 +88,16 @@ export const handleExportDocx = async (editor: Editor | null) => {
   }
 }
 
-export const handleExportOdraft = async (editor: Editor | null) => {
+/**
+ * Shared body for the two native-format exports. `.sceneplay` and `.odraft`
+ * carry an identical payload — only the extension differs — so the only thing
+ * that varies is which download function runs.
+ */
+const exportNative = async (
+  editor: Editor | null,
+  download: typeof downloadOdraft,
+  label: string,
+) => {
   if (!editor) return
   try {
     const store = useEditorStore.getState()
@@ -113,18 +122,34 @@ export const handleExportOdraft = async (editor: Editor | null) => {
     const content = buildSaveContent(editor)
     if (!content) return
 
-    const { currentProject, currentScriptId } = useProjectStore.getState()
+    // Embed the images the document references. Without this, an exported file
+    // opened anywhere else comes back with every image broken — the assets live
+    // outside the document, as ids pointing into this browser's storage.
+    const { assets, truncated } = await packAssets(content)
 
-    await downloadOdraft(meta, content, {
-      projectId: currentProject?.id ?? null,
-      scriptId: currentScriptId ?? null,
-      projectTitle: currentProject?.name,
+    await download(meta, content, {
+      assets,
+      assetsOmitted: truncated,
     })
+    if (truncated) {
+      showToast(
+        'Exported, but some images were too large to embed — the file will show them as missing elsewhere.',
+        'info',
+      )
+    }
   } catch (err) {
-    console.error('OpenDraft export failed:', err)
+    console.error(`${label} export failed:`, err)
     showToast(
       `Export failed: ${err instanceof Error ? err.message : String(err)}`,
       'error',
     )
   }
 }
+
+/** File → Export → Sceneplay (.sceneplay) — the native format going forward. */
+export const handleExportSceneplay = (editor: Editor | null) =>
+  exportNative(editor, downloadSceneplay, 'Sceneplay')
+
+/** File → Export → OpenDraft (.odraft) — same payload, historical extension. */
+export const handleExportOdraft = (editor: Editor | null) =>
+  exportNative(editor, downloadOdraft, 'OpenDraft')

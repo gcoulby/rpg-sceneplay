@@ -4,7 +4,7 @@
  *
  * The vitest environment is `node` (no DOM), so this deliberately excludes
  * extensions that reach outside the schema:
- *   - `ScreenplayImage` pulls in `services/api` → `authedFetch` → Tauri/`window`
+ *   - `ScreenplayImage` pulls in the storage layer, which reaches for `window`
  *   - `Grammar` / `SpellCheck` pull in stores and the spellchecker singleton
  * None of them affect inline text extraction, which is what these tests cover.
  *

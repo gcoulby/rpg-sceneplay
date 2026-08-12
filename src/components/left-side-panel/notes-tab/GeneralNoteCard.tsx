@@ -12,7 +12,6 @@ interface GeneralNoteCardProps {
   note: GeneralNote
   isEditing: boolean
   assets: Asset[]
-  projectId: string | null
   onStartEdit: () => void
   onStopEdit: () => void
   onTitleChange: (title: string) => void
@@ -26,7 +25,6 @@ const GeneralNoteCard: React.FC<GeneralNoteCardProps> = ({
   note,
   isEditing,
   assets,
-  projectId,
   onStartEdit,
   onStopEdit,
   onTitleChange,
@@ -77,7 +75,7 @@ const GeneralNoteCard: React.FC<GeneralNoteCardProps> = ({
             </div>
           )}
           {note.content ? (
-            <NoteContentDisplay content={note.content} assets={assets} projectId={projectId} />
+            <NoteContentDisplay content={note.content} assets={assets} />
           ) : (
             <span className="text-(--fd-text-muted) text-[11px] italic">
               {note.title ? '' : 'Click to add note...'}

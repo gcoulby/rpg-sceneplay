@@ -1,57 +1,50 @@
-import { api } from '@/services/api'
-import { authedFetch } from '@/services/authedFetch'
+/**
+ * Turning a screenplayImage node into pixels.
+ *
+ * Images live outside the document: the node carries `{ assetId, filename }` and
+ * the bytes sit in IndexedDB (see `storage/assetStore`). A node may instead
+ * carry an inline `src` data-URL, which is used for documents that had no id
+ * yet when the image was inserted.
+ *
+ * Resolving an `assetId` mints an object URL that has to be revoked. Every
+ * function here owns that lifecycle end-to-end, so callers never hold a URL they
+ * have to remember to release.
+ */
+import { getAssetObjectUrl } from '@/storage/assetStore'
 
-interface ImageNodeAttrs {
+export interface ImageNodeAttrs {
   assetId?: string | null
+  /** Legacy: the server-side project an asset belonged to. Ignored now. */
   projectId?: string | null
   filename?: string | null
   src?: string | null
 }
 
-/** Resolve a screenplayImage node's attrs to a loadable URL (asset or data-URL). */
-export function resolveImageUrl(attrs: ImageNodeAttrs): string | null {
-  if (attrs.assetId && attrs.projectId) {
-    try {
-      return api.getAssetUrl(
-        attrs.projectId,
-        attrs.assetId,
-        attrs.filename ?? undefined,
-      )
-    } catch {
-      /* fall through */
-    }
-  }
-  return attrs.src ?? null
-}
-
-/** Fetch a (possibly auth-protected) asset URL as a blob object URL. data:/blob:
- *  URLs are returned as-is. The asset endpoint requires a token, which authedFetch
- *  supplies; an <img src> alone would 401. */
-async function toLoadableUrl(
-  url: string,
+/**
+ * Resolve a node's attrs to a loadable URL plus the matching cleanup.
+ *
+ * `revoke()` is a no-op for a data-URL and releases the object URL for a stored
+ * asset, so callers can always call it unconditionally.
+ */
+export async function resolveImageUrl(
+  attrs: ImageNodeAttrs,
 ): Promise<{ url: string; revoke: () => void } | null> {
-  if (url.startsWith('data:') || url.startsWith('blob:'))
-    return { url, revoke: () => {} }
-  try {
-    const res = await authedFetch(url)
-    if (!res.ok) return null
-    const blob = await res.blob()
-    const obj = URL.createObjectURL(blob)
-    return { url: obj, revoke: () => URL.revokeObjectURL(obj) }
-  } catch {
-    return null
+  if (attrs.assetId) {
+    const url = await getAssetObjectUrl(attrs.assetId)
+    if (url) return { url, revoke: () => URL.revokeObjectURL(url) }
   }
+  if (attrs.src) return { url: attrs.src, revoke: () => {} }
+  return null
 }
 
 /**
- * Load an image URL into a PNG data URL plus natural dimensions, via a canvas.
- * Fetches with auth so protected asset URLs work; the blob is same-origin so the
- * canvas isn't tainted.
+ * Load an image into a PNG data URL plus natural dimensions, via a canvas.
+ * The blob is same-origin so the canvas isn't tainted.
  */
 export async function loadImageData(
-  url: string,
+  attrs: ImageNodeAttrs,
 ): Promise<{ dataUrl: string; width: number; height: number } | null> {
-  const loadable = await toLoadableUrl(url)
+  const loadable = await resolveImageUrl(attrs)
   if (!loadable) return null
   try {
     const img = new Image()
@@ -80,9 +73,9 @@ export async function loadImageData(
 
 /** Raw PNG bytes (for DOCX ImageRun) plus natural dimensions. */
 export async function loadImageBytes(
-  url: string,
+  attrs: ImageNodeAttrs,
 ): Promise<{ data: Uint8Array; width: number; height: number } | null> {
-  const d = await loadImageData(url)
+  const d = await loadImageData(attrs)
   if (!d) return null
   const b64 = d.dataUrl.split(',')[1] || ''
   const bin = atob(b64)

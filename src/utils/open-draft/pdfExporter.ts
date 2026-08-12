@@ -8,9 +8,10 @@ import {
   resolveMoresContds,
 } from '@/stores/editorStore'
 import type { PageLayout, HeaderFooterContent } from '@/stores/editorStore'
-import { resolveImageUrl, loadImageData } from './imageAsset'
+import { loadImageData } from './imageAsset'
 import { jsonBlockRuns } from './nodeText'
 import { wordWrapRuns, type WrapRun } from './wrapText'
+import { saveFile } from '@/storage/fileOps'
 
 // --- Constants matching pagination.ts ---
 
@@ -208,7 +209,6 @@ export async function exportPDF(
   layout: PageLayout,
   options?: PDFExportOptions,
 ): Promise<void> {
-  const { saveFile } = await import('./fileOps')
   const filename = `${sanitizeFilename(title)}.pdf`
 
   if (!doc || !doc.content || doc.content.length === 0) {
@@ -321,9 +321,7 @@ export async function exportPDF(
     for (let k = 0; k < titleItems.length; k++) {
       const it = titleItems[k]
       if (it.kind !== 'image') continue
-      const url = resolveImageUrl(it.attrs || {})
-      if (!url) continue
-      const d = await loadImageData(url)
+      const d = await loadImageData(it.attrs || {})
       if (!d) continue
       const widthPx = Number(it.attrs?.width) || 0
       let wPt =
@@ -406,9 +404,7 @@ export async function exportPDF(
   for (let k = 0; k < nodes.length; k++) {
     if (nodes[k].typeName !== 'screenplayImage') continue
     const attrs = (nodes[k].attrs || {}) as Record<string, unknown>
-    const url = resolveImageUrl(attrs)
-    if (!url) continue
-    const d = await loadImageData(url)
+    const d = await loadImageData(attrs)
     if (!d) continue
     const widthPx = Number(attrs.width) || 0
     let wPt =

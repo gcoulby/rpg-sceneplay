@@ -2,8 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
-import { initStorage } from './services/api'
-import { initDemoInfo } from './services/demoInfo'
 import './index.css'
 import { SidebarProvider } from './components/ui/sidebar.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
@@ -38,26 +36,6 @@ async function init() {
   }
   window.addEventListener('resize', updateViewportHeight)
   updateViewportHeight()
-
-  // On Tauri (desktop + mobile) this swaps the HTTP api with local SQLite.
-  // On web it is a no-op — the Python backend is used as-is.
-  // initStorage() handles its own timeout and fallback internally —
-  // no additional wrapping needed here.
-  await initStorage()
-
-  // Fetch the backend's demo-mode flag once so CollabLoginDialog/SettingsPage
-  // can decide whether to show demo warnings. Non-blocking best-effort.
-  initDemoInfo().catch(() => {})
-
-  // Set initial native window title on desktop (for macOS Window menu)
-  import('./services/platform').then(({ isDesktopTauri }) => {
-    if (!isDesktopTauri()) return
-    import('@tauri-apps/api/core').then(({ invoke }) => {
-      invoke('set_window_title', { title: 'Untitled Screenplay' }).catch(
-        () => {},
-      )
-    })
-  })
 
   // Clear the loading-timeout diagnostic (and remove overlay if it fired early)
   if ((window as any)._renderTimeout)

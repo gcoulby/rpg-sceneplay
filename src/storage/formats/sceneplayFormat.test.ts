@@ -4,9 +4,9 @@ import {
   parseOdraft,
   parseOdraftLoose,
   ODRAFT_VERSION,
-} from './odraftFormat'
-import { SAVE_METADATA_KEYS } from './saveContent'
-import type { ScriptMeta } from '@/services/api'
+} from './sceneplayFormat'
+import { SAVE_METADATA_KEYS } from '../saveContent'
+import type { ScriptMeta } from './sceneplayFormat'
 
 const META: ScriptMeta = {
   id: 's1',

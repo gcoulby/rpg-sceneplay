@@ -1,45 +1,38 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { resolveImageUrl } from '@/utils/open-draft/imageAsset'
-import { authedFetch } from '@/services/authedFetch'
-import { isTauri } from '@/services/platform'
 
 interface TpImageThumbProps {
   attrs: Record<string, unknown>
   align?: boolean
 }
 
-/** Small auth-aware image thumbnail for the title-page preview/list. Uses the
- *  same blob-fetch path as the editor NodeView so it loads reliably. */
+/** Small image thumbnail for the title-page preview/list. Resolves the node's
+ *  asset the same way the editor NodeView does, and releases the object URL
+ *  when the thumbnail goes away. */
 export default function TpImageThumb({ attrs, align }: TpImageThumbProps) {
-  const resolved = useMemo(() => resolveImageUrl(attrs) || '', [attrs])
-  const directUrl = useMemo(
-    () => (resolved.startsWith('data:') || isTauri() ? resolved : ''),
-    [resolved],
-  )
-  const [blobUrl, setBlobUrl] = useState('')
+  const [url, setUrl] = useState('')
+  const assetId = attrs.assetId as string | null | undefined
+  const src = attrs.src as string | null | undefined
 
   useEffect(() => {
-    if (!resolved || resolved.startsWith('data:') || isTauri()) return
-    let obj: string | null = null
+    let revoke: (() => void) | null = null
     let cancelled = false
-    ;(async () => {
-      try {
-        const res = await authedFetch(resolved)
-        if (!res.ok) return
-        const blob = await res.blob()
-        obj = URL.createObjectURL(blob)
-        if (!cancelled) setBlobUrl(obj)
-      } catch {
-        /* ignore */
+    void (async () => {
+      const loadable = await resolveImageUrl({ assetId, src })
+      if (!loadable) return
+      if (cancelled) {
+        loadable.revoke()
+        return
       }
+      revoke = loadable.revoke
+      setUrl(loadable.url)
     })()
     return () => {
       cancelled = true
-      if (obj) URL.revokeObjectURL(obj)
+      revoke?.()
     }
-  }, [resolved])
+  }, [assetId, src])
 
-  const url = directUrl || blobUrl
   if (!url) return null
 
   const a = align ? (attrs.align as string) || 'center' : 'center'

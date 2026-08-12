@@ -7,37 +7,36 @@ describe('sessionDoc', () => {
   beforeEach(() => clearSessionDoc());
 
   it('returns nothing when nothing was stashed', () => {
-    expect(takeSessionDoc(null, null)).toBeNull();
+    expect(takeSessionDoc(null)).toBeNull();
   });
 
   it('round-trips a document for the same context', () => {
-    stashSessionDoc({ doc: DOC, projectId: 'p1', scriptId: 's1' });
-    expect(takeSessionDoc('p1', 's1')).toEqual(DOC);
+    stashSessionDoc({ doc: DOC, docId: 'd1' });
+    expect(takeSessionDoc('d1')).toEqual(DOC);
   });
 
-  it('handles a document that belongs to no project', () => {
-    stashSessionDoc({ doc: DOC, projectId: null, scriptId: null });
-    expect(takeSessionDoc(null, null)).toEqual(DOC);
+  it('handles an unsaved document with no id', () => {
+    stashSessionDoc({ doc: DOC, docId: null });
+    expect(takeSessionDoc(null)).toEqual(DOC);
   });
 
   it('consumes the stash so it cannot be restored twice', () => {
-    stashSessionDoc({ doc: DOC, projectId: 'p1', scriptId: 's1' });
-    expect(takeSessionDoc('p1', 's1')).toEqual(DOC);
-    expect(takeSessionDoc('p1', 's1')).toBeNull();
+    stashSessionDoc({ doc: DOC, docId: 'd1' });
+    expect(takeSessionDoc('d1')).toEqual(DOC);
+    expect(takeSessionDoc('d1')).toBeNull();
   });
 
-  it('refuses a different script, and leaves the stash intact', () => {
-    stashSessionDoc({ doc: DOC, projectId: 'p1', scriptId: 's1' });
-    expect(takeSessionDoc('p1', 's2')).toBeNull();
-    expect(takeSessionDoc('p2', 's1')).toBeNull();
-    expect(takeSessionDoc(null, null)).toBeNull();
-    // Still there for the context it came from.
-    expect(takeSessionDoc('p1', 's1')).toEqual(DOC);
+  it('refuses a different document, and leaves the stash intact', () => {
+    stashSessionDoc({ doc: DOC, docId: 'd1' });
+    expect(takeSessionDoc('d2')).toBeNull();
+    expect(takeSessionDoc(null)).toBeNull();
+    // Still there for the document it came from.
+    expect(takeSessionDoc('d1')).toEqual(DOC);
   });
 
   it('forgets the document when cleared', () => {
-    stashSessionDoc({ doc: DOC, projectId: null, scriptId: null });
+    stashSessionDoc({ doc: DOC, docId: null });
     clearSessionDoc();
-    expect(takeSessionDoc(null, null)).toBeNull();
+    expect(takeSessionDoc(null)).toBeNull();
   });
 });

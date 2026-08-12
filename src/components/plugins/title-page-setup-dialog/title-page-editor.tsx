@@ -21,7 +21,7 @@ import {
 import { useEditorStore } from '@/stores/editorStore'
 import { useProjectStore } from '@/stores/projectStore'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
-import { api } from '@/services/api'
+import { addAssetFile } from '@/storage/assetStore'
 import { showToast } from '@/actions/show-toast'
 import TpImageThumb from './title-page-image-thumb'
 import {
@@ -102,16 +102,16 @@ export default function TitlePageEditor({
       const placement = imagePosition
       try {
         if (!editor) throw new Error('Editor is not initialised')
-        const currentProject = useProjectStore.getState().currentProject
+        const docId = useProjectStore.getState().currentDocId
         let attrs: Record<string, unknown>
-        if (currentProject) {
-          const asset = await api.uploadAsset(currentProject.id, file, [
-            'title-page-image',
-          ])
+        if (docId) {
+          const asset = await addAssetFile(file, {
+            docId,
+            tags: ['title-page-image'],
+          })
           attrs = {
             assetId: asset.id,
-            projectId: currentProject.id,
-            filename: asset.filename ?? file.name,
+            filename: asset.original_name,
             align: 'center',
           }
         } else {

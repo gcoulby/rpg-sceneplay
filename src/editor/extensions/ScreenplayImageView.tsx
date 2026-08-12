@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
-import { api } from '../../services/api';
-import { authedFetch } from '../../services/authedFetch';
-import { isTauri } from '../../services/platform';
+import { getAssetObjectUrl } from '../../storage/assetStore';
 
 const LINE_HEIGHT_PX = 16; // 12pt — matches pagination LINE_HEIGHT_PT
 
@@ -13,39 +11,32 @@ const LINE_HEIGHT_PX = 16; // 12pt — matches pagination LINE_HEIGHT_PT
  * paginator can roughly account for the image.
  */
 export const ScreenplayImageView: React.FC<NodeViewProps> = ({ node, updateAttributes, selected, editor }) => {
-  const { assetId, projectId, src, filename, width, align } = node.attrs as {
-    assetId: string | null; projectId: string | null; src: string | null;
-    filename: string | null; width: number | null; align: string;
+  const { assetId, src, width, align } = node.attrs as {
+    assetId: string | null; src: string | null;
+    width: number | null; align: string;
   };
   const imgRef = useRef<HTMLImageElement>(null);
   const [blobUrl, setBlobUrl] = useState<string>('');
 
-  // The asset endpoint requires auth, which an <img> can't send — so on the web
-  // we fetch the bytes with the token and use a blob URL. Direct cases (data URL,
-  // or Tauri's asset://) are resolved synchronously below.
+  // Images live outside the document as `assetId` references into IndexedDB, so
+  // resolve the blob to an object URL. A stored data: URL in `src` needs no
+  // lookup and is used directly below.
   useEffect(() => {
-    if (src || !assetId || !projectId || isTauri()) return;
+    if (src || !assetId) return;
     let objectUrl: string | null = null;
     let cancelled = false;
     (async () => {
       try {
-        const res = await authedFetch(api.getAssetUrl(projectId, assetId, filename || undefined));
-        if (!res.ok) return;
-        const blob = await res.blob();
-        objectUrl = URL.createObjectURL(blob);
-        if (!cancelled) setBlobUrl(objectUrl);
+        const resolved = await getAssetObjectUrl(assetId);
+        if (!resolved) return;
+        objectUrl = resolved;
+        if (!cancelled) setBlobUrl(resolved);
       } catch { /* leave blank on failure */ }
     })();
     return () => { cancelled = true; if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [assetId, projectId, filename, src]);
+  }, [assetId, src]);
 
-  const url = useMemo(() => {
-    if (src) return src;
-    if (assetId && projectId && isTauri()) {
-      try { return api.getAssetUrl(projectId, assetId, filename || undefined); } catch { return ''; }
-    }
-    return blobUrl;
-  }, [src, assetId, projectId, filename, blobUrl]);
+  const url = useMemo(() => src || blobUrl, [src, blobUrl]);
 
   // On first load (no stored width), default to the natural width capped to the
   // content column, and record the rendered height in lines for pagination.

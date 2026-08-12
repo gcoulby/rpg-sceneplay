@@ -10,7 +10,7 @@
  * doc (e.g. `_notes`, `_tagCategories`) do NOT count as body text.
  *
  * Used by both the editor's auto-save guards (ScreenplayEditor.tsx) and the
- * storage-layer guard (local-storage.ts). Kept free of any framework/Tauri
+ * storage-layer guard. Kept free of any framework
  * imports so it is trivially unit-testable.
  */
 export function docHasAnyText(doc: unknown): boolean {

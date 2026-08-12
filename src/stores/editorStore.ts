@@ -3,6 +3,7 @@ import { uuid } from '../utils/open-draft/uuid'
 import { spellChecker, PROJECT_DICT_TARGET } from '../editor/spellchecker'
 import { findLanguage, urlsFor } from '../editor/languageCatalog'
 import type { Editor } from '@tiptap/core'
+import type { StorageMode } from '@/storage/types'
 
 // ── View-state persistence helpers ──
 const VIEW_STATE_KEY = 'opendraft:viewState'
@@ -819,9 +820,9 @@ interface EditorState {
   postSaveAction: (() => void) | null
   setPostSaveAction: (action: (() => void) | null) => void
   /** If the current unsaved document was imported from an external file
-   *  (.fdx, .fountain, .docx, etc.), tracks the source filename. Used by
-   *  SaveAsDialog to clarify that saves go to OpenDraft's library rather than
-   *  writing back to the source file. Cleared on successful save. */
+   *  (.fdx, .fountain, .docx, etc.), tracks the source filename. Shown in the
+   *  UI to clarify that automatic saving does not write back to the source
+   *  file. Cleared on successful save. */
   importedSource: { name: string; format: string } | null
   setImportedSource: (src: { name: string; format: string } | null) => void
 
@@ -860,6 +861,16 @@ interface EditorState {
   setPageSetupOpen: (open: boolean) => void
   scriptStatisticsOpen: boolean
   setScriptStatisticsOpen: (open: boolean) => void
+  /** File → Open… reopens the storage-mode/document picker after the initial
+   *  boot — it's the only way back to a saved Browser-mode document once the
+   *  first-run dialog has been dismissed. */
+  storagePickerOpen: boolean
+  setStoragePickerOpen: (open: boolean) => void
+  /** File → Switch Storage — requests moving the CURRENT document into a
+   *  different storage mode (unlike storagePickerOpen, which opens/browses a
+   *  different document). null when no request is pending. */
+  switchStorageModeRequest: StorageMode | null
+  setSwitchStorageModeRequest: (mode: StorageMode | null) => void
 }
 
 const BEAT_UNDO_MAX = 50
@@ -900,18 +911,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setActiveElement: (el) => set({ activeElement: el }),
 
   documentTitle: 'Untitled Screenplay',
-  setDocumentTitle: (title) => {
-    set({ documentTitle: title })
-    // Update native window title on desktop so macOS Window menu shows file names
-    import('../services/platform').then(({ isDesktopTauri }) => {
-      if (!isDesktopTauri()) return
-      import('@tauri-apps/api/core')
-        .then(({ invoke }) => {
-          invoke('set_window_title', { title: title || '' }).catch(() => {})
-        })
-        .catch(() => {})
-    })
-  },
+  setDocumentTitle: (title) => set({ documentTitle: title }),
   pageCount: 1,
   setPageCount: (count) => set({ pageCount: count }),
   currentPage: 1,
@@ -1603,4 +1603,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   writingSuggestionsOpen: false,
   setWritingSuggestionsOpen: (open: boolean) =>
     set({ writingSuggestionsOpen: open }),
+
+  storagePickerOpen: false,
+  setStoragePickerOpen: (open) => set({ storagePickerOpen: open }),
+  switchStorageModeRequest: null,
+  setSwitchStorageModeRequest: (mode) =>
+    set({ switchStorageModeRequest: mode }),
 }))

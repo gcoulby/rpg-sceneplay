@@ -14,7 +14,11 @@ import { ONE_HOUR_DRAMA_TEMPLATE, ONE_HOUR_DRAMA_ID } from './templates/oneHourD
 import { STAGE_PLAY_TEMPLATE, STAGE_PLAY_ID } from './templates/stagePlayTemplate';
 import { RADIO_PLAY_TEMPLATE, RADIO_PLAY_ID } from './templates/radioPlayTemplate';
 import { AV_SCRIPT_TEMPLATE, AV_SCRIPT_ID } from './templates/avScriptTemplate';
-import { api } from '../services/api';
+import {
+  listTemplates,
+  putTemplate,
+  deleteTemplate as deleteStoredTemplate,
+} from '@/storage/templateStore';
 
 /** Built-in system templates, keyed by id. Read-only — never persisted. */
 export const SYSTEM_TEMPLATES: Record<string, FormattingTemplate> = {
@@ -106,10 +110,11 @@ export const useFormattingTemplateStore = create<FormattingTemplateState>((set, 
 
   loadTemplates: async () => {
     try {
-      const templates = await (api as any).listFormattingTemplates();
+      const templates = await listTemplates();
       set({ templates, loaded: true });
     } catch {
-      // Storage not available yet or no templates
+      // IndexedDB unavailable (private mode, blocked upgrade) — carry on with
+      // just the system templates rather than blocking the editor.
       set({ loaded: true });
     }
   },
@@ -128,8 +133,8 @@ export const useFormattingTemplateStore = create<FormattingTemplateState>((set, 
       updatedAt: ts,
     };
     try {
-      await (api as any).createFormattingTemplate(template);
-    } catch { /* web fallback: store in memory */ }
+      await putTemplate(template);
+    } catch { /* not persisted; still usable this session */ }
     set((s) => ({ templates: [...s.templates, template] }));
     return template;
   },
@@ -144,7 +149,7 @@ export const useFormattingTemplateStore = create<FormattingTemplateState>((set, 
     const updated = get().templates.find((t) => t.id === id);
     if (updated) {
       try {
-        await (api as any).updateFormattingTemplate(id, updated);
+        await putTemplate(updated);
       } catch { /* ignore */ }
     }
   },
@@ -155,7 +160,7 @@ export const useFormattingTemplateStore = create<FormattingTemplateState>((set, 
       activeTemplateId: s.activeTemplateId === id ? null : s.activeTemplateId,
     }));
     try {
-      await (api as any).deleteFormattingTemplate(id);
+      await deleteStoredTemplate(id);
     } catch { /* ignore */ }
   },
 

@@ -1,13 +1,16 @@
 import { useMemo } from 'react'
 import { newScreenplay } from '@/actions/new-screenplay'
 import { useEditorStore } from '@/stores/editorStore'
+import { useBrowserStorageStatusStore } from '@/stores/browserStorageStatusStore'
 import { type HeaderMenuBarModel } from '@/types'
+import type { StorageMode } from '@/storage/types'
 import { handleImport, handleImportDocx } from '@/actions/file-import'
 import {
   handleExportDocx,
   handleExportFDX,
   handleExportFountain,
   handleExportOdraft,
+  handleExportSceneplay,
   handleExportPDF,
 } from '@/actions/file-export'
 import {
@@ -35,6 +38,7 @@ import {
   FaCopy,
   FaCut,
   FaEdit,
+  FaExchangeAlt,
   FaEye,
   FaFile,
   FaFileAlt,
@@ -83,6 +87,8 @@ import {
 import { showToast } from '@/actions/show-toast'
 
 interface UseHeaderMenusArgs {
+  onOpenStorageDialog: () => void
+  onSwitchStorageMode: (mode: StorageMode) => void
   onOpenPageSetup: () => void
   onOpenGoToPage: () => void
   onOpenGrammarPanel: () => void
@@ -94,6 +100,8 @@ interface UseHeaderMenusArgs {
 }
 
 export function useHeaderMenus({
+  onOpenStorageDialog,
+  onSwitchStorageMode,
   onOpenPageSetup,
   onOpenGoToPage,
   onOpenGrammarPanel,
@@ -104,6 +112,7 @@ export function useHeaderMenus({
   onDiagnosticsOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
+  const activeStorageMode = useBrowserStorageStatusStore((s) => s.mode)
 
   const {
     setSpellCheckOpen,
@@ -187,6 +196,35 @@ export function useHeaderMenus({
               newScreenplay(editor)
             },
           },
+          {
+            label: 'Open…',
+            icon: FaFile,
+            action: onOpenStorageDialog,
+          },
+          {
+            label: 'Switch Storage',
+            icon: FaExchangeAlt,
+            items: [
+              {
+                label: 'Browser',
+                icon: FaFile,
+                disabled: activeStorageMode === 'browser',
+                action: () => onSwitchStorageMode('browser'),
+              },
+              {
+                label: 'Disk Persistence',
+                icon: FaFile,
+                disabled: activeStorageMode === 'disk',
+                action: () => onSwitchStorageMode('disk'),
+              },
+              {
+                label: 'No Persistence',
+                icon: FaFile,
+                disabled: activeStorageMode === 'memory',
+                action: () => onSwitchStorageMode('memory'),
+              },
+            ],
+          },
           { separator: true, label: '' },
           {
             label: 'Import',
@@ -243,6 +281,13 @@ export function useHeaderMenus({
                 icon: FaRegFileWord,
                 action: () => {
                   handleExportDocx(editor)
+                },
+              },
+              {
+                label: 'Sceneplay (.sceneplay)',
+                icon: FaRegFileCode,
+                action: () => {
+                  handleExportSceneplay(editor)
                 },
               },
               {
@@ -614,6 +659,9 @@ export function useHeaderMenus({
     ],
     [
       mod,
+      onOpenStorageDialog,
+      onSwitchStorageMode,
+      activeStorageMode,
       onOpenPageSetup,
       editor,
       onOpenGoToPage,

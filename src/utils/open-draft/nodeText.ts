@@ -17,7 +17,7 @@
  *   `leafText` patch in `editor/extensions/ScreenplayHardBreak.ts`. The only
  *   helper needed here is `blockContentRange`, for position safety.
  *
- * Kept free of framework and Tauri imports (only a type-only ProseMirror
+ * Kept free of framework imports (only a type-only ProseMirror
  * import) so it stays trivially unit-testable in the node test environment,
  * matching the convention in `docText.ts`.
  */

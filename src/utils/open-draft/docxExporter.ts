@@ -25,7 +25,7 @@ import {
   ImageRun,
 } from 'docx'
 import type { ISectionOptions } from 'docx'
-import { resolveImageUrl, loadImageBytes } from './imageAsset'
+import { loadImageBytes } from './imageAsset'
 import { jsonBlockRuns, jsonBlockText, type Run } from './nodeText'
 import type { JSONContent } from '@tiptap/react'
 import {
@@ -33,6 +33,7 @@ import {
   DEFAULT_FOOTER_CONTENT,
 } from '@/stores/editorStore'
 import type { PageLayout, HeaderFooterContent } from '@/stores/editorStore'
+import { saveFile } from '@/storage/fileOps'
 
 // --- Layout constants (mirror pdfExporter.ts) ---
 
@@ -422,7 +423,6 @@ export async function exportDocx(
   layout: PageLayout,
   options?: DocxExportOptions,
 ): Promise<void> {
-  const { saveFile } = await import('./fileOps')
   const filename = `${sanitizeFilename(title)}.docx`
 
   // Separate the title-page region (the leading run of titlePage + image nodes)
@@ -497,9 +497,7 @@ export async function exportDocx(
   for (let i = 0; i < bodyNodes.length; i++) {
     if (bodyNodes[i].type !== 'screenplayImage') continue
     const attrs = (bodyNodes[i].attrs || {}) as Record<string, unknown>
-    const url = resolveImageUrl(attrs)
-    if (!url) continue
-    const b = await loadImageBytes(url)
+    const b = await loadImageBytes(attrs)
     if (!b) continue
     const widthPx = Number(attrs.width) || 0
     let w =
@@ -526,9 +524,7 @@ export async function exportDocx(
     const node = titleRegionNodes[i]
     if (node.type !== 'screenplayImage') continue
     const attrs = (node.attrs || {}) as Record<string, unknown>
-    const url = resolveImageUrl(attrs)
-    if (!url) continue
-    const b = await loadImageBytes(url)
+    const b = await loadImageBytes(attrs)
     if (!b) continue
     const widthPx = Number(attrs.width) || 0
     let w =
