@@ -4,12 +4,14 @@ import { coordKey } from './coordKey'
 import {
   DEFAULT_GRID_COLUMNS,
   DEFAULT_GRID_ROWS,
+  GRID_CELL_GAP,
   GRID_CELL_SIZE,
   generateGridCoords,
   gridToPixel,
 } from './gridMath'
 import {
   DEFAULT_HEX_RADIUS,
+  HEX_DRAW_SIZE,
   HEX_SIZE,
   generateHexCoords,
   axialToPixel,
@@ -90,17 +92,17 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
               {cell?.imageAssetId && (
                 <MapCellImage
                   assetId={cell.imageAssetId}
-                  x={x}
-                  y={y}
-                  width={GRID_CELL_SIZE}
-                  height={GRID_CELL_SIZE}
+                  x={x + GRID_CELL_GAP / 2}
+                  y={y + GRID_CELL_GAP / 2}
+                  width={GRID_CELL_SIZE - GRID_CELL_GAP}
+                  height={GRID_CELL_SIZE - GRID_CELL_GAP}
                 />
               )}
               <rect
-                x={x}
-                y={y}
-                width={GRID_CELL_SIZE}
-                height={GRID_CELL_SIZE}
+                x={x + GRID_CELL_GAP / 2}
+                y={y + GRID_CELL_GAP / 2}
+                width={GRID_CELL_SIZE - GRID_CELL_GAP}
+                height={GRID_CELL_SIZE - GRID_CELL_GAP}
                 className={cellClass(!!cell?.imageAssetId, !!cell)}
                 strokeWidth={1}
               />
@@ -178,10 +180,10 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
                   </clipPath>
                   <MapCellImage
                     assetId={cell.imageAssetId}
-                    x={x - HEX_SIZE}
-                    y={y - HEX_SIZE}
-                    width={HEX_SIZE * 2}
-                    height={HEX_SIZE * 2}
+                    x={x - HEX_DRAW_SIZE}
+                    y={y - HEX_DRAW_SIZE}
+                    width={HEX_DRAW_SIZE * 2}
+                    height={HEX_DRAW_SIZE * 2}
                     clipPathId={clipId}
                   />
                 </>
@@ -189,8 +191,8 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
               <polygon
                 points={hexPolygonPoints(x, y)}
                 className={cellClass(!!cell?.imageAssetId, !!cell)}
-                style={!cell && ringColor ? { stroke: ringColor } : undefined}
-                strokeWidth={1}
+                style={ringColor ? { stroke: ringColor } : undefined}
+                strokeWidth={2}
               />
               {icon && (
                 <icon.Icon

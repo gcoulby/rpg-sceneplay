@@ -6,6 +6,10 @@ export const DEFAULT_HEX_RADIUS = 5
 export const HEX_SIZE = 32
 export const HEX_RADIUS_MIN = 1
 export const HEX_RADIUS_MAX = 20
+/** Hexes are drawn smaller than their pitch (axialToPixel spacing) so a gap
+ *  shows between neighbors — otherwise adjacent hexes share an edge and
+ *  whichever one paints last "wins" that edge's color. */
+export const HEX_DRAW_SIZE = HEX_SIZE * 0.9
 
 export function hexCellId(q: number, r: number): string {
   return `${q},${r}`
@@ -18,12 +22,12 @@ export function axialToPixel(q: number, r: number): { x: number; y: number } {
 }
 
 /** SVG polygon `points` string for a flat-top hex centered at (cx, cy). */
-export function hexPolygonPoints(cx: number, cy: number): string {
+export function hexPolygonPoints(cx: number, cy: number, size: number = HEX_DRAW_SIZE): string {
   const points: string[] = []
   for (let i = 0; i < 6; i++) {
     const angle = (Math.PI / 180) * (60 * i)
     points.push(
-      `${cx + HEX_SIZE * Math.cos(angle)},${cy + HEX_SIZE * Math.sin(angle)}`,
+      `${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`,
     )
   }
   return points.join(' ')

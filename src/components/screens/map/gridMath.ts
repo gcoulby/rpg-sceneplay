@@ -7,6 +7,9 @@ export const DEFAULT_GRID_ROWS = 12
 export const GRID_CELL_SIZE = 48
 export const GRID_SIZE_MIN = 3
 export const GRID_SIZE_MAX = 40
+/** Gap left between neighboring cells so borders don't touch, matching the
+ *  hex grid's spaced look. */
+export const GRID_CELL_GAP = 4
 
 export function gridCellId(x: number, y: number): string {
   return `${x},${y}`

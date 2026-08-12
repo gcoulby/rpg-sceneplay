@@ -154,11 +154,20 @@ export const useMapStore = create<MapState>((set, get) => ({
     const map = get().map
     if (!map) return
     const key = coordKey(map.type, coord)
-    set({
-      map: {
-        ...map,
-        cells: map.cells.filter((c) => coordKey(map.type, c.coord) !== key),
-      },
+    set((s) => {
+      const locationMapRefs = { ...s.locationMapRefs }
+      for (const [name, ref] of Object.entries(locationMapRefs)) {
+        if (ref.mapId === map.id && coordKey(map.type, ref.coord) === key) {
+          delete locationMapRefs[name]
+        }
+      }
+      return {
+        map: {
+          ...map,
+          cells: map.cells.filter((c) => coordKey(map.type, c.coord) !== key),
+        },
+        locationMapRefs,
+      }
     })
   },
 }))

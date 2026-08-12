@@ -35,11 +35,26 @@ export default function MapCellDialog({
   const map = useMapStore((s) => s.map)
   const upsertCellFeature = useMapStore((s) => s.upsertCellFeature)
   const deleteCellFeature = useMapStore((s) => s.deleteCellFeature)
+  const locationMapRefs = useMapStore((s) => s.locationMapRefs)
+  const removeLocationMapRef = useMapStore((s) => s.removeLocationMapRef)
 
   const cell =
     coord && map
       ? map.cells.find((c) => coordKey(mapType, c.coord) === coordKey(mapType, coord))
       : undefined
+
+  // Locations placed on this specific cell — a feature can be linked to more
+  // than one scene heading that shares the same location name.
+  const linkedLocations =
+    coord && map
+      ? Object.entries(locationMapRefs)
+          .filter(
+            ([, ref]) =>
+              ref.mapId === map.id &&
+              coordKey(mapType, ref.coord) === coordKey(mapType, coord),
+          )
+          .map(([name]) => name)
+      : []
 
   // The component is remounted (via `key` in MapScreen) whenever the target
   // cell changes, so lazy initial state is enough — no effect needed to resync.
@@ -127,6 +142,29 @@ export default function MapCellDialog({
               placeholder="Anything worth remembering about this location."
             />
           </div>
+          {linkedLocations.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Locations</Label>
+              <div className="flex flex-wrap gap-1">
+                {linkedLocations.map((name) => (
+                  <span
+                    key={name}
+                    className="inline-flex items-center gap-1 bg-accent/50 px-1.5 py-0.5 rounded text-[11px]"
+                  >
+                    {name}
+                    <button
+                      type="button"
+                      title="Unlink location"
+                      className="text-muted-foreground hover:text-foreground"
+                      onClick={() => removeLocationMapRef(name)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-xs">Icon</Label>
             <MapIconPicker value={icon} onChange={setIcon} />

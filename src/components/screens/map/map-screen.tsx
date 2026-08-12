@@ -8,6 +8,7 @@ import MapSettingsDialog from './MapSettingsDialog'
 import MapBackgroundImage from './MapBackgroundImage'
 import { coordKey } from './coordKey'
 import type { MapCoord } from './types'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 export const MapScreen = () => {
   const map = useMapStore((s) => s.map)
@@ -20,7 +21,10 @@ export const MapScreen = () => {
   const resetZoom = useMapStore((s) => s.resetZoom)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [selectedCoord, setSelectedCoord] = useState<MapCoord | null>(null)
-  const [anchorPoint, setAnchorPoint] = useState<{ x: number; y: number } | null>(null)
+  const [anchorPoint, setAnchorPoint] = useState<{
+    x: number
+    y: number
+  } | null>(null)
 
   const handleCellClick = (coord: MapCoord, event: React.MouseEvent) => {
     if (!map) return
@@ -70,7 +74,7 @@ export const MapScreen = () => {
           </Button>
           <button
             type="button"
-            className="w-11 text-xs text-muted-foreground hover:text-foreground text-center"
+            className="w-11 text-muted-foreground hover:text-foreground text-xs text-center"
             onClick={resetZoom}
           >
             {zoom}%
@@ -88,7 +92,7 @@ export const MapScreen = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="px-2 h-7 ml-auto"
+          className="ml-auto px-2 h-7"
           onClick={() => setSettingsOpen(true)}
         >
           <Settings className="size-3.5" />
@@ -114,23 +118,24 @@ export const MapScreen = () => {
         </div>
       )}
 
-      <div
-        className="relative flex flex-1 justify-center items-start p-4 overflow-auto"
-        onWheel={handleWheel}
-      >
+      <div className="relative flex-1 min-h-0">
         {map.ambientBackground && (
           <div className="absolute inset-0 pointer-events-none">
             <MapBackgroundImage background={map.ambientBackground} />
           </div>
         )}
-        <div
-          style={{
-            transform: `scale(${zoom / 100})`,
-            transformOrigin: 'top center',
-          }}
-        >
-          <MapCanvas map={map} onCellClick={handleCellClick} />
-        </div>
+        <ScrollArea className="relative w-full h-full" onWheel={handleWheel}>
+          <div className="flex justify-center items-start p-4">
+            <div
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: 'top center',
+              }}
+            >
+              <MapCanvas map={map} onCellClick={handleCellClick} />
+            </div>
+          </div>
+        </ScrollArea>
       </div>
 
       <MapCellDialog
