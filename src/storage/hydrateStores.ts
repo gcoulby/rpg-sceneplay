@@ -20,6 +20,8 @@ import {
   DEFAULT_PAGE_LAYOUT,
 } from '@/stores/editorStore'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
+import { useMapStore } from '@/components/screens/map/useMapStore'
+import type { ProjectMap, MapRef } from '@/components/screens/map/types'
 import { hasSaveMetadata } from './saveContent'
 
 /**
@@ -83,6 +85,12 @@ export function hydrateEditorStoresFromContent(
       console.warn('[import] could not apply template', c._templateId, err)
     }
   }
+
+  const mapStore = useMapStore.getState()
+  mapStore.setMap(parseAttr<ProjectMap | null>(c._map, null))
+  mapStore.setLocationMapRefs(
+    parseAttr<Record<string, MapRef>>(c._locationMapRefs, {}),
+  )
 
   return true
 }

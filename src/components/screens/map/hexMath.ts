@@ -1,0 +1,39 @@
+import type { MapCoord } from './types'
+
+/** Flat-top axial hex grid, fixed radius — no pan/zoom, the whole map always fits. */
+export const HEX_RADIUS = 5
+export const HEX_SIZE = 32
+
+export function hexCellId(q: number, r: number): string {
+  return `${q},${r}`
+}
+
+export function axialToPixel(q: number, r: number): { x: number; y: number } {
+  const x = HEX_SIZE * 1.5 * q
+  const y = HEX_SIZE * (Math.sqrt(3) / 2) * q + HEX_SIZE * Math.sqrt(3) * r
+  return { x, y }
+}
+
+/** SVG polygon `points` string for a flat-top hex centered at (cx, cy). */
+export function hexPolygonPoints(cx: number, cy: number): string {
+  const points: string[] = []
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 180) * (60 * i)
+    points.push(
+      `${cx + HEX_SIZE * Math.cos(angle)},${cy + HEX_SIZE * Math.sin(angle)}`,
+    )
+  }
+  return points.join(' ')
+}
+
+export function generateHexCoords(radius: number = HEX_RADIUS): MapCoord[] {
+  const coords: MapCoord[] = []
+  for (let q = -radius; q <= radius; q++) {
+    const r1 = Math.max(-radius, -q - radius)
+    const r2 = Math.min(radius, -q + radius)
+    for (let r = r1; r <= r2; r++) {
+      coords.push({ q, r })
+    }
+  }
+  return coords
+}

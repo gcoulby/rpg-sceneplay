@@ -55,6 +55,8 @@ import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
 import Highlight from '@tiptap/extension-highlight'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
+import { useMapStore } from '@/components/screens/map/useMapStore'
+import type { ProjectMap, MapRef } from '@/components/screens/map/types'
 import {
   generateTemplateCss,
   injectTemplateCss,
@@ -1812,6 +1814,8 @@ const ScreenplayEditor: React.FC = () => {
         store.setBeats([])
         store.setBeatColumns([])
         store.setPageLayout({ ...DEFAULT_PAGE_LAYOUT })
+        useMapStore.getState().setMap(null)
+        useMapStore.getState().setLocationMapRefs({})
 
         const parseAttr = (val: unknown): unknown[] => {
           if (typeof val === 'string') {
@@ -1952,6 +1956,18 @@ const ScreenplayEditor: React.FC = () => {
               ...(c._pageLayout as Record<string, unknown>),
             })
           }
+          // Restore the project map and location→cell links
+          const mapStore = useMapStore.getState()
+          mapStore.setMap(
+            c._map && typeof c._map === 'object'
+              ? (c._map as ProjectMap)
+              : null,
+          )
+          mapStore.setLocationMapRefs(
+            c._locationMapRefs && typeof c._locationMapRefs === 'object'
+              ? (c._locationMapRefs as Record<string, MapRef>)
+              : {},
+          )
         }
 
         setCurrentDocId(doc.id)

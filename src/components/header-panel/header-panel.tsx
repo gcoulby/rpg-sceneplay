@@ -16,6 +16,7 @@ import AboutDialog from '../plugins/about/about-dialog'
 import DiagnosticsDialog from '../plugins/diagnostics/diagnostics-dialog'
 import { HeaderPanelMenuBar } from './header-panel-menubar'
 import { HeaderPanelToolbar } from './toolbar/header-panel-toolbar'
+import MapSettingsDialog from '@/components/screens/map/MapSettingsDialog'
 
 export default function AppShell() {
   const editor = useEditorStore((s) => s.editor)
@@ -29,6 +30,7 @@ export default function AppShell() {
 
   const [templateSelectOpen, setTemplateSelectOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
+  const [mapSettingsOpen, setMapSettingsOpen] = useState(false)
 
   const goToPage = useEditorStore((s) => s.goToPage)
 
@@ -54,6 +56,7 @@ export default function AppShell() {
     onTemplateSelectOpen: () => setTemplateSelectOpen(true),
     onAboutOpen: () => setAboutOpen(true),
     onDiagnosticsOpen: () => setDiagnosticsOpen(true),
+    onOpenMapSettings: () => setMapSettingsOpen(true),
   })
 
   return (
@@ -107,6 +110,10 @@ export default function AppShell() {
       <DiagnosticsDialog
         open={diagnosticsOpen}
         onOpenChange={setDiagnosticsOpen}
+      />
+      <MapSettingsDialog
+        open={mapSettingsOpen}
+        onOpenChange={setMapSettingsOpen}
       />
     </header>
   )
