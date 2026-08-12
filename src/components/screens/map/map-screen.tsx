@@ -5,6 +5,7 @@ import { useMapStore } from './useMapStore'
 import MapCanvas from './MapCanvas'
 import MapCellDialog from './MapCellDialog'
 import MapSettingsDialog from './MapSettingsDialog'
+import MapBackgroundImage from './MapBackgroundImage'
 import { coordKey } from './coordKey'
 import type { MapCoord } from './types'
 
@@ -12,22 +13,31 @@ export const MapScreen = () => {
   const map = useMapStore((s) => s.map)
   const pendingLocationLink = useMapStore((s) => s.pendingLocationLink)
   const setPendingLocationLink = useMapStore((s) => s.setPendingLocationLink)
-  const setLocationMapRef = useMapStore((s) => s.setLocationMapRef)
+  const linkLocationToCell = useMapStore((s) => s.linkLocationToCell)
   const zoom = useMapStore((s) => s.zoom)
   const zoomIn = useMapStore((s) => s.zoomIn)
   const zoomOut = useMapStore((s) => s.zoomOut)
   const resetZoom = useMapStore((s) => s.resetZoom)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [selectedCoord, setSelectedCoord] = useState<MapCoord | null>(null)
+  const [anchorPoint, setAnchorPoint] = useState<{ x: number; y: number } | null>(null)
 
-  const handleCellClick = (coord: MapCoord) => {
+  const handleCellClick = (coord: MapCoord, event: React.MouseEvent) => {
     if (!map) return
     if (pendingLocationLink) {
-      setLocationMapRef(pendingLocationLink, { mapId: map.id, coord })
+      linkLocationToCell(pendingLocationLink, coord)
       setPendingLocationLink(null)
       return
     }
+    setAnchorPoint({ x: event.clientX, y: event.clientY })
     setSelectedCoord(coord)
+  }
+
+  const handleWheel = (event: React.WheelEvent) => {
+    if (!event.ctrlKey && !event.metaKey) return
+    event.preventDefault()
+    if (event.deltaY < 0) zoomIn()
+    else zoomOut()
   }
 
   if (!map) {
@@ -104,7 +114,15 @@ export const MapScreen = () => {
         </div>
       )}
 
-      <div className="flex flex-1 justify-center items-start p-4 overflow-auto">
+      <div
+        className="relative flex flex-1 justify-center items-start p-4 overflow-auto"
+        onWheel={handleWheel}
+      >
+        {map.ambientBackground && (
+          <div className="absolute inset-0 pointer-events-none">
+            <MapBackgroundImage background={map.ambientBackground} />
+          </div>
+        )}
         <div
           style={{
             transform: `scale(${zoom / 100})`,
@@ -118,6 +136,7 @@ export const MapScreen = () => {
       <MapCellDialog
         key={selectedCoord ? coordKey(map.type, selectedCoord) : 'closed'}
         coord={selectedCoord}
+        anchorPoint={anchorPoint}
         mapType={map.type}
         onOpenChange={(open) => {
           if (!open) setSelectedCoord(null)

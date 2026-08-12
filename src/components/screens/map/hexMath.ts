@@ -29,6 +29,11 @@ export function hexPolygonPoints(cx: number, cy: number): string {
   return points.join(' ')
 }
 
+/** Ring distance from the center hex (0 = center), for ring-based border colors. */
+export function hexRing(q: number, r: number): number {
+  return (Math.abs(q) + Math.abs(r) + Math.abs(q + r)) / 2
+}
+
 export function generateHexCoords(radius: number = DEFAULT_HEX_RADIUS): MapCoord[] {
   const coords: MapCoord[] = []
   for (let q = -radius; q <= radius; q++) {

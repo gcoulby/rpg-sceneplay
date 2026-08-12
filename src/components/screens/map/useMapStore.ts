@@ -18,6 +18,10 @@ interface MapState {
     updates: Partial<Pick<ProjectMap, 'gridColumns' | 'gridRows' | 'hexRadius'>>,
   ) => void
   setMapBackground: (background: MapBackground | null) => void
+  setAmbientBackground: (background: MapBackground | null) => void
+  /** Hex only — border color for a ring of hexes. Empty string clears it back
+   *  to the default border. */
+  setRingColor: (ring: number, color: string) => void
 
   /** Location mapRefs keyed by uppercased location name — locations are derived
    *  from scene headings, not stored entities, so the name is the only stable key. */
@@ -25,6 +29,10 @@ interface MapState {
   setLocationMapRefs: (refs: Record<string, MapRef>) => void
   setLocationMapRef: (locationName: string, ref: MapRef) => void
   removeLocationMapRef: (locationName: string) => void
+  /** Links a location to a cell and, when that cell has no feature yet, fills
+   *  it in with the location's name so "Add to Map" produces a real map
+   *  feature instead of just a marker dot. */
+  linkLocationToCell: (locationName: string, coord: MapCoord) => void
 
   /** When set, the map canvas is in "pick a cell" mode for this location name
    *  instead of opening the feature editor on click. */
@@ -42,7 +50,12 @@ interface MapState {
 
   upsertCellFeature: (
     coord: MapCoord,
-    updates: { label: string; notes: string; imageAssetId?: string },
+    updates: {
+      label: string
+      notes: string
+      imageAssetId?: string
+      icon?: string
+    },
   ) => void
   deleteCellFeature: (coord: MapCoord) => void
 }
@@ -58,6 +71,19 @@ export const useMapStore = create<MapState>((set, get) => ({
     set((s) =>
       s.map ? { map: { ...s.map, background: background ?? undefined } } : s,
     ),
+  setAmbientBackground: (background) =>
+    set((s) =>
+      s.map
+        ? { map: { ...s.map, ambientBackground: background ?? undefined } }
+        : s,
+    ),
+  setRingColor: (ring, color) =>
+    set((s) => {
+      if (!s.map) return s
+      const next = [...(s.map.ringColors ?? [])]
+      next[ring] = color
+      return { map: { ...s.map, ringColors: next } }
+    }),
 
   locationMapRefs: {},
   setLocationMapRefs: (refs) => set({ locationMapRefs: refs }),
@@ -74,6 +100,21 @@ export const useMapStore = create<MapState>((set, get) => ({
       delete next[locationName.toUpperCase()]
       return { locationMapRefs: next }
     }),
+  linkLocationToCell: (locationName, coord) => {
+    const map = get().map
+    if (!map) return
+    set((s) => ({
+      locationMapRefs: {
+        ...s.locationMapRefs,
+        [locationName.toUpperCase()]: { mapId: map.id, coord },
+      },
+    }))
+    const key = coordKey(map.type, coord)
+    const hasFeature = map.cells.some((c) => coordKey(map.type, c.coord) === key)
+    if (!hasFeature) {
+      get().upsertCellFeature(coord, { label: locationName, notes: '' })
+    }
+  },
 
   pendingLocationLink: null,
   setPendingLocationLink: (locationName) =>
@@ -103,6 +144,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       label: updates.label,
       notes: updates.notes,
       imageAssetId: updates.imageAssetId,
+      icon: updates.icon,
     }
     if (idx >= 0) cells[idx] = { ...cells[idx], ...nextCell }
     else cells.push(nextCell)

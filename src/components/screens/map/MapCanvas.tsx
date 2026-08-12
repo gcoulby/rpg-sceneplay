@@ -14,14 +14,16 @@ import {
   generateHexCoords,
   axialToPixel,
   hexPolygonPoints,
+  hexRing,
 } from './hexMath'
 import MapBackgroundImage from './MapBackgroundImage'
 import MapCellImage from './MapCellImage'
-import type { MapCoord, ProjectMap } from './types'
+import { MAP_ICONS_BY_KEY } from './mapIcons'
+import type { MapCell, MapCoord, ProjectMap } from './types'
 
 interface MapCanvasProps {
   map: ProjectMap
-  onCellClick: (coord: MapCoord) => void
+  onCellClick: (coord: MapCoord, event: React.MouseEvent) => void
 }
 
 /** Renders a hex or grid map and reports cell clicks — coordinate math lives
@@ -31,7 +33,7 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
   const pendingLocationLink = useMapStore((s) => s.pendingLocationLink)
 
   const cellsByKey = useMemo(() => {
-    const m = new Map<string, (typeof map.cells)[number]>()
+    const m = new Map<string, MapCell>()
     for (const cell of map.cells) m.set(coordKey(map.type, cell.coord), cell)
     return m
   }, [map])
@@ -75,10 +77,14 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
           const { x, y } = gridToPixel(coord.x ?? 0, coord.y ?? 0)
           const cell = cellsByKey.get(key)
           const linkedLocations = locationsByKey.get(key)
+          const icon = cell?.icon ? MAP_ICONS_BY_KEY[cell.icon] : undefined
+          const cx = x + GRID_CELL_SIZE / 2
+          const iconY = cell?.label ? y + 15 : y + GRID_CELL_SIZE / 2
+          const labelY = icon ? y + 39 : y + GRID_CELL_SIZE / 2
           return (
             <g
               key={key}
-              onClick={() => onCellClick(coord)}
+              onClick={(e) => onCellClick(coord, e)}
               className="cursor-pointer"
             >
               {cell?.imageAssetId && (
@@ -98,10 +104,18 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
                 className={cellClass(!!cell?.imageAssetId, !!cell)}
                 strokeWidth={1}
               />
+              {icon && (
+                <icon.Icon
+                  x={cx - 9}
+                  y={iconY - 9}
+                  size={18}
+                  className="fill-foreground pointer-events-none"
+                />
+              )}
               {cell?.label && (
                 <text
-                  x={x + GRID_CELL_SIZE / 2}
-                  y={y + GRID_CELL_SIZE / 2}
+                  x={cx}
+                  y={labelY}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className="fill-foreground pointer-events-none select-none"
@@ -147,10 +161,14 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
           const cell = cellsByKey.get(key)
           const linkedLocations = locationsByKey.get(key)
           const clipId = `hexclip-${key}`
+          const icon = cell?.icon ? MAP_ICONS_BY_KEY[cell.icon] : undefined
+          const iconY = cell?.label ? y - 8 : y
+          const labelY = icon ? y + 16 : y
+          const ringColor = map.ringColors?.[hexRing(coord.q ?? 0, coord.r ?? 0)]
           return (
             <g
               key={key}
-              onClick={() => onCellClick(coord)}
+              onClick={(e) => onCellClick(coord, e)}
               className="cursor-pointer"
             >
               {cell?.imageAssetId && (
@@ -171,12 +189,21 @@ export default function MapCanvas({ map, onCellClick }: MapCanvasProps) {
               <polygon
                 points={hexPolygonPoints(x, y)}
                 className={cellClass(!!cell?.imageAssetId, !!cell)}
+                style={!cell && ringColor ? { stroke: ringColor } : undefined}
                 strokeWidth={1}
               />
+              {icon && (
+                <icon.Icon
+                  x={x - 9}
+                  y={iconY - 9}
+                  size={18}
+                  className="fill-foreground pointer-events-none"
+                />
+              )}
               {cell?.label && (
                 <text
                   x={x}
-                  y={y}
+                  y={labelY}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className="fill-foreground pointer-events-none select-none"

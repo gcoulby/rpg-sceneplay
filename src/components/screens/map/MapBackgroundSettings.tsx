@@ -11,11 +11,14 @@ import {
 } from '@/components/ui/select'
 import { useProjectStore } from '@/stores/projectStore'
 import { addAssetFile, useAssetUrl } from '@/storage/assetStore'
-import { useMapStore } from './useMapStore'
-import type { MapBackground, ProjectMap } from './types'
+import type { MapBackground } from './types'
 
 interface MapBackgroundSettingsProps {
-  map: ProjectMap
+  title: string
+  uploadLabel: string
+  assetTag: string
+  value: MapBackground | undefined
+  onChange: (background: MapBackground | null) => void
 }
 
 const DEFAULT_BACKGROUND: Omit<MapBackground, 'assetId'> = {
@@ -25,16 +28,19 @@ const DEFAULT_BACKGROUND: Omit<MapBackground, 'assetId'> = {
   scale: 100,
 }
 
-/** Background image + its cover/contain fit and position/scale — split out
- *  of MapSettingsDialog so that file stays a plain orchestrator. */
+/** A background image + its cover/contain fit and position/scale. Reused for
+ *  both the grid-bound background and the ambient (whole-view) backdrop —
+ *  same shape, different key on ProjectMap — so the controls aren't duplicated. */
 export default function MapBackgroundSettings({
-  map,
+  title,
+  uploadLabel,
+  assetTag,
+  value,
+  onChange,
 }: MapBackgroundSettingsProps) {
-  const setMapBackground = useMapStore((s) => s.setMapBackground)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const background = map.background
-  const previewUrl = useAssetUrl(background?.assetId ?? null)
+  const previewUrl = useAssetUrl(value?.assetId ?? null)
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -45,26 +51,26 @@ export default function MapBackgroundSettings({
       const docId = useProjectStore.getState().currentDocId
       const stored = await addAssetFile(file, {
         docId,
-        tags: ['map-background'],
+        tags: [assetTag],
       })
-      setMapBackground({ ...DEFAULT_BACKGROUND, ...background, assetId: stored.id })
+      onChange({ ...DEFAULT_BACKGROUND, ...value, assetId: stored.id })
     } finally {
       setUploading(false)
     }
   }
 
   const updateBackground = (updates: Partial<MapBackground>) => {
-    if (!background) return
-    setMapBackground({ ...background, ...updates })
+    if (!value) return
+    onChange({ ...value, ...updates })
   }
 
   return (
     <div className="space-y-2">
       <div className="font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
-        Background Image
+        {title}
       </div>
 
-      {background && previewUrl ? (
+      {value && previewUrl ? (
         <div className="space-y-2">
           <img
             src={previewUrl}
@@ -75,7 +81,7 @@ export default function MapBackgroundSettings({
           <div className="flex items-center gap-2">
             <Label className="min-w-15 text-xs shrink-0">Fit</Label>
             <Select
-              value={background.fit}
+              value={value.fit}
               onValueChange={(v) =>
                 v && updateBackground({ fit: v as MapBackground['fit'] })
               }
@@ -100,7 +106,7 @@ export default function MapBackgroundSettings({
                 min={0}
                 max={100}
                 className="h-8 text-xs"
-                value={background.posX}
+                value={value.posX}
                 onChange={(e) =>
                   updateBackground({
                     posX: Math.min(100, Math.max(0, parseInt(e.target.value, 10) || 0)),
@@ -117,7 +123,7 @@ export default function MapBackgroundSettings({
                 min={0}
                 max={100}
                 className="h-8 text-xs"
-                value={background.posY}
+                value={value.posY}
                 onChange={(e) =>
                   updateBackground({
                     posY: Math.min(100, Math.max(0, parseInt(e.target.value, 10) || 0)),
@@ -134,7 +140,7 @@ export default function MapBackgroundSettings({
               min={50}
               max={300}
               className="h-8 text-xs w-24"
-              value={background.scale}
+              value={value.scale}
               onChange={(e) =>
                 updateBackground({
                   scale: Math.min(300, Math.max(50, parseInt(e.target.value, 10) || 100)),
@@ -149,9 +155,9 @@ export default function MapBackgroundSettings({
             variant="outline"
             size="sm"
             className="text-xs h-7"
-            onClick={() => setMapBackground(null)}
+            onClick={() => onChange(null)}
           >
-            Remove Background
+            Remove
           </Button>
         </div>
       ) : (
@@ -163,7 +169,7 @@ export default function MapBackgroundSettings({
           disabled={uploading}
           onClick={() => fileInputRef.current?.click()}
         >
-          {uploading ? 'Uploading…' : 'Upload Background Image'}
+          {uploading ? 'Uploading…' : uploadLabel}
         </Button>
       )}
       <input

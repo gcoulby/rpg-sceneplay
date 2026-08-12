@@ -1,11 +1,9 @@
 import { useRef, useState } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -14,18 +12,23 @@ import { useProjectStore } from '@/stores/projectStore'
 import { addAssetFile, useAssetUrl } from '@/storage/assetStore'
 import { useMapStore } from './useMapStore'
 import { coordKey } from './coordKey'
+import MapIconPicker from './MapIconPicker'
 import type { MapCoord, MapType } from './types'
 
 interface MapCellDialogProps {
   coord: MapCoord | null
+  /** Screen position of the click that opened this — anchors the popover to
+   *  the cell instead of a fixed corner, same reasoning as Map Settings:
+   *  seeing the map while editing is more useful than a centered dialog. */
+  anchorPoint: { x: number; y: number } | null
   mapType: MapType
   onOpenChange: (open: boolean) => void
 }
 
-/** Add/edit the feature (label + notes + image) on a single cell. Open state
- *  is driven by `coord` being non-null, matching the click-a-cell interaction. */
+/** Add/edit the feature (label + notes + image + icon) on a single cell. */
 export default function MapCellDialog({
   coord,
+  anchorPoint,
   mapType,
   onOpenChange,
 }: MapCellDialogProps) {
@@ -38,11 +41,12 @@ export default function MapCellDialog({
       ? map.cells.find((c) => coordKey(mapType, c.coord) === coordKey(mapType, coord))
       : undefined
 
-  // The dialog is remounted (via `key` in MapScreen) whenever the target cell
-  // changes, so lazy initial state is enough — no effect needed to resync.
+  // The component is remounted (via `key` in MapScreen) whenever the target
+  // cell changes, so lazy initial state is enough — no effect needed to resync.
   const [label, setLabel] = useState(() => cell?.label ?? '')
   const [notes, setNotes] = useState(() => cell?.notes ?? '')
   const [imageAssetId, setImageAssetId] = useState(() => cell?.imageAssetId ?? '')
+  const [icon, setIcon] = useState(() => cell?.icon ?? '')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageUrl = useAssetUrl(imageAssetId || null)
@@ -70,6 +74,7 @@ export default function MapCellDialog({
       label: label.trim(),
       notes: notes.trim(),
       imageAssetId: imageAssetId || undefined,
+      icon: icon || undefined,
     })
     onOpenChange(false)
   }
@@ -80,14 +85,28 @@ export default function MapCellDialog({
     onOpenChange(false)
   }
 
-  return (
-    <Dialog open={coord !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>{cell ? 'Edit Feature' : 'Add Feature'}</DialogTitle>
-        </DialogHeader>
+  const anchor = anchorPoint
+    ? () => ({ getBoundingClientRect: () => new DOMRect(anchorPoint.x, anchorPoint.y, 0, 0) })
+    : undefined
 
-        <div className="space-y-3">
+  return (
+    <Popover open={coord !== null} onOpenChange={onOpenChange}>
+      <PopoverTrigger
+        tabIndex={-1}
+        aria-hidden
+        className="top-0 left-0 fixed w-0 h-0 pointer-events-none"
+      />
+      <PopoverContent
+        anchor={anchor}
+        align="start"
+        sideOffset={8}
+        className="p-0 w-72 text-[13px]"
+      >
+        <div className="flex items-center justify-between py-2 px-3 border-b border-(--fd-border) font-semibold text-xs text-(--fd-text-muted) uppercase tracking-[0.5px]">
+          <span>{cell ? 'Edit Feature' : 'Add Feature'}</span>
+        </div>
+
+        <div className="p-3 space-y-3">
           <div className="space-y-1.5">
             <Label className="text-xs">Label</Label>
             <Input
@@ -102,21 +121,37 @@ export default function MapCellDialog({
             <Label className="text-xs">Notes</Label>
             <Textarea
               className="text-sm"
-              rows={4}
+              rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Anything worth remembering about this location."
             />
           </div>
           <div className="space-y-1.5">
+            <Label className="text-xs">Icon</Label>
+            <MapIconPicker value={icon} onChange={setIcon} />
+          </div>
+          <div className="space-y-1.5">
             <Label className="text-xs">Image</Label>
-            {imageUrl ? (
-              <div className="space-y-1.5">
-                <img
-                  src={imageUrl}
-                  alt=""
-                  className="rounded border border-border w-full h-28 object-cover"
-                />
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt=""
+                className="rounded border border-border w-full h-24 object-cover"
+              />
+            )}
+            <div className="flex gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs h-7"
+                disabled={uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? 'Uploading…' : imageUrl ? 'Change Image' : 'Upload Image'}
+              </Button>
+              {imageUrl && (
                 <Button
                   type="button"
                   variant="outline"
@@ -126,19 +161,8 @@ export default function MapCellDialog({
                 >
                   Remove Image
                 </Button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="text-xs h-7"
-                disabled={uploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {uploading ? 'Uploading…' : 'Upload Image'}
-              </Button>
-            )}
+              )}
+            </div>
             <input
               ref={fileInputRef}
               type="file"
@@ -149,23 +173,37 @@ export default function MapCellDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          {cell && (
-            <Button variant="ghost" className="mr-auto text-destructive" onClick={handleDelete}>
+        <div className="flex justify-between items-center gap-2 py-2 px-3 border-t border-(--fd-border)">
+          {cell ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive"
+              onClick={handleDelete}
+            >
               Delete
             </Button>
+          ) : (
+            <span />
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!label.trim() && !imageAssetId}
-          >
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <div className="flex gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={!label.trim() && !imageAssetId && !icon}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
