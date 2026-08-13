@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SHEET_TEMPLATES } from '../templates'
+import { DEFAULT_TEMPLATE_ICON, TEMPLATE_ICONS } from '../templates/templateIcons'
 import type { CharacterSheet, SheetTemplate } from '../types'
 
 interface SheetOptionsDialogProps {
@@ -77,11 +78,15 @@ const SheetOptionsDialog: React.FC<SheetOptionsDialogProps> = ({
                 <SelectValue placeholder="No template (custom)" />
               </SelectTrigger>
               <SelectContent>
-                {SHEET_TEMPLATES.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.name}
-                  </SelectItem>
-                ))}
+                {SHEET_TEMPLATES.map((t) => {
+                  const Icon = TEMPLATE_ICONS[t.id] ?? DEFAULT_TEMPLATE_ICON
+                  return (
+                    <SelectItem key={t.id} value={t.id}>
+                      <Icon className="mr-1.5 size-3.5 text-(--fd-text-muted)" />
+                      {t.name}
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
             <p className="text-(--fd-text-muted) text-[11px]">

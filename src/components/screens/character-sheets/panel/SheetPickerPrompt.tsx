@@ -2,6 +2,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SHEET_TEMPLATES } from '../templates'
+import { DEFAULT_TEMPLATE_ICON, TEMPLATE_ICONS } from '../templates/templateIcons'
 import type { SheetTemplate } from '../types'
 
 interface SheetPickerPromptProps {
@@ -26,24 +27,39 @@ const SheetPickerPrompt: React.FC<SheetPickerPromptProps> = ({
     </p>
 
     <div className="gap-3 grid grid-cols-1 sm:grid-cols-2 w-full">
-      {SHEET_TEMPLATES.map((template) => (
-        <Card key={template.id} className="cursor-pointer hover:border-(--fd-accent)">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs">{template.name}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2 pt-0">
-            <p className="text-[11px] text-(--fd-text-muted)">{template.description}</p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs"
-              onClick={() => onStartFromTemplate(template)}
-            >
-              Use this template
-            </Button>
-          </CardContent>
-        </Card>
-      ))}
+      {SHEET_TEMPLATES.map((template) => {
+        const Icon = TEMPLATE_ICONS[template.id] ?? DEFAULT_TEMPLATE_ICON
+        return (
+          <Card
+            key={template.id}
+            className="group hover:bg-(--fd-dropdown-bg) cursor-pointer transition-colors"
+            onClick={() => onStartFromTemplate(template)}
+          >
+            <CardHeader className="flex flex-row items-center gap-2.5 pb-2">
+              <div className="flex justify-center items-center bg-(--fd-accent)/15 rounded-md size-8 text-(--fd-accent) shrink-0">
+                <Icon className="size-4" />
+              </div>
+              <CardTitle className="text-xs">{template.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2 pt-0">
+              <p className="text-[11px] text-(--fd-text-muted) leading-relaxed">
+                {template.description}
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="group-hover:border-(--fd-accent) text-xs"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onStartFromTemplate(template)
+                }}
+              >
+                Use this template
+              </Button>
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
 
     <Button variant="ghost" size="sm" className="text-xs" onClick={onStartBlank}>

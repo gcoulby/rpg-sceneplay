@@ -12,6 +12,7 @@ import {
 import { uuid } from '@/utils/open-draft/uuid'
 import ModuleCard from './shared/ModuleCard'
 import NumberField from './shared/NumberField'
+import AddTile from './shared/AddTile'
 import type { ModuleComponentProps } from './moduleProps'
 
 const DIE_TYPES = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100', 'flat']
@@ -34,14 +35,26 @@ export const defaultCustomStatsValues: CustomStatsValues = {}
 
 const CustomStatsModule: React.FC<
   ModuleComponentProps<CustomStatsConfig, CustomStatsValues>
-> = ({ module, onChangeLabel, onChangeConfig, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
+> = ({
+  module,
+  layout,
+  onChangeLabel,
+  onChangeConfig,
+  onChangeValues,
+  onChangeLayout,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}) => {
   const { config, values } = module
 
   return (
     <ModuleCard
       label={module.label}
       icon={Sparkles}
+      layout={layout}
       onChangeLabel={onChangeLabel}
+      onChangeLayout={onChangeLayout}
       onDelete={onDelete}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
@@ -109,18 +122,14 @@ const CustomStatsModule: React.FC<
             </Button>
           </div>
         ))}
-        <Button
-          variant="outline"
-          size="sm"
-          className="self-start h-7 text-xs"
+        <AddTile
+          label="Add Stat"
           onClick={() =>
             onChangeConfig({
               rows: [...config.rows, { id: uuid(), label: 'New Stat', die: 'd20' }],
             })
           }
-        >
-          + Stat
-        </Button>
+        />
       </div>
     </ModuleCard>
   )

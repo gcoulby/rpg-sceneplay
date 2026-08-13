@@ -18,11 +18,13 @@ export const defaultChargesValues: ChargesValues = { current: 3, max: 3 }
 
 const ChargesModule: React.FC<
   ModuleComponentProps<ChargesConfig, ChargesValues>
-> = ({ module, onChangeLabel, onChangeValues, onDelete, onMoveUp, onMoveDown }) => (
+> = ({ module, layout, onChangeLabel, onChangeValues, onChangeLayout, onDelete, onMoveUp, onMoveDown }) => (
   <ModuleCard
     label={module.label}
     icon={BatteryCharging}
+    layout={layout}
     onChangeLabel={onChangeLabel}
+    onChangeLayout={onChangeLayout}
     onDelete={onDelete}
     onMoveUp={onMoveUp}
     onMoveDown={onMoveDown}

@@ -1,38 +1,38 @@
 import React from 'react'
-import { Check, ListChecks, X } from 'lucide-react'
+import { ToggleLeft, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { uuid } from '@/utils/open-draft/uuid'
 import ModuleCard from './shared/ModuleCard'
 import AddTile from './shared/AddTile'
 import type { ModuleComponentProps } from './moduleProps'
 
-/** Generic toggleable checklist — covers feats/traits/etc. without a
- *  dedicated module per category. */
-export interface ListItem {
+/** Named on/off switches — flags like "Inspiration" or "Advantage", visually
+ *  distinct from List's checkable-item rows. No shadcn `switch` primitive is
+ *  installed in this project, so this is hand-rolled like PipRow/TrackerBar. */
+export interface ToggleItem {
   id: string
   label: string
-  checked: boolean
+  enabled: boolean
 }
 
-export interface ListConfig {}
+export interface TogglesConfig {}
 
-export interface ListValues {
-  items: ListItem[]
+export interface TogglesValues {
+  items: ToggleItem[]
 }
 
-export const defaultListConfig: ListConfig = {}
-export const defaultListValues: ListValues = { items: [] }
+export const defaultTogglesConfig: TogglesConfig = {}
+export const defaultTogglesValues: TogglesValues = { items: [] }
 
-const ListModule: React.FC<
-  ModuleComponentProps<ListConfig, ListValues>
+const TogglesModule: React.FC<
+  ModuleComponentProps<TogglesConfig, TogglesValues>
 > = ({ module, layout, onChangeLabel, onChangeValues, onChangeLayout, onDelete, onMoveUp, onMoveDown }) => {
   const { values } = module
 
   return (
     <ModuleCard
       label={module.label}
-      icon={ListChecks}
+      icon={ToggleLeft}
       layout={layout}
       onChangeLabel={onChangeLabel}
       onChangeLayout={onChangeLayout}
@@ -40,7 +40,7 @@ const ListModule: React.FC<
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
     >
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         {values.items.map((item) => (
           <div key={item.id} className="flex items-center gap-1.5">
             <button
@@ -48,18 +48,20 @@ const ListModule: React.FC<
               onClick={() =>
                 onChangeValues({
                   items: values.items.map((i) =>
-                    i.id === item.id ? { ...i, checked: !i.checked } : i,
+                    i.id === item.id ? { ...i, enabled: !i.enabled } : i,
                   ),
                 })
               }
-              className={`flex items-center justify-center size-5 rounded border-2 shrink-0 transition-colors ${
-                item.checked
-                  ? 'bg-(--fd-accent) border-(--fd-accent)'
-                  : 'bg-transparent border-(--fd-border) hover:border-(--fd-text-muted)'
+              className={`relative shrink-0 w-8 h-4.5 rounded-full transition-colors ${
+                item.enabled ? 'bg-(--fd-accent)' : 'bg-black/30'
               }`}
-              title={item.checked ? 'Mark incomplete' : 'Mark complete'}
+              title={item.enabled ? 'On' : 'Off'}
             >
-              {item.checked && <Check className="size-3.5 text-white" />}
+              <span
+                className={`absolute top-0.5 size-3.5 rounded-full bg-white transition-all ${
+                  item.enabled ? 'left-4' : 'left-0.5'
+                }`}
+              />
             </button>
             <Input
               value={item.label}
@@ -70,25 +72,24 @@ const ListModule: React.FC<
                   ),
                 })
               }
-              className={`h-7 text-xs ${item.checked ? 'line-through text-(--fd-text-muted)' : ''}`}
+              className="flex-1 h-7 text-xs"
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-6 text-(--fd-text-muted) shrink-0"
+            <button
+              type="button"
               onClick={() =>
                 onChangeValues({ items: values.items.filter((i) => i.id !== item.id) })
               }
+              className="text-(--fd-text-muted) hover:text-destructive shrink-0"
             >
               <X className="size-3.5" />
-            </Button>
+            </button>
           </div>
         ))}
         <AddTile
-          label="Add Item"
+          label="Add Toggle"
           onClick={() =>
             onChangeValues({
-              items: [...values.items, { id: uuid(), label: 'New item', checked: false }],
+              items: [...values.items, { id: uuid(), label: 'New Toggle', enabled: false }],
             })
           }
         />
@@ -97,4 +98,4 @@ const ListModule: React.FC<
   )
 }
 
-export default ListModule
+export default TogglesModule

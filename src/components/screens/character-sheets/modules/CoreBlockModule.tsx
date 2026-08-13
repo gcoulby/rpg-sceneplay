@@ -38,14 +38,26 @@ export const defaultCoreBlockValues: CoreBlockValues = {
 
 const CoreBlockModule: React.FC<
   ModuleComponentProps<CoreBlockConfig, CoreBlockValues>
-> = ({ module, onChangeLabel, onChangeConfig, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
+> = ({
+  module,
+  layout,
+  onChangeLabel,
+  onChangeConfig,
+  onChangeValues,
+  onChangeLayout,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}) => {
   const { config, values } = module
 
   return (
     <ModuleCard
       label={module.label}
       icon={IdCard}
+      layout={layout}
       onChangeLabel={onChangeLabel}
+      onChangeLayout={onChangeLayout}
       onDelete={onDelete}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}

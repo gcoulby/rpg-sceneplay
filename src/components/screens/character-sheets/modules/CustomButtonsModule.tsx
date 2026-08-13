@@ -7,6 +7,7 @@ import { uuid } from '@/utils/open-draft/uuid'
 import { resolveReferences } from '../formula/resolveReferences'
 import { rollFormula, type RollResult } from '../formula/rollFormula'
 import ModuleCard from './shared/ModuleCard'
+import AddTile from './shared/AddTile'
 import type { ModuleComponentProps } from './moduleProps'
 
 export interface CustomButtonDef {
@@ -27,7 +28,17 @@ export const defaultCustomButtonsValues: CustomButtonsValues = {}
 
 const CustomButtonsModule: React.FC<
   ModuleComponentProps<CustomButtonsConfig, CustomButtonsValues>
-> = ({ module, valueMap, onChangeLabel, onChangeConfig, onDelete, onMoveUp, onMoveDown }) => {
+> = ({
+  module,
+  valueMap,
+  layout,
+  onChangeLabel,
+  onChangeConfig,
+  onChangeLayout,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}) => {
   const { config } = module
   const [results, setResults] = useState<Record<string, RollResult>>({})
 
@@ -35,7 +46,9 @@ const CustomButtonsModule: React.FC<
     <ModuleCard
       label={module.label}
       icon={Dices}
+      layout={layout}
       onChangeLabel={onChangeLabel}
+      onChangeLayout={onChangeLayout}
       onDelete={onDelete}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
@@ -117,18 +130,14 @@ const CustomButtonsModule: React.FC<
             )}
           </div>
         ))}
-        <Button
-          variant="outline"
-          size="sm"
-          className="self-start h-7 text-xs"
+        <AddTile
+          label="Add Button"
           onClick={() =>
             onChangeConfig({
               buttons: [...config.buttons, { id: uuid(), label: 'Roll', formula: '1d20' }],
             })
           }
-        >
-          + Button
-        </Button>
+        />
       </div>
     </ModuleCard>
   )

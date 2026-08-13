@@ -6,6 +6,7 @@ import { uuid } from '@/utils/open-draft/uuid'
 import { rollFormula } from '../formula/rollFormula'
 import ModuleCard from './shared/ModuleCard'
 import NumberField from './shared/NumberField'
+import AddTile from './shared/AddTile'
 import type { ModuleComponentProps } from './moduleProps'
 
 export interface SkillRow {
@@ -27,7 +28,7 @@ export const defaultSkillsValues: SkillsValues = { rows: [] }
 
 const SkillsModule: React.FC<
   ModuleComponentProps<SkillsConfig, SkillsValues>
-> = ({ module, onChangeLabel, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
+> = ({ module, layout, onChangeLabel, onChangeValues, onChangeLayout, onDelete, onMoveUp, onMoveDown }) => {
   const { values } = module
   const [lastRoll, setLastRoll] = useState<Record<string, number>>({})
 
@@ -35,7 +36,9 @@ const SkillsModule: React.FC<
     <ModuleCard
       label={module.label}
       icon={Target}
+      layout={layout}
       onChangeLabel={onChangeLabel}
+      onChangeLayout={onChangeLayout}
       onDelete={onDelete}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
@@ -64,24 +67,23 @@ const SkillsModule: React.FC<
               }
               inputClassName="h-8 w-14"
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-(--fd-text-muted) shrink-0"
-              title="Roll"
+            <button
+              type="button"
+              title="Roll 1d20 + modifier"
               onClick={() => {
                 const sign = row.modifier >= 0 ? '+' : ''
                 const result = rollFormula(`1d20${sign}${row.modifier}`)
                 setLastRoll((s) => ({ ...s, [row.id]: result.total }))
               }}
+              className="flex items-center gap-1 bg-black/10 hover:bg-black/20 px-1.5 border border-(--fd-border) rounded-md h-8 shrink-0 transition-colors"
             >
-              <Dices className="size-3.5" />
-            </Button>
-            {lastRoll[row.id] !== undefined && (
-              <span className="w-6 text-(--fd-accent) text-xs text-center shrink-0">
-                {lastRoll[row.id]}
-              </span>
-            )}
+              <Dices className="size-3.5 text-(--fd-text-muted)" />
+              {lastRoll[row.id] !== undefined && (
+                <span className="min-w-4 font-semibold text-(--fd-accent) text-xs text-center">
+                  {lastRoll[row.id]}
+                </span>
+              )}
+            </button>
             <Button
               variant="ghost"
               size="icon"
@@ -94,18 +96,14 @@ const SkillsModule: React.FC<
             </Button>
           </div>
         ))}
-        <Button
-          variant="outline"
-          size="sm"
-          className="self-start h-7 text-xs"
+        <AddTile
+          label="Add Skill"
           onClick={() =>
             onChangeValues({
               rows: [...values.rows, { id: uuid(), name: 'New Skill', modifier: 0 }],
             })
           }
-        >
-          + Skill
-        </Button>
+        />
       </div>
     </ModuleCard>
   )

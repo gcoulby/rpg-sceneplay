@@ -9,6 +9,19 @@ export type ModuleType =
   | 'conditions'
   | 'notes'
   | 'list'
+  | 'character-details'
+  | 'backstory'
+  | 'traits'
+  | 'resources'
+  | 'toggles'
+  | 'clock'
+
+export interface ModuleLayout {
+  /** Grid column span, 1-6 (the module grid is a fixed 6-column layout). */
+  w: number
+  /** Grid row span, 1-6, in row-height units. */
+  h: number
+}
 
 export interface SheetModule<TConfig = unknown, TValues = unknown> {
   id: string
@@ -17,6 +30,9 @@ export interface SheetModule<TConfig = unknown, TValues = unknown> {
   label: string
   config: TConfig
   values: TValues
+  /** Optional: sheets saved before sizing existed fall back to the module
+   *  type's registry default via getModuleLayout(). */
+  layout?: ModuleLayout
 }
 
 export interface SheetTab {

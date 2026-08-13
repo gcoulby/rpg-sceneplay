@@ -31,7 +31,7 @@ export const defaultConditionsValues: ConditionsValues = { items: [] }
 
 const ConditionsModule: React.FC<
   ModuleComponentProps<ConditionsConfig, ConditionsValues>
-> = ({ module, onChangeLabel, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
+> = ({ module, layout, onChangeLabel, onChangeValues, onChangeLayout, onDelete, onMoveUp, onMoveDown }) => {
   const { values } = module
   const existingLabels = new Set(values.items.map((i) => i.label.toLowerCase()))
   const availablePresets = CONDITION_PRESETS.filter(
@@ -49,7 +49,9 @@ const ConditionsModule: React.FC<
     <ModuleCard
       label={module.label}
       icon={AlertTriangle}
+      layout={layout}
       onChangeLabel={onChangeLabel}
+      onChangeLayout={onChangeLayout}
       onDelete={onDelete}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}

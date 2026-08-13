@@ -4,6 +4,8 @@ import type { CustomStatsConfig, CustomStatsValues } from '../modules/CustomStat
 import type { TrackerValues } from '../modules/TrackerModule'
 import type { ChargesValues } from '../modules/ChargesModule'
 import type { SkillsValues } from '../modules/SkillsModule'
+import type { ResourcesValues } from '../modules/ResourcesModule'
+import type { ClockConfig, ClockValues } from '../modules/ClockModule'
 
 /**
  * Flattens every numeric value on a sheet into a single lookup used to
@@ -55,6 +57,21 @@ export function buildValueMap(sheet: CharacterSheet): Record<string, number> {
           for (const row of values.rows) {
             set(row.name, row.modifier)
           }
+          break
+        }
+        case 'resources': {
+          const values = mod.values as ResourcesValues
+          for (const row of values.rows) {
+            set(row.label, row.current)
+            set(`${row.label}.max`, row.max)
+          }
+          break
+        }
+        case 'clock': {
+          const config = mod.config as ClockConfig
+          const values = mod.values as ClockValues
+          set(mod.label, values.filled)
+          set(`${mod.label}.max`, config.segments)
           break
         }
         default:

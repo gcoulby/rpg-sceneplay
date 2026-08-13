@@ -14,7 +14,7 @@ const PipRow: React.FC<PipRowProps> = ({ current, max, onChange }) => {
 
   return (
     <div className="flex flex-col gap-2.5 w-full">
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap justify-center gap-1.5">
         {pips.map((filled, i) => (
           <button
             key={i}
