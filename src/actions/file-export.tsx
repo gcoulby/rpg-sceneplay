@@ -1,9 +1,12 @@
-import { showToast } from '@/components/open-draft/Toast'
+import { showToast } from '@/actions/show-toast'
 import { useEditorStore } from '@/stores/editorStore'
 import { downloadDocx } from '@/utils/open-draft/docxExporter'
 import { downloadFDX } from '@/utils/open-draft/fdxExporter'
 import { downloadFountain } from '@/utils/open-draft/fountainExporter'
-import { downloadOdraft, downloadSceneplay } from '@/storage/formats/sceneplayFormat'
+import {
+  downloadOdraft,
+  downloadSceneplay,
+} from '@/storage/formats/sceneplayFormat'
 import { exportPDF } from '@/utils/open-draft/pdfExporter'
 import { buildSaveContent } from '@/storage/saveContent'
 import { packAssets } from '@/storage/assetStore'
@@ -25,10 +28,10 @@ export const handleExportFDX = async (editor: Editor | null) => {
     )
   } catch (err) {
     console.error('FDX export failed:', err)
-    showToast(
-      `Export failed: ${err instanceof Error ? err.message : String(err)}`,
-      'error',
-    )
+    showToast({
+      description: `Export failed: ${err instanceof Error ? err.message : String(err)}`,
+      type: 'error',
+    })
   }
 }
 
@@ -41,10 +44,10 @@ export const handleExportFountain = async (editor: Editor | null) => {
     await downloadFountain(editor.getJSON(), store.documentTitle)
   } catch (err) {
     console.error('Fountain export failed:', err)
-    showToast(
-      `Export failed: ${err instanceof Error ? err.message : String(err)}`,
-      'error',
-    )
+    showToast({
+      description: `Export failed: ${err instanceof Error ? err.message : String(err)}`,
+      type: 'error',
+    })
   }
 }
 
@@ -59,10 +62,10 @@ export const handleExportPDF = async (editor: Editor | null) => {
     })
   } catch (err) {
     console.error('PDF export failed:', err)
-    showToast(
-      `Export failed: ${err instanceof Error ? err.message : String(err)}`,
-      'error',
-    )
+    showToast({
+      description: `Export failed: ${err instanceof Error ? err.message : String(err)}`,
+      type: 'error',
+    })
   }
 }
 
@@ -81,10 +84,10 @@ export const handleExportDocx = async (editor: Editor | null) => {
     )
   } catch (err) {
     console.error('Word export failed:', err)
-    showToast(
-      `Export failed: ${err instanceof Error ? err.message : String(err)}`,
-      'error',
-    )
+    showToast({
+      description: `Export failed: ${err instanceof Error ? err.message : String(err)}`,
+      type: 'error',
+    })
   }
 }
 
@@ -132,17 +135,18 @@ const exportNative = async (
       assetsOmitted: truncated,
     })
     if (truncated) {
-      showToast(
-        'Exported, but some images were too large to embed — the file will show them as missing elsewhere.',
-        'info',
-      )
+      showToast({
+        description:
+          'Exported, but some images were too large to embed — the file will show them as missing elsewhere.',
+        type: 'info',
+      })
     }
   } catch (err) {
     console.error(`${label} export failed:`, err)
-    showToast(
-      `Export failed: ${err instanceof Error ? err.message : String(err)}`,
-      'error',
-    )
+    showToast({
+      description: `Export failed: ${err instanceof Error ? err.message : String(err)}`,
+      type: 'error',
+    })
   }
 }
 

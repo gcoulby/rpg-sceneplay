@@ -6,7 +6,7 @@ import { groupByLocation, parseHeading } from '../utils/scene-utils'
 import { blockContentRange, singleLine } from '@/utils/open-draft/nodeText'
 import { useGoToScene } from '../utils/useGoToScene'
 import LocationGroupItem from './LocationGroupItem'
-import { showToast } from '@/components/open-draft/Toast'
+import { showToast } from '@/actions/show-toast'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface LocationsPanelProps {
@@ -83,10 +83,10 @@ const LocationsPanel: React.FC<LocationsPanelProps> = ({
     })
 
     if (skippedBroken > 0) {
-      showToast(
-        `Skipped ${skippedBroken} scene heading${skippedBroken === 1 ? '' : 's'} containing a line break`,
-        'info',
-      )
+      showToast({
+        description: `Skipped ${skippedBroken} scene heading${skippedBroken === 1 ? '' : 's'} containing a line break`,
+        type: 'info',
+      })
     }
 
     if (tr.steps.length > 0) editor.view.dispatch(tr)

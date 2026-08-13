@@ -9,7 +9,7 @@ import {
   setAssetTags,
   getAssetObjectUrl,
 } from '@/storage/assetStore'
-import { showToast } from './Toast'
+import { showToast } from '@/actions/show-toast'
 
 interface AssetManagerProps {
   projectId: string
@@ -66,10 +66,10 @@ const AssetManager: React.FC<AssetManagerProps> = ({
         await addAssetFile(file, { docId: projectId, tags })
       } catch (err) {
         failed++
-        showToast(
-          `Failed to upload "${file.name}": ${err instanceof Error ? err.message : 'unknown error'}`,
-          'error',
-        )
+        showToast({
+          description: `Failed to upload "${file.name}": ${err instanceof Error ? err.message : 'unknown error'}`,
+          type: 'error',
+        })
       }
     }
     setTagInput('')
@@ -77,10 +77,10 @@ const AssetManager: React.FC<AssetManagerProps> = ({
     setUploading(false)
     const succeeded = fileArray.length - failed
     if (succeeded > 0) {
-      showToast(
-        `Uploaded ${succeeded} file${succeeded !== 1 ? 's' : ''} successfully`,
-        'success',
-      )
+      showToast({
+        description: `Uploaded ${succeeded} file${succeeded !== 1 ? 's' : ''} successfully`,
+        type: 'success',
+      })
     }
   }
 
@@ -89,12 +89,12 @@ const AssetManager: React.FC<AssetManagerProps> = ({
     try {
       await removeAsset(assetId)
       await fetchAssets()
-      showToast('Asset deleted', 'success')
+      showToast({ description: 'Asset deleted', type: 'success' })
     } catch (err) {
-      showToast(
-        `Failed to delete asset: ${err instanceof Error ? err.message : 'unknown error'}`,
-        'error',
-      )
+      showToast({
+        description: `Failed to delete asset: ${err instanceof Error ? err.message : 'unknown error'}`,
+        type: 'error',
+      })
     } finally {
       setDeletingId(null)
     }
@@ -103,7 +103,10 @@ const AssetManager: React.FC<AssetManagerProps> = ({
   const handleDownload = async (asset: Asset) => {
     const url = await getAssetObjectUrl(asset.id)
     if (!url) {
-      showToast('That file is no longer stored on this device', 'error')
+      showToast({
+        description: 'That file is no longer stored on this device',
+        type: 'error',
+      })
       return
     }
     const a = document.createElement('a')
@@ -123,12 +126,12 @@ const AssetManager: React.FC<AssetManagerProps> = ({
     try {
       await setAssetTags(assetId, tags)
       await fetchAssets()
-      showToast('Tags updated', 'success')
+      showToast({ description: 'Tags updated', type: 'success' })
     } catch (err) {
-      showToast(
-        `Failed to update tags: ${err instanceof Error ? err.message : 'unknown error'}`,
-        'error',
-      )
+      showToast({
+        description: `Failed to update tags: ${err instanceof Error ? err.message : 'unknown error'}`,
+        type: 'error',
+      })
     } finally {
       setSavingTagsId(null)
       setEditingTagsId(null)

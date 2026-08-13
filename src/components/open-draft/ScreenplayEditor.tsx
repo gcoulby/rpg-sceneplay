@@ -121,7 +121,7 @@ import StorageModeDialog from '@/storage/StorageModeDialog'
 import { openTextFile } from '@/storage/fileOps'
 import { unpackAssets } from '@/storage/assetStore'
 import { useBrowserStorageStatusStore } from '@/stores/browserStorageStatusStore'
-import { showToast } from './Toast'
+import { showToast } from '@/actions/show-toast'
 import AssetManager from './AssetManager'
 import WelcomeDialog, { type WelcomeChoice } from './WelcomeDialog'
 import { parseFountain } from '@/utils/open-draft/fountainParser'
@@ -133,10 +133,7 @@ import {
   isSceneplayFile,
 } from '@/storage/formats/sceneplayFormat'
 import { hydrateEditorStoresFromContent } from '@/storage/hydrateStores'
-import {
-  stashSessionDoc,
-  takeSessionDoc,
-} from '@/utils/open-draft/sessionDoc'
+import { stashSessionDoc, takeSessionDoc } from '@/utils/open-draft/sessionDoc'
 import { useIsTouchDevice, usePinchZoom } from '@/hooks/useTouch'
 import { pluginRegistry } from '@/plugins/registry'
 import {
@@ -532,7 +529,6 @@ function resolveHFFields(
 }
 
 const ScreenplayEditor: React.FC = () => {
-
   const {
     setActiveElement,
     setScenes,
@@ -555,10 +551,7 @@ const ScreenplayEditor: React.FC = () => {
     setSaveStatus,
   } = useEditorStore()
 
-  const {
-    currentDocId,
-    setCurrentDocId,
-  } = useProjectStore()
+  const { currentDocId, setCurrentDocId } = useProjectStore()
 
   // Bumped to force TipTap to recreate the editor instance.
   const [editorKey] = useState(0)
@@ -629,7 +622,6 @@ const ScreenplayEditor: React.FC = () => {
   zoomLevelRef.current = zoomLevel
 
   const [overlays, setOverlays] = useState<OverlayInfo[]>([])
-
 
   // Auto-fit page to viewport on mobile/tablet
   const autoZoomApplied = useRef(false)
@@ -1245,12 +1237,16 @@ const ScreenplayEditor: React.FC = () => {
         e.preventDefault()
         try {
           editor.chain().undo().run()
-        } catch {}
+        } catch {
+          //
+        }
       } else if (ie.inputType === 'historyRedo') {
         e.preventDefault()
         try {
           editor.chain().redo().run()
-        } catch {}
+        } catch {
+          //
+        }
       }
     }
     document.addEventListener('beforeinput', handleBeforeInput)
@@ -1300,11 +1296,12 @@ const ScreenplayEditor: React.FC = () => {
 
   const handleImageFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
+      void currentDocId
       const file = e.target.files?.[0]
       e.target.value = '' // allow re-selecting the same file
       if (!file || !editor) return
       if (!file.type.startsWith('image/')) {
-        showToast('Please choose an image file', 'error')
+        showToast({ description: 'Please choose an image file', type: 'error' })
         return
       }
       // Insert at the captured cursor position (valid block position), not doc start.
@@ -1314,10 +1311,10 @@ const ScreenplayEditor: React.FC = () => {
       try {
         insertAt(await buildImageAttrs(file))
       } catch (err) {
-        showToast(
-          `Failed to insert image: ${err instanceof Error ? err.message : String(err)}`,
-          'error',
-        )
+        showToast({
+          description: `Failed to insert image: ${err instanceof Error ? err.message : String(err)}`,
+          type: 'error',
+        })
       }
     },
     [editor, currentDocId],
@@ -1725,7 +1722,10 @@ const ScreenplayEditor: React.FC = () => {
       updateScenes()
     } catch (err) {
       console.error('Could not restore the open document:', err)
-      showToast('Could not restore the document you had open', 'error')
+      showToast({
+        description: 'Could not restore the document you had open',
+        type: 'error',
+      })
     }
   }, [editor, currentDocId, updateScenes])
 
@@ -1787,10 +1787,10 @@ const ScreenplayEditor: React.FC = () => {
           }
         } catch (setErr) {
           console.error('setContent failed:', setErr)
-          showToast(
-            `Failed to render content: ${setErr instanceof Error ? setErr.message : String(setErr)}`,
-            'error',
-          )
+          showToast({
+            description: `Failed to render content: ${setErr instanceof Error ? setErr.message : String(setErr)}`,
+            type: 'error',
+          })
           editor.commands.setContent({
             type: 'doc',
             content: [{ type: 'action', content: [] }],
@@ -2061,10 +2061,11 @@ const ScreenplayEditor: React.FC = () => {
       if (!ok) return
       useBrowserStorageStatusStore.getState().setMode(mode)
       if (mode === 'memory') {
-        showToast(
-          'Now editing without automatic saving — use File → Export to save',
-          'info',
-        )
+        showToast({
+          description:
+            'Now editing without automatic saving — use File → Export to save',
+          type: 'info',
+        })
         return
       }
       const doc = buildStorageDoc()
@@ -2072,17 +2073,18 @@ const ScreenplayEditor: React.FC = () => {
       try {
         await saveActiveDoc(doc)
         useBrowserStorageStatusStore.getState().noteSuccess()
-        showToast(
-          mode === 'disk'
-            ? 'Now saving to that file automatically'
-            : 'Now saving automatically in this browser',
-          'success',
-        )
+        showToast({
+          description:
+            mode === 'disk'
+              ? 'Now saving to that file automatically'
+              : 'Now saving automatically in this browser',
+          type: 'success',
+        })
       } catch (err) {
-        showToast(
-          `Could not switch storage: ${err instanceof Error ? err.message : String(err)}`,
-          'error',
-        )
+        showToast({
+          description: `Could not switch storage: ${err instanceof Error ? err.message : String(err)}`,
+          type: 'error',
+        })
       }
     },
     [buildStorageDoc],
@@ -2109,7 +2111,11 @@ const ScreenplayEditor: React.FC = () => {
     const mode = switchStorageModeRequest
     setSwitchStorageModeRequest(null)
     void handleSwitchStorageMode(mode)
-  }, [switchStorageModeRequest, setSwitchStorageModeRequest, handleSwitchStorageMode])
+  }, [
+    switchStorageModeRequest,
+    setSwitchStorageModeRequest,
+    handleSwitchStorageMode,
+  ])
 
   /** A mode was picked in the first-run dialog. */
   const handleStorageModeChosen = useCallback(
@@ -2126,10 +2132,10 @@ const ScreenplayEditor: React.FC = () => {
             return
           }
         } catch (err) {
-          showToast(
-            `Could not open that document: ${err instanceof Error ? err.message : String(err)}`,
-            'error',
-          )
+          showToast({
+            description: `Could not open that document: ${err instanceof Error ? err.message : String(err)}`,
+            type: 'error',
+          })
         }
       }
       const provider = getActiveMode()
@@ -2589,10 +2595,10 @@ const ScreenplayEditor: React.FC = () => {
           .setImportedSource({ name: file.name, format: fmtLabel })
       } catch (err) {
         console.error('Failed to import dropped file:', err)
-        showToast(
-          `Failed to import file: ${err instanceof Error ? err.message : String(err)}`,
-          'error',
-        )
+        showToast({
+          description: `Failed to import file: ${err instanceof Error ? err.message : String(err)}`,
+          type: 'error',
+        })
       }
     },
     [editor, setDocumentTitle],
@@ -2621,10 +2627,11 @@ const ScreenplayEditor: React.FC = () => {
 
       const ext = file.name.split('.').pop()?.toLowerCase()
       if (!ext || !IMPORTABLE_EXTENSIONS.includes(ext)) {
-        showToast(
-          'Unsupported file type. Drop a .fdx, .fountain, .odraft, or .txt file.',
-          'error',
-        )
+        showToast({
+          description:
+            'Unsupported file type. Drop a .fdx, .fountain, .odraft, or .txt file.',
+          type: 'error',
+        })
         return
       }
 
@@ -2635,7 +2642,7 @@ const ScreenplayEditor: React.FC = () => {
         importDroppedFile(file)
       }
     },
-    [hasUnsavedChanges, importDroppedFile],
+    [IMPORTABLE_EXTENSIONS, hasUnsavedChanges, importDroppedFile],
   )
 
   const handleDropConfirmSave = useCallback(async () => {
@@ -2646,10 +2653,10 @@ const ScreenplayEditor: React.FC = () => {
         await saveActiveDoc(doc)
         lastSavedJsonRef.current = JSON.stringify(doc.content)
       } catch (err) {
-        showToast(
-          `Save failed: ${err instanceof Error ? err.message : String(err)}`,
-          'error',
-        )
+        showToast({
+          description: `Save failed: ${err instanceof Error ? err.message : String(err)}`,
+          type: 'error',
+        })
       }
     }
     setDropConfirmOpen(false)
@@ -2762,121 +2769,6 @@ const ScreenplayEditor: React.FC = () => {
     return () => editorEl.removeEventListener('click', handleCharClick)
   }, [editor])
 
-  // --- Script context menu (right-click) ---
-  // useEffect(() => {
-  //   if (!editor) return
-  //   const isTouchDevice = navigator.maxTouchPoints > 0
-  //   const handleContextMenu = (e: MouseEvent) => {
-  //     const editorDom = editor.view.dom
-  //     if (!editorDom.contains(e.target as Node)) return
-  //     e.preventDefault()
-  //     // No context menu on touch devices — use 3-finger touch instead
-  //     if (isTouchDevice) return
-
-  //     // Move cursor to click position only if no text is selected,
-  //     // or if the click is outside the current selection
-  //     const pos = editor.view.posAtCoords({ left: e.clientX, top: e.clientY })
-  //     if (pos) {
-  //       const { from, to } = editor.state.selection
-  //       const clickInSelection = pos.pos >= from && pos.pos <= to && from !== to
-  //       if (!clickInSelection) {
-  //         editor.commands.setTextSelection(pos.pos)
-  //       }
-  //     }
-
-  //     // Check if clicked on a misspelled word
-  //     let spellInfo: {
-  //       word: string
-  //       from: number
-  //       to: number
-  //       suggestions: string[]
-  //     } | null = null
-  //     const target = e.target as HTMLElement
-  //     if (
-  //       target.classList.contains('spell-error') ||
-  //       target.closest('.spell-error')
-  //     ) {
-  //       const spellEl = target.classList.contains('spell-error')
-  //         ? target
-  //         : target.closest('.spell-error')
-  //       if (spellEl && pos) {
-  //         // Find the decoration range by examining the spell error text
-  //         const pluginState = spellCheckPluginKey.getState(editor.state) as
-  //           | {
-  //               decorations: import('@tiptap/pm/view').DecorationSet
-  //               enabled: boolean
-  //             }
-  //           | undefined
-  //         if (pluginState?.enabled) {
-  //           const decos = pluginState.decorations.find(pos.pos, pos.pos)
-  //           if (decos.length > 0) {
-  //             const deco = decos[0]
-  //             const word = editor.state.doc.textBetween(deco.from, deco.to)
-  //             spellInfo = {
-  //               word,
-  //               from: deco.from,
-  //               to: deco.to,
-  //               suggestions: spellChecker.suggest(word),
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-
-  //     // Check if clicked on a grammar issue.
-  //     let grammarInfo: {
-  //       from: number
-  //       to: number
-  //       ruleId: string
-  //       message: string
-  //       severity: 'style' | 'grammar'
-  //       suggestions: string[]
-  //     } | null = null
-  //     if (
-  //       pos &&
-  //       (target.classList.contains('grammar-issue') ||
-  //         target.closest('.grammar-issue'))
-  //     ) {
-  //       const ps = grammarPluginKey.getState(editor.state) as
-  //         | {
-  //             enabled: boolean
-  //             issues: import('@/plugins/registry').GrammarIssue[]
-  //           }
-  //         | undefined
-  //       if (ps?.enabled && Array.isArray(ps.issues)) {
-  //         const hit = ps.issues.find(
-  //           (i) => pos.pos >= i.from && pos.pos <= i.to,
-  //         )
-  //         if (hit) {
-  //           grammarInfo = {
-  //             from: hit.from,
-  //             to: hit.to,
-  //             ruleId: hit.ruleId,
-  //             message: hit.message,
-  //             severity: hit.severity,
-  //             suggestions: hit.suggestions ?? [],
-  //           }
-  //         }
-  //       }
-  //     }
-
-  //     setCtxMenuState({
-  //       visible: true,
-  //       position: { x: e.clientX, y: e.clientY },
-  //       spellInfo,
-  //       grammarInfo,
-  //     })
-  //   }
-
-  //   // Attach to the editor's parent to catch all right-clicks in the editor area
-  //   const editorEl = editor.view.dom.parentElement
-  //   if (editorEl) {
-  //     editorEl.addEventListener('contextmenu', handleContextMenu)
-  //     return () =>
-  //       editorEl.removeEventListener('contextmenu', handleContextMenu)
-  //   }
-  // }, [editor])
-
   const handleCtxMenuClose = useCallback(() => {
     setCtxMenuState((s) => ({ ...s, visible: false }))
   }, [])
@@ -2918,7 +2810,10 @@ const ScreenplayEditor: React.FC = () => {
                   lastSavedJsonRef.current = JSON.stringify(doc.content)
                   useBrowserStorageStatusStore.getState().noteSuccess()
                   setSaveStatus('saved')
-                  showToast('Saved successfully', 'success')
+                  showToast({
+                    description: 'Saved successfully',
+                    type: 'success',
+                  })
                 })
                 .catch((err) => {
                   const msg = err instanceof Error ? err.message : String(err)
@@ -2963,12 +2858,17 @@ const ScreenplayEditor: React.FC = () => {
                 content,
                 { backupKind: 'crash' },
               )
-                .then(() => showToast('Backup exported', 'success'))
+                .then(() =>
+                  showToast({
+                    description: 'Backup exported',
+                    type: 'success',
+                  }),
+                )
                 .catch((err) =>
-                  showToast(
-                    `Backup export failed: ${err instanceof Error ? err.message : String(err)}`,
-                    'error',
-                  ),
+                  showToast({
+                    description: `Backup export failed: ${err instanceof Error ? err.message : String(err)}`,
+                    type: 'error',
+                  }),
                 )
             }}
           >
@@ -2984,7 +2884,7 @@ const ScreenplayEditor: React.FC = () => {
       )}
       <div className="flex flex-1 overflow-hidden editor-layout">
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden editor-center">
-          {(
+          {
             <div
               className="editor-main flex-1 overflow-y-auto overflow-x-auto bg-(--fd-bg) flex justify-center pt-[30px] pb-[60px]"
               ref={editorMainRef}
@@ -3228,11 +3128,11 @@ const ScreenplayEditor: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
+          }
         </div>
-        {          pluginRegistry
-            .getPanels('right-sidebar')
-            .map((p) => <p.component key={p.id} editor={editor} />)}
+        {pluginRegistry.getPanels('right-sidebar').map((p) => (
+          <p.component key={p.id} editor={editor} />
+        ))}
       </div>
       {pickerState.visible && (
         <ElementPicker

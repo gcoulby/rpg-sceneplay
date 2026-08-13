@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import type { Node as PmNode } from '@tiptap/pm/model'
-import { showToast } from '@/components/open-draft/Toast'
+import { showToast } from '@/actions/show-toast'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -121,10 +121,10 @@ export const DualDialogue = Node.create({
           }
 
           if (curIdx < 0) {
-            showToast(
-              'Place cursor on a character or dialogue element',
-              'error',
-            )
+            showToast({
+              description: 'Place cursor on a character or dialogue element',
+              type: 'error',
+            })
             return false
           }
 
@@ -146,10 +146,10 @@ export const DualDialogue = Node.create({
             }
           }
           if (blocks[g1Start].node.type.name !== 'character') {
-            showToast(
-              'Place cursor on a character or dialogue element',
-              'error',
-            )
+            showToast({
+              description: 'Place cursor on a character or dialogue element',
+              type: 'error',
+            })
             return false
           }
 
@@ -180,7 +180,7 @@ export const DualDialogue = Node.create({
 
           // If no second group after, maybe cursor is on the second group — look before
           if (g2End < 0) {
-            let prevEnd = g1Start - 1
+            const prevEnd = g1Start - 1
             if (
               prevEnd >= 0 &&
               DIALOGUE_NODE_TYPES.has(blocks[prevEnd].node.type.name)
@@ -209,10 +209,11 @@ export const DualDialogue = Node.create({
           }
 
           if (g2End < 0) {
-            showToast(
-              'Dual dialogue requires two adjacent character/dialogue groups',
-              'error',
-            )
+            showToast({
+              description:
+                'Dual dialogue requires two adjacent character/dialogue groups',
+              type: 'error',
+            })
             return false
           }
 
