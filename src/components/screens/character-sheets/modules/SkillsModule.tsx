@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { X, Dices } from 'lucide-react'
+import { Target, X, Dices } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { uuid } from '@/utils/open-draft/uuid'
 import { rollFormula } from '../formula/rollFormula'
 import ModuleCard from './shared/ModuleCard'
+import NumberField from './shared/NumberField'
 import type { ModuleComponentProps } from './moduleProps'
 
 export interface SkillRow {
@@ -26,12 +27,19 @@ export const defaultSkillsValues: SkillsValues = { rows: [] }
 
 const SkillsModule: React.FC<
   ModuleComponentProps<SkillsConfig, SkillsValues>
-> = ({ module, onChangeLabel, onChangeValues, onDelete }) => {
+> = ({ module, onChangeLabel, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
   const { values } = module
   const [lastRoll, setLastRoll] = useState<Record<string, number>>({})
 
   return (
-    <ModuleCard label={module.label} onChangeLabel={onChangeLabel} onDelete={onDelete}>
+    <ModuleCard
+      label={module.label}
+      icon={Target}
+      onChangeLabel={onChangeLabel}
+      onDelete={onDelete}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+    >
       <div className="flex flex-col gap-1.5">
         {values.rows.map((row) => (
           <div key={row.id} className="flex items-center gap-1.5">
@@ -44,27 +52,22 @@ const SkillsModule: React.FC<
                   ),
                 })
               }
-              className="h-7 text-xs"
+              className="h-8 text-xs"
               placeholder="Skill name"
             />
-            <Input
-              type="number"
+            <NumberField
               value={row.modifier}
-              onChange={(e) =>
+              onChange={(v) =>
                 onChangeValues({
-                  rows: values.rows.map((r) =>
-                    r.id === row.id
-                      ? { ...r, modifier: Number(e.target.value) || 0 }
-                      : r,
-                  ),
+                  rows: values.rows.map((r) => (r.id === row.id ? { ...r, modifier: v } : r)),
                 })
               }
-              className="h-7 w-16 text-xs text-right"
+              inputClassName="h-8 w-14"
             />
             <Button
               variant="ghost"
               size="icon"
-              className="size-6 text-(--fd-text-muted)"
+              className="size-8 text-(--fd-text-muted) shrink-0"
               title="Roll"
               onClick={() => {
                 const sign = row.modifier >= 0 ? '+' : ''
@@ -82,7 +85,7 @@ const SkillsModule: React.FC<
             <Button
               variant="ghost"
               size="icon"
-              className="size-6 text-(--fd-text-muted)"
+              className="size-8 text-(--fd-text-muted) shrink-0"
               onClick={() =>
                 onChangeValues({ rows: values.rows.filter((r) => r.id !== row.id) })
               }

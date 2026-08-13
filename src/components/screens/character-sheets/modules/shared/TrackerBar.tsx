@@ -1,5 +1,5 @@
 import React from 'react'
-import { Input } from '@/components/ui/input'
+import NumberField from './NumberField'
 
 interface TrackerBarProps {
   current: number
@@ -11,28 +11,31 @@ interface TrackerBarProps {
  *  project and a single bar doesn't warrant adding the dependency. */
 const TrackerBar: React.FC<TrackerBarProps> = ({ current, max, onChange }) => {
   const pct = max > 0 ? Math.min(100, Math.max(0, (current / max) * 100)) : 0
+  const low = max > 0 && current / max <= 0.25
 
   return (
-    <div className="flex flex-col gap-1.5 w-full">
-      <div className="bg-(--fd-border) rounded-full w-full h-2.5 overflow-hidden">
+    <div className="flex flex-col gap-2 w-full">
+      <div className="bg-black/30 rounded-full w-full h-2.5 overflow-hidden">
         <div
-          className="bg-(--fd-accent) h-full transition-[width] duration-150"
+          className={`h-full transition-[width] duration-200 ${low ? 'bg-destructive' : 'bg-(--fd-accent)'}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="flex items-center gap-1.5 text-xs">
-        <Input
-          type="number"
+      <div className="flex items-center gap-2">
+        <NumberField
           value={current}
-          onChange={(e) => onChange({ current: Number(e.target.value) || 0, max })}
-          className="h-6 px-1.5 w-16 text-xs text-right"
+          onChange={(v) => onChange({ current: v, max })}
+          withSteppers
+          className="flex-1"
+          inputClassName="h-7 font-semibold text-sm"
         />
-        <span className="text-(--fd-text-muted)">/</span>
-        <Input
-          type="number"
+        <span className="text-(--fd-text-muted) text-xs shrink-0">of</span>
+        <NumberField
           value={max}
-          onChange={(e) => onChange({ current, max: Number(e.target.value) || 0 })}
-          className="h-6 px-1.5 w-16 text-xs text-right"
+          onChange={(v) => onChange({ current, max: v })}
+          withSteppers
+          className="flex-1"
+          inputClassName="h-7 text-sm"
         />
       </div>
     </div>

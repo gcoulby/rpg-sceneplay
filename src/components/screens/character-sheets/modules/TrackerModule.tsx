@@ -1,4 +1,5 @@
 import React from 'react'
+import { Activity } from 'lucide-react'
 import TrackerBar from './shared/TrackerBar'
 import ModuleCard from './shared/ModuleCard'
 import type { ModuleComponentProps } from './moduleProps'
@@ -17,8 +18,15 @@ export const defaultTrackerValues: TrackerValues = { current: 10, max: 10 }
 
 const TrackerModule: React.FC<
   ModuleComponentProps<TrackerConfig, TrackerValues>
-> = ({ module, onChangeLabel, onChangeValues, onDelete }) => (
-  <ModuleCard label={module.label} onChangeLabel={onChangeLabel} onDelete={onDelete}>
+> = ({ module, onChangeLabel, onChangeValues, onDelete, onMoveUp, onMoveDown }) => (
+  <ModuleCard
+    label={module.label}
+    icon={Activity}
+    onChangeLabel={onChangeLabel}
+    onDelete={onDelete}
+    onMoveUp={onMoveUp}
+    onMoveDown={onMoveDown}
+  >
     <TrackerBar
       current={module.values.current}
       max={module.values.max}

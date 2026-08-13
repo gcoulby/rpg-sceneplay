@@ -27,12 +27,19 @@ export const defaultCustomButtonsValues: CustomButtonsValues = {}
 
 const CustomButtonsModule: React.FC<
   ModuleComponentProps<CustomButtonsConfig, CustomButtonsValues>
-> = ({ module, valueMap, onChangeLabel, onChangeConfig, onDelete }) => {
+> = ({ module, valueMap, onChangeLabel, onChangeConfig, onDelete, onMoveUp, onMoveDown }) => {
   const { config } = module
   const [results, setResults] = useState<Record<string, RollResult>>({})
 
   return (
-    <ModuleCard label={module.label} onChangeLabel={onChangeLabel} onDelete={onDelete}>
+    <ModuleCard
+      label={module.label}
+      icon={Dices}
+      onChangeLabel={onChangeLabel}
+      onDelete={onDelete}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+    >
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1 text-[10px] text-(--fd-text-muted)">
           <Tooltip>

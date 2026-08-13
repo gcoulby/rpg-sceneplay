@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { uuid } from '@/utils/open-draft/uuid'
-import type { CharacterSheet, ModuleType, SheetTab } from '../types'
+import type { CharacterSheet, ModuleType, SheetModule, SheetTab } from '../types'
 import { MODULE_REGISTRY, MODULE_TYPES } from '../modules/moduleRegistry'
 import { buildValueMap } from '../formula/buildValueMap'
 
@@ -25,6 +25,9 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
   const valueMap = buildValueMap(sheet)
 
   const currentActive = tabs.some((t) => t.id === activeTab) ? activeTab : tabs[0]?.id ?? ''
+
+  const updateModules = (tabId: string, modules: SheetModule[]) =>
+    onChangeLayout(tabs.map((t) => (t.id === tabId ? { ...t, modules } : t)))
 
   const addTab = () => {
     const tab: SheetTab = { id: uuid(), label: 'New Tab', modules: [] }
@@ -46,25 +49,28 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
     if (type === 'core-block' && sheet.characterName) {
       values.characterName = sheet.characterName
     }
-    onChangeLayout(
-      tabs.map((t) =>
-        t.id === tabId
-          ? {
-              ...t,
-              modules: [
-                ...t.modules,
-                {
-                  id: uuid(),
-                  type,
-                  label: def.label,
-                  config: structuredClone(def.defaultConfig),
-                  values,
-                },
-              ],
-            }
-          : t,
-      ),
-    )
+    const tab = tabs.find((t) => t.id === tabId)
+    if (!tab) return
+    updateModules(tabId, [
+      ...tab.modules,
+      {
+        id: uuid(),
+        type,
+        label: def.label,
+        config: structuredClone(def.defaultConfig),
+        values,
+      },
+    ])
+  }
+
+  const moveModule = (tabId: string, index: number, direction: -1 | 1) => {
+    const tab = tabs.find((t) => t.id === tabId)
+    if (!tab) return
+    const target = index + direction
+    if (target < 0 || target >= tab.modules.length) return
+    const modules = [...tab.modules]
+    ;[modules[index], modules[target]] = [modules[target], modules[index]]
+    updateModules(tabId, modules)
   }
 
   if (tabs.length === 0) {
@@ -81,7 +87,7 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
 
   return (
     <Tabs value={currentActive} onValueChange={setActiveTab} className="w-full">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <TabsList>
           {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id}>
@@ -95,12 +101,12 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
       </div>
 
       {tabs.map((tab) => (
-        <TabsContent key={tab.id} value={tab.id} className="flex flex-col gap-3">
+        <TabsContent key={tab.id} value={tab.id} className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <input
               value={tab.label}
               onChange={(e) => renameTab(tab.id, e.target.value)}
-              className="bg-transparent px-1 border-0 border-(--fd-border) border-b outline-none text-sm"
+              className="bg-transparent px-1 border-0 border-(--fd-border) border-b outline-none font-medium text-sm"
             />
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -110,11 +116,15 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
                 Add Module
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {MODULE_TYPES.map((type) => (
-                  <DropdownMenuItem key={type} onClick={() => addModule(tab.id, type)}>
-                    {MODULE_REGISTRY[type].label}
-                  </DropdownMenuItem>
-                ))}
+                {MODULE_TYPES.map((type) => {
+                  const Icon = MODULE_REGISTRY[type].icon
+                  return (
+                    <DropdownMenuItem key={type} onClick={() => addModule(tab.id, type)}>
+                      <Icon className="mr-1.5 size-3.5 text-(--fd-text-muted)" />
+                      {MODULE_REGISTRY[type].label}
+                    </DropdownMenuItem>
+                  )
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
@@ -128,70 +138,55 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
             </Button>
           </div>
 
-          <div className="gap-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {tab.modules.map((mod) => {
-              const def = MODULE_REGISTRY[mod.type]
-              const Component = def.Component
-              return (
-                <Component
-                  key={mod.id}
-                  module={mod}
-                  valueMap={valueMap}
-                  onChangeLabel={(label) =>
-                    onChangeLayout(
-                      tabs.map((t) =>
-                        t.id === tab.id
-                          ? {
-                              ...t,
-                              modules: t.modules.map((m) =>
-                                m.id === mod.id ? { ...m, label } : m,
-                              ),
-                            }
-                          : t,
-                      ),
-                    )
-                  }
-                  onChangeConfig={(config) =>
-                    onChangeLayout(
-                      tabs.map((t) =>
-                        t.id === tab.id
-                          ? {
-                              ...t,
-                              modules: t.modules.map((m) =>
-                                m.id === mod.id ? { ...m, config } : m,
-                              ),
-                            }
-                          : t,
-                      ),
-                    )
-                  }
-                  onChangeValues={(values) =>
-                    onChangeLayout(
-                      tabs.map((t) =>
-                        t.id === tab.id
-                          ? {
-                              ...t,
-                              modules: t.modules.map((m) =>
-                                m.id === mod.id ? { ...m, values } : m,
-                              ),
-                            }
-                          : t,
-                      ),
-                    )
-                  }
-                  onDelete={() =>
-                    onChangeLayout(
-                      tabs.map((t) =>
-                        t.id === tab.id
-                          ? { ...t, modules: t.modules.filter((m) => m.id !== mod.id) }
-                          : t,
-                      ),
-                    )
-                  }
-                />
-              )
-            })}
-          </div>
+          {tab.modules.length === 0 ? (
+            <p className="py-8 text-(--fd-text-muted) text-xs text-center">
+              No modules on this tab yet — use "Add Module" to start building it out.
+            </p>
+          ) : (
+            <div className="items-start gap-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+              {tab.modules.map((mod, index) => {
+                const def = MODULE_REGISTRY[mod.type]
+                const Component = def.Component
+                return (
+                  <Component
+                    key={mod.id}
+                    module={mod}
+                    valueMap={valueMap}
+                    onChangeLabel={(label) =>
+                      updateModules(
+                        tab.id,
+                        tab.modules.map((m) => (m.id === mod.id ? { ...m, label } : m)),
+                      )
+                    }
+                    onChangeConfig={(config) =>
+                      updateModules(
+                        tab.id,
+                        tab.modules.map((m) => (m.id === mod.id ? { ...m, config } : m)),
+                      )
+                    }
+                    onChangeValues={(values) =>
+                      updateModules(
+                        tab.id,
+                        tab.modules.map((m) => (m.id === mod.id ? { ...m, values } : m)),
+                      )
+                    }
+                    onDelete={() =>
+                      updateModules(
+                        tab.id,
+                        tab.modules.filter((m) => m.id !== mod.id),
+                      )
+                    }
+                    onMoveUp={index > 0 ? () => moveModule(tab.id, index, -1) : null}
+                    onMoveDown={
+                      index < tab.modules.length - 1
+                        ? () => moveModule(tab.id, index, 1)
+                        : null
+                    }
+                  />
+                )
+              })}
+            </div>
+          )}
         </TabsContent>
       ))}
     </Tabs>

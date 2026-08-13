@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings, FileStack } from 'lucide-react'
+import { IdCard, Settings, FileStack, Users } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { useEditorStore } from '@/stores/editorStore'
@@ -15,8 +15,6 @@ import OrphanedSheetsPanel from './panel/OrphanedSheetsPanel'
 import { Card } from '@/components/ui/card'
 
 export const CharacterSheet = () => {
-  const characters = useEditorStore((s) => s.characterProfiles)
-
   const setActiveCharacterName = useSheetStore((s) => s.setActiveCharacterName)
   const selectedCharacter = useSheetStore((s) => s.activeCharacterName)
   const characterProfiles = useEditorStore((s) => s.characterProfiles)
@@ -42,6 +40,17 @@ export const CharacterSheet = () => {
         {sheet ? sheet.options.name : 'Character Sheet'}
       </span>
       <div className="flex items-center gap-1">
+        {selectedCharacter && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={() => setActiveCharacterName(null)}
+            title="Switch character"
+          >
+            <Users className="size-3.5" />
+          </Button>
+        )}
         {sheet && (
           <Button
             variant="ghost"
@@ -66,30 +75,47 @@ export const CharacterSheet = () => {
     </div>
   )
 
-  console.log('CHARS', characters, characters.length)
-
   return (
     <ScrollArea className="h-(--app-h)">
       {header}
       <div className="p-4">
         {!selectedCharacter && (
-          <>
-            <p className="py-2 mt-4 text-(--fd-text-muted) text-xs text-center">
+          <div className="flex flex-col items-center gap-4 mx-auto py-10 max-w-3xl">
+            <p className="text-(--fd-text-muted) text-xs">
               Select a character to view their sheet.
             </p>
-            <div className="flex gap-3 p-4">
-              {characters.map((char) => (
-                <Card
-                  className="flex justify-center items-center p-4 w-1/3 cursor-pointer"
-                  onClick={() => {
-                    setActiveCharacterName(char.name)
-                  }}
-                >
-                  {char.name}
-                </Card>
-              ))}
-            </div>
-          </>
+            {characterProfiles.length === 0 ? (
+              <p className="text-(--fd-text-muted) text-xs">
+                No characters yet — add one from the Characters panel.
+              </p>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-3 w-full">
+                {characterProfiles.map((char) => (
+                  <Card
+                    key={char.name}
+                    className="flex flex-col items-center gap-2 p-4 w-32 cursor-pointer transition-colors hover:border-(--fd-accent)"
+                    onClick={() => setActiveCharacterName(char.name)}
+                  >
+                    <div
+                      className="flex justify-center items-center rounded-full size-10 font-semibold text-sm text-white shrink-0"
+                      style={{ backgroundColor: char.color || 'var(--fd-border)' }}
+                    >
+                      {char.name.slice(0, 1)}
+                    </div>
+                    <span className="max-w-full text-xs text-center truncate">
+                      {char.name}
+                    </span>
+                    {char.sheetId && (
+                      <span className="flex items-center gap-1 text-[10px] text-(--fd-accent)">
+                        <IdCard className="size-3" />
+                        Has sheet
+                      </span>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {selectedCharacter && !sheet && (

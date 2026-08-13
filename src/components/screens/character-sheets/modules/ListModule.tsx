@@ -1,5 +1,5 @@
 import React from 'react'
-import { X } from 'lucide-react'
+import { ListChecks, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { uuid } from '@/utils/open-draft/uuid'
@@ -25,11 +25,18 @@ export const defaultListValues: ListValues = { items: [] }
 
 const ListModule: React.FC<
   ModuleComponentProps<ListConfig, ListValues>
-> = ({ module, onChangeLabel, onChangeValues, onDelete }) => {
+> = ({ module, onChangeLabel, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
   const { values } = module
 
   return (
-    <ModuleCard label={module.label} onChangeLabel={onChangeLabel} onDelete={onDelete}>
+    <ModuleCard
+      label={module.label}
+      icon={ListChecks}
+      onChangeLabel={onChangeLabel}
+      onDelete={onDelete}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+    >
       <div className="flex flex-col gap-1">
         {values.items.map((item) => (
           <div key={item.id} className="flex items-center gap-1.5">
@@ -43,7 +50,7 @@ const ListModule: React.FC<
                   ),
                 })
               }
-              className="accent-(--fd-accent) size-3.5"
+              className="accent-(--fd-accent) size-3.5 shrink-0"
             />
             <Input
               value={item.label}

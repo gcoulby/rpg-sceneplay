@@ -1,9 +1,10 @@
 import React from 'react'
-import { X } from 'lucide-react'
+import { Backpack, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { uuid } from '@/utils/open-draft/uuid'
 import ModuleCard from './shared/ModuleCard'
+import NumberField from './shared/NumberField'
 import type { ModuleComponentProps } from './moduleProps'
 
 export interface GearItem {
@@ -25,12 +26,28 @@ export const defaultGearValues: GearValues = { items: [] }
 
 const GearModule: React.FC<
   ModuleComponentProps<GearConfig, GearValues>
-> = ({ module, onChangeLabel, onChangeValues, onDelete }) => {
+> = ({ module, onChangeLabel, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
   const { values } = module
 
   return (
-    <ModuleCard label={module.label} onChangeLabel={onChangeLabel} onDelete={onDelete}>
+    <ModuleCard
+      label={module.label}
+      icon={Backpack}
+      onChangeLabel={onChangeLabel}
+      onDelete={onDelete}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+    >
       <div className="flex flex-col gap-1.5">
+        {values.items.length > 0 && (
+          <div className="flex items-center gap-1.5 px-0.5 text-[10px] text-(--fd-text-muted) uppercase tracking-wide">
+            <span className="flex-2">Item</span>
+            <span className="w-12 text-center">Qty</span>
+            <span className="w-14 text-center">Wt.</span>
+            <span className="flex-[1.5]">Notes</span>
+            <span className="w-8" />
+          </div>
+        )}
         {values.items.map((item) => (
           <div key={item.id} className="flex items-center gap-1.5">
             <Input
@@ -42,35 +59,27 @@ const GearModule: React.FC<
                   ),
                 })
               }
-              className="h-7 text-xs"
+              className="flex-2 h-8 text-xs"
               placeholder="Item"
             />
-            <Input
-              type="number"
+            <NumberField
               value={item.qty}
-              onChange={(e) =>
+              onChange={(v) =>
                 onChangeValues({
-                  items: values.items.map((i) =>
-                    i.id === item.id ? { ...i, qty: Number(e.target.value) || 0 } : i,
-                  ),
+                  items: values.items.map((i) => (i.id === item.id ? { ...i, qty: v } : i)),
                 })
               }
-              className="h-7 w-14 text-xs text-right"
+              inputClassName="h-8 w-12"
               title="Quantity"
             />
-            <Input
-              type="number"
+            <NumberField
               value={item.weight}
-              onChange={(e) =>
+              onChange={(v) =>
                 onChangeValues({
-                  items: values.items.map((i) =>
-                    i.id === item.id
-                      ? { ...i, weight: Number(e.target.value) || 0 }
-                      : i,
-                  ),
+                  items: values.items.map((i) => (i.id === item.id ? { ...i, weight: v } : i)),
                 })
               }
-              className="h-7 w-16 text-xs text-right"
+              inputClassName="h-8 w-14"
               title="Weight"
             />
             <Input
@@ -82,13 +91,13 @@ const GearModule: React.FC<
                   ),
                 })
               }
-              className="h-7 text-xs"
+              className="flex-[1.5] h-8 text-xs"
               placeholder="Notes"
             />
             <Button
               variant="ghost"
               size="icon"
-              className="size-6 text-(--fd-text-muted) shrink-0"
+              className="size-8 text-(--fd-text-muted) shrink-0"
               onClick={() =>
                 onChangeValues({ items: values.items.filter((i) => i.id !== item.id) })
               }

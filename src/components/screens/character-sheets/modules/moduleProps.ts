@@ -10,4 +10,6 @@ export interface ModuleComponentProps<TConfig = unknown, TValues = unknown> {
   onChangeConfig: (config: TConfig) => void
   onChangeValues: (values: TValues) => void
   onDelete: () => void
+  onMoveUp: (() => void) | null
+  onMoveDown: (() => void) | null
 }

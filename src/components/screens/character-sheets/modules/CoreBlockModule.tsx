@@ -1,9 +1,10 @@
 import React from 'react'
+import { IdCard, Plus, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { uuid } from '@/utils/open-draft/uuid'
-import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { uuid } from '@/utils/open-draft/uuid'
 import TrackerBar from './shared/TrackerBar'
+import NumberField from './shared/NumberField'
 import ModuleCard from './shared/ModuleCard'
 import type { ModuleComponentProps } from './moduleProps'
 
@@ -37,21 +38,30 @@ export const defaultCoreBlockValues: CoreBlockValues = {
 
 const CoreBlockModule: React.FC<
   ModuleComponentProps<CoreBlockConfig, CoreBlockValues>
-> = ({ module, onChangeLabel, onChangeConfig, onChangeValues, onDelete }) => {
+> = ({ module, onChangeLabel, onChangeConfig, onChangeValues, onDelete, onMoveUp, onMoveDown }) => {
   const { config, values } = module
 
   return (
-    <ModuleCard label={module.label} onChangeLabel={onChangeLabel} onDelete={onDelete}>
-      <div className="flex flex-col gap-2">
+    <ModuleCard
+      label={module.label}
+      icon={IdCard}
+      onChangeLabel={onChangeLabel}
+      onDelete={onDelete}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+    >
+      <div className="flex flex-col gap-3">
         <Input
           value={values.characterName}
           placeholder="Character name"
           onChange={(e) => onChangeValues({ ...values, characterName: e.target.value })}
-          className="h-7 text-xs"
+          className="bg-transparent px-1.5 border-transparent hover:border-(--fd-border) focus-visible:border-ring font-semibold text-sm"
         />
 
         <div>
-          <span className="text-[10px] text-(--fd-text-muted) uppercase">HP</span>
+          <span className="font-medium text-[10px] text-(--fd-text-muted) uppercase tracking-wide">
+            HP
+          </span>
           <TrackerBar
             current={values.hpCurrent}
             max={values.hpMax}
@@ -61,11 +71,26 @@ const CoreBlockModule: React.FC<
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {config.statLabels.map((stat) => (
-            <div key={stat.id} className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1">
-                <Input
+        {config.statLabels.length > 0 && (
+          <div className="gap-2 grid grid-cols-3">
+            {config.statLabels.map((stat) => (
+              <div
+                key={stat.id}
+                className="group relative flex flex-col items-center gap-1 bg-black/10 py-2 border border-(--fd-border) rounded-lg"
+              >
+                <button
+                  type="button"
+                  className="top-1 right-1 absolute flex items-center justify-center opacity-0 group-hover:opacity-100 rounded text-(--fd-text-muted) hover:text-destructive transition-opacity size-4"
+                  onClick={() =>
+                    onChangeConfig({
+                      statLabels: config.statLabels.filter((s) => s.id !== stat.id),
+                    })
+                  }
+                  title="Remove stat"
+                >
+                  <X className="size-3" />
+                </button>
+                <input
                   value={stat.label}
                   onChange={(e) =>
                     onChangeConfig({
@@ -74,47 +99,32 @@ const CoreBlockModule: React.FC<
                       ),
                     })
                   }
-                  className="h-5 px-1 w-14 text-[10px] text-center uppercase"
+                  className="bg-transparent w-full font-medium text-[10px] text-(--fd-text-muted) text-center uppercase tracking-wide outline-none"
                 />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-4 text-(--fd-text-muted)"
-                  onClick={() =>
-                    onChangeConfig({
-                      statLabels: config.statLabels.filter((s) => s.id !== stat.id),
-                    })
+                <NumberField
+                  value={values.stats[stat.id] ?? 0}
+                  onChange={(v) =>
+                    onChangeValues({ ...values, stats: { ...values.stats, [stat.id]: v } })
                   }
-                >
-                  <X className="size-2.5" />
-                </Button>
+                  inputClassName="h-8 bg-transparent border-transparent font-bold text-lg"
+                />
               </div>
-              <Input
-                type="number"
-                value={values.stats[stat.id] ?? 0}
-                onChange={(e) =>
-                  onChangeValues({
-                    ...values,
-                    stats: { ...values.stats, [stat.id]: Number(e.target.value) || 0 },
-                  })
-                }
-                className="h-8 w-14 text-sm text-center"
-              />
-            </div>
-          ))}
-          <Button
-            variant="outline"
-            size="sm"
-            className="self-end h-8 text-xs"
-            onClick={() =>
-              onChangeConfig({
-                statLabels: [...config.statLabels, { id: uuid(), label: 'NEW' }],
-              })
-            }
-          >
-            + Stat
-          </Button>
-        </div>
+            ))}
+          </div>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-start h-7 text-xs"
+          onClick={() =>
+            onChangeConfig({
+              statLabels: [...config.statLabels, { id: uuid(), label: 'NEW' }],
+            })
+          }
+        >
+          <Plus className="mr-1 size-3.5" />
+          Stat
+        </Button>
       </div>
     </ModuleCard>
   )
