@@ -97,6 +97,7 @@ interface UseHeaderMenusArgs {
   onTemplateSelectOpen: () => void
   onAboutOpen: () => void
   onDiagnosticsOpen: () => void
+  onOpenMapSettings: () => void
 }
 
 export function useHeaderMenus({
@@ -110,6 +111,7 @@ export function useHeaderMenus({
   onTemplateSelectOpen,
   onAboutOpen,
   onDiagnosticsOpen,
+  onOpenMapSettings,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
   const activeStorageMode = useBrowserStorageStatusStore((s) => s.mode)
@@ -305,6 +307,11 @@ export function useHeaderMenus({
             label: 'Page Setup…',
             icon: FaCog, // or whatever icon
             action: onOpenPageSetup,
+          },
+          {
+            label: 'Map Settings…',
+            icon: FaCog,
+            action: onOpenMapSettings,
           },
         ],
       },
@@ -690,6 +697,7 @@ export function useHeaderMenus({
       zoomLevel,
       onAboutOpen,
       onDiagnosticsOpen,
+      onOpenMapSettings,
       setSearchOpen,
       setSpellCheckOpen,
       setWritingSuggestionsOpen,

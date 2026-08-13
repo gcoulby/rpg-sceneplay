@@ -3,13 +3,10 @@ import { clearTrackChanges } from './shared'
 import type { Editor } from '@tiptap/react'
 import { openBinaryFile, openTextFile } from '@/storage/fileOps'
 import { parseFDXFull } from '@/utils/open-draft/fdxParser'
-import {
-  parseOdraft,
-  isSceneplayFile,
-} from '@/storage/formats/sceneplayFormat'
+import { parseOdraft, isSceneplayFile } from '@/storage/formats/sceneplayFormat'
 import { hydrateEditorStoresFromContent } from '@/storage/hydrateStores'
 import { unpackAssets } from '@/storage/assetStore'
-import { showToast } from '@/components/open-draft/Toast'
+import { showToast } from '@/actions/show-toast'
 import { parseFountain } from '@/utils/open-draft/fountainParser'
 import { clearEditorHistory } from '@/editor/clearHistory'
 import { useProjectStore } from '@/stores/projectStore'
@@ -107,10 +104,10 @@ export const handleImport = async (editor: Editor | null) => {
         // still resolve by id.
         await unpackAssets(parsed.assets, null)
       } catch (parseErr) {
-        showToast(
-          `Invalid .${ext} file: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
-          'error',
-        )
+        showToast({
+          description: `Invalid .${ext} file: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`,
+          type: 'error',
+        })
         return
       }
     } else {
@@ -136,15 +133,14 @@ export const handleImport = async (editor: Editor | null) => {
       odraft: 'OpenDraft (.odraft)',
     }
     const fmtLabel =
-      (ext && FORMAT_LABELS[ext]) ||
-      (ext ? `.${ext}` : 'imported file')
+      (ext && FORMAT_LABELS[ext]) || (ext ? `.${ext}` : 'imported file')
     store.setImportedSource({ name, format: fmtLabel })
   } catch (err) {
     console.error('Import failed:', err)
-    showToast(
-      `Import failed: ${err instanceof Error ? err.message : String(err)}`,
-      'error',
-    )
+    showToast({
+      description: `Import failed: ${err instanceof Error ? err.message : String(err)}`,
+      type: 'error',
+    })
   }
 }
 
@@ -177,16 +173,16 @@ export const handleImportDocx = async (editor: Editor | null) => {
         parsed.ambiguousCount > 0
           ? `Imported with ${parsed.ambiguousCount} paragraph(s) auto-classified as Action — review the script.`
           : `Imported with ${parsed.warnings.length} note(s). See console for details.`
-      showToast(summary, 'info')
+      showToast({ description: summary, type: 'info' })
       for (const w of parsed.warnings) console.warn('[Word Import]', w)
     } else {
-      showToast('Word document imported.', 'info')
+      showToast({ description: 'Word document imported.', type: 'info' })
     }
   } catch (err) {
     console.error('Word import failed:', err)
-    showToast(
-      `Word import failed: ${err instanceof Error ? err.message : String(err)}`,
-      'error',
-    )
+    showToast({
+      description: `Word import failed: ${err instanceof Error ? err.message : String(err)}`,
+      type: 'error',
+    })
   }
 }

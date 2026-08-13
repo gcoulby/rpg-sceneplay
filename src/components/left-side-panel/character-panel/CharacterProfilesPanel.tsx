@@ -12,7 +12,7 @@ import { useProjectStore } from '@/stores/projectStore'
 import { useAssetStore } from '@/stores/assetStore'
 import { addAssetFile, listAssets, useAssetUrls } from '@/storage/assetStore'
 import { characterKey, singleLine } from '@/utils/open-draft/nodeText'
-import { showToast } from '@/components/open-draft/Toast'
+import { showToast } from '@/actions/show-toast'
 import { useDocVersion } from '../utils/useDocVersion'
 import { DEFAULT_HIGHLIGHT_COLORS } from './characterConstants'
 import { getEmptyProfile } from './characterUtils'
@@ -570,12 +570,12 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
         upsertCharacterProfile(charName, {
           images: [...currentImages, imageValue],
         })
-        showToast('Image added', 'success')
+        showToast({ description: 'Image added', type: 'success' })
       } catch (err) {
-        showToast(
-          `Image upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
-          'error',
-        )
+        showToast({
+          description: `Image upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+          type: 'error',
+        })
       } finally {
         setUploading(false)
       }

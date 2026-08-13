@@ -19,6 +19,7 @@ import { useEditorStore } from '@/stores/editorStore'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import { spellChecker } from '@/editor/spellchecker'
 import { grammarIgnore } from '@/editor/grammar/grammarIgnore'
+import { useMapStore } from '@/components/screens/map/useMapStore'
 
 /**
  * Every `_`-prefixed key `buildSaveContent` writes. Used to separate app
@@ -49,6 +50,8 @@ export const SAVE_METADATA_KEYS = [
   '_sceneNumbersVisible',
   '_sceneNumbersLocked',
   '_pageLayout',
+  '_map',
+  '_locationMapRefs',
 ] as const
 
 export type SaveMetadataKey = (typeof SAVE_METADATA_KEYS)[number]
@@ -64,6 +67,7 @@ export function buildSaveContent(
   if (!editor || editor.isDestroyed) return undefined
   const store = useEditorStore.getState()
   const tplStore = useFormattingTemplateStore.getState()
+  const mapStore = useMapStore.getState()
   const doc = editor.getJSON()
   return {
     ...doc,
@@ -92,6 +96,8 @@ export function buildSaveContent(
     _sceneNumbersVisible: store.sceneNumbersVisible,
     _sceneNumbersLocked: store.sceneNumbersLocked,
     _pageLayout: store.pageLayout,
+    _map: mapStore.map,
+    _locationMapRefs: mapStore.locationMapRefs,
   }
 }
 

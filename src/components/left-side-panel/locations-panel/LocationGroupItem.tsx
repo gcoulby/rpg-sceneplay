@@ -6,6 +6,8 @@ import {
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useMapStore } from '@/components/screens/map/useMapStore'
+import { useMainTabStore } from '@/stores/mainTabStore'
 import type { LocationGroup } from '../utils/scene-utils'
 
 interface LocationGroupItemProps {
@@ -32,6 +34,17 @@ const LocationGroupItem: React.FC<LocationGroupItemProps> = ({
   onSelectScene,
 }) => {
   const key = group.name.toUpperCase()
+  const mapRef = useMapStore((s) => s.locationMapRefs[key])
+  const map = useMapStore((s) => s.map)
+  const setPendingLocationLink = useMapStore((s) => s.setPendingLocationLink)
+  const removeLocationMapRef = useMapStore((s) => s.removeLocationMapRef)
+  const setActiveTab = useMainTabStore((s) => s.setActiveTab)
+
+  const handleAddToMap = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setPendingLocationLink(group.name)
+    setActiveTab('map')
+  }
 
   return (
     <AccordionItem
@@ -68,17 +81,42 @@ const LocationGroupItem: React.FC<LocationGroupItemProps> = ({
             />
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mb-1.5 px-2 py-0.75 h-auto text-[10px]"
-            onClick={(e) => {
-              e.stopPropagation()
-              onStartRename()
-            }}
-          >
-            Rename Location
-          </Button>
+          <div className="flex flex-wrap gap-1.5 mb-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="px-2 py-0.75 h-auto text-[10px]"
+              onClick={(e) => {
+                e.stopPropagation()
+                onStartRename()
+              }}
+            >
+              Rename Location
+            </Button>
+            {map && !mapRef && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2 py-0.75 h-auto text-[10px]"
+                onClick={handleAddToMap}
+              >
+                Add to Map
+              </Button>
+            )}
+            {mapRef && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2 py-0.75 h-auto text-[10px]"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  removeLocationMapRef(group.name)
+                }}
+              >
+                Remove from Map
+              </Button>
+            )}
+          </div>
         )}
 
         <div className="flex flex-col gap-0.5">
