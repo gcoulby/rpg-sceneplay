@@ -1,0 +1,92 @@
+{
+  "id": "pulp-investigator",
+  "name": "Pulp Investigator",
+  "description": "A low-fantasy investigator sheet: sanity/health trackers, skills, and a clue list.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Investigator",
+        "modules": [
+          {
+            "id": "core",
+            "type": "core-block",
+            "label": "Core Block",
+            "config": {
+              "statLabels": [
+                { "id": "str", "label": "STR" },
+                { "id": "dex", "label": "DEX" },
+                { "id": "int", "label": "INT" }
+              ]
+            },
+            "values": {
+              "characterName": "",
+              "portraitAssetId": null,
+              "hpCurrent": 12,
+              "hpMax": 12,
+              "stats": {}
+            }
+          },
+          {
+            "id": "sanity",
+            "type": "tracker",
+            "label": "Sanity",
+            "config": {},
+            "values": { "current": 50, "max": 99 }
+          },
+          {
+            "id": "skills",
+            "type": "skills",
+            "label": "Skills",
+            "config": { "showRoll": true },
+            "values": {
+              "rows": [
+                { "id": "spot-hidden", "name": "Spot Hidden", "modifier": 0 },
+                { "id": "library-use", "name": "Library Use", "modifier": 0 },
+                { "id": "psychology", "name": "Psychology", "modifier": 0 }
+              ]
+            }
+          },
+          {
+            "id": "actions",
+            "type": "custom-buttons",
+            "label": "Rolls",
+            "config": {
+              "buttons": [
+                { "id": "sanity-check", "label": "Sanity Check", "formula": "1d100" }
+              ]
+            },
+            "values": {}
+          }
+        ]
+      },
+      {
+        "id": "case-file",
+        "label": "Case File",
+        "modules": [
+          {
+            "id": "gear",
+            "type": "gear",
+            "label": "Equipment",
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "clues",
+            "type": "list",
+            "label": "Clues",
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "notes",
+            "type": "notes",
+            "label": "Case Notes",
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

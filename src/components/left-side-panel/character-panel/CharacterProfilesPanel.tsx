@@ -27,6 +27,8 @@ import ImageLightboxDialog from './ImageLightboxDialog'
 import CharacterDetailDialog from './CharacterDetailDialog'
 import { RelationshipMap } from './RelationshipMap'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { deleteCharacterCascade } from '@/components/screens/character-sheets/store/sheetLinking'
+import { openCharacterSheet } from '@/components/screens/character-sheets/store/openCharacterSheet'
 
 interface CharacterProfilesPanelProps {
   editor: Editor | null
@@ -41,7 +43,6 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
     characters,
     characterProfiles,
     upsertCharacterProfile,
-    deleteCharacterProfile,
     characterRelationships,
     upsertCharacterRelationship,
     deleteCharacterRelationship,
@@ -183,7 +184,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
     }
 
     for (const prof of characterProfiles) {
-      if (!names.has(prof.name)) deleteCharacterProfile(prof.name)
+      if (!names.has(prof.name)) deleteCharacterCascade(prof.name)
     }
 
     let colorIdx = characterProfiles.length
@@ -204,12 +205,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
       if (Object.keys(updates).length > 0)
         upsertCharacterProfile(charName, updates)
     }
-  }, [
-    editor,
-    characterProfiles,
-    upsertCharacterProfile,
-    deleteCharacterProfile,
-  ])
+  }, [editor, characterProfiles, upsertCharacterProfile])
 
   interface CharStats {
     dialogueCount: number
@@ -751,6 +747,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
                         setImagePickerFor(name)
                         setImagePickerFilter('')
                       }}
+                      onOpenSheet={() => openCharacterSheet(name)}
                     />
                   )
                 })
@@ -848,7 +845,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
         onOpenChange={(open) => !open && setPendingRemoveChar(null)}
         onConfirm={() => {
           if (!pendingRemoveChar) return
-          deleteCharacterProfile(pendingRemoveChar)
+          deleteCharacterCascade(pendingRemoveChar)
           setPendingRemoveChar(null)
         }}
       />

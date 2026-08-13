@@ -22,6 +22,8 @@ import {
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import { useMapStore } from '@/components/screens/map/useMapStore'
 import type { ProjectMap, MapRef } from '@/components/screens/map/types'
+import { useSheetStore } from '@/components/screens/character-sheets/store/useSheetStore'
+import type { CharacterSheet } from '@/components/screens/character-sheets/types'
 import { hasSaveMetadata } from './saveContent'
 
 /**
@@ -91,6 +93,8 @@ export function hydrateEditorStoresFromContent(
   mapStore.setLocationMapRefs(
     parseAttr<Record<string, MapRef>>(c._locationMapRefs, {}),
   )
+
+  useSheetStore.getState().setSheets(parseAttr<CharacterSheet[]>(c._sheets, []))
 
   return true
 }

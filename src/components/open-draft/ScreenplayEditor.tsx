@@ -57,6 +57,8 @@ import Highlight from '@tiptap/extension-highlight'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import { useMapStore } from '@/components/screens/map/useMapStore'
 import type { ProjectMap, MapRef } from '@/components/screens/map/types'
+import { useSheetStore } from '@/components/screens/character-sheets/store/useSheetStore'
+import type { CharacterSheet } from '@/components/screens/character-sheets/types'
 import {
   generateTemplateCss,
   injectTemplateCss,
@@ -1816,6 +1818,7 @@ const ScreenplayEditor: React.FC = () => {
         store.setPageLayout({ ...DEFAULT_PAGE_LAYOUT })
         useMapStore.getState().setMap(null)
         useMapStore.getState().setLocationMapRefs({})
+        useSheetStore.getState().setSheets([])
 
         const parseAttr = (val: unknown): unknown[] => {
           if (typeof val === 'string') {
@@ -1868,6 +1871,8 @@ const ScreenplayEditor: React.FC = () => {
                     ? (prof.images as string[])
                     : [],
                   sampleDialogue: (prof.sampleDialogue as string) || '',
+                  sheetId:
+                    typeof prof.sheetId === 'string' ? prof.sheetId : null,
                 })
               }
             }
@@ -1967,6 +1972,10 @@ const ScreenplayEditor: React.FC = () => {
             c._locationMapRefs && typeof c._locationMapRefs === 'object'
               ? (c._locationMapRefs as Record<string, MapRef>)
               : {},
+          )
+          // Restore character sheets
+          useSheetStore.getState().setSheets(
+            Array.isArray(c._sheets) ? (c._sheets as CharacterSheet[]) : [],
           )
         }
 

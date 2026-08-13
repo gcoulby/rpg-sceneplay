@@ -1,0 +1,96 @@
+{
+  "id": "sci-fi-operative",
+  "name": "Sci-Fi Operative",
+  "description": "A sci-fi/cyberpunk operative sheet: shields + HP trackers, gear, and system conditions.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Operative",
+        "modules": [
+          {
+            "id": "core",
+            "type": "core-block",
+            "label": "Core Block",
+            "config": {
+              "statLabels": [
+                { "id": "body", "label": "BODY" },
+                { "id": "reflex", "label": "REFLEX" },
+                { "id": "tech", "label": "TECH" }
+              ]
+            },
+            "values": {
+              "characterName": "",
+              "portraitAssetId": null,
+              "hpCurrent": 20,
+              "hpMax": 20,
+              "stats": {}
+            }
+          },
+          {
+            "id": "shields",
+            "type": "tracker",
+            "label": "Shields",
+            "config": {},
+            "values": { "current": 15, "max": 15 }
+          },
+          {
+            "id": "custom-stats",
+            "type": "custom-stats",
+            "label": "Attributes",
+            "config": {
+              "rows": [
+                { "id": "hacking", "label": "Hacking", "die": "d20" },
+                { "id": "piloting", "label": "Piloting", "die": "d20" }
+              ]
+            },
+            "values": {}
+          },
+          {
+            "id": "actions",
+            "type": "custom-buttons",
+            "label": "Systems",
+            "config": {
+              "buttons": [
+                { "id": "hack", "label": "Hack", "formula": "1d20+{Hacking}" }
+              ]
+            },
+            "values": {}
+          }
+        ]
+      },
+      {
+        "id": "loadout",
+        "label": "Loadout",
+        "modules": [
+          {
+            "id": "gear",
+            "type": "gear",
+            "label": "Gear",
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "conditions",
+            "type": "conditions",
+            "label": "System Status",
+            "config": {},
+            "values": {
+              "items": [
+                { "id": "overheated", "label": "Overheated", "active": false },
+                { "id": "hacked", "label": "Hacked", "active": false }
+              ]
+            }
+          },
+          {
+            "id": "notes",
+            "type": "notes",
+            "label": "Notes",
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

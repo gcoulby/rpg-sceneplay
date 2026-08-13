@@ -24,6 +24,7 @@ export function getEmptyProfile(name: string): CharacterProfile {
     verbalTics: '',
     sampleDialogue: '',
     images: [],
+    sheetId: null,
   }
 }
 
