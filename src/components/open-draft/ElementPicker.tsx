@@ -239,6 +239,11 @@ const ElementPicker: React.FC<ElementPickerProps> = ({
   const orderedTypes = useMemo<ElementType[]>(() => {
     // Caller-supplied list (e.g. AV cell context) wins outright.
     if (availableTypes && availableTypes.length > 0) return availableTypes
+    // Templates with a restricted, fixed element set (e.g. RPG Sceneplay's
+    // S-T-A-R-T list) show exactly that list, in that order, regardless of
+    // the current block's type — rather than the contextual "most likely
+    // next type" ordering used by unrestricted templates below.
+    if (activeTemplate.elementMenuOrder) return activeTemplate.elementMenuOrder
     const enabled = new Set(
       Object.values(activeTemplate.rules)
         .filter((r) => r.enabled)

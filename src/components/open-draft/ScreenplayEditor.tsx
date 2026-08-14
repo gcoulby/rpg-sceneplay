@@ -1015,30 +1015,49 @@ const ScreenplayEditor: React.FC = () => {
     }),
   )
 
-  // Element shortcuts: Mod-1 through Mod-8 to set element type
+  // Element shortcuts: Mod-1 through Mod-9 to set element type. Reads the
+  // active template's `elementMenuOrder` when set (e.g. RPG Sceneplay's
+  // restricted 8-type S-T-A-R-T mapping); falls back to the original
+  // hardcoded 8 built-ins otherwise, so Film Screenplay (and every other
+  // template without elementMenuOrder) is unaffected.
+  const DEFAULT_SHORTCUT_TYPES = [
+    'sceneHeading',
+    'action',
+    'character',
+    'dialogue',
+    'parenthetical',
+    'transition',
+    'general',
+    'shot',
+  ]
   const [ElementShortcutExtension] = React.useState(() =>
     Extension.create({
       name: 'elementShortcuts',
       priority: 999,
       addKeyboardShortcuts() {
-        const types = [
-          'sceneHeading',
-          'action',
-          'character',
-          'dialogue',
-          'parenthetical',
-          'transition',
-          'general',
-          'shot',
-        ]
         const shortcuts: Record<string, any> = {}
-        types.forEach((type, i) => {
+        for (let i = 0; i < 9; i++) {
           shortcuts[`Mod-${i + 1}`] = ({ editor }: { editor: any }) => {
-            if (!editor.schema.nodes[type]) return false
-            editor.chain().focus().setNode(type).run()
+            const activeTemplate = useFormattingTemplateStore
+              .getState()
+              .getActiveTemplate()
+            const types = activeTemplate.elementMenuOrder || DEFAULT_SHORTCUT_TYPES
+            const type = types[i]
+            if (!type) return false
+            if (editor.schema.nodes[type]) {
+              editor.chain().focus().setNode(type).run()
+              return true
+            }
+            const rule = activeTemplate.rules[type]
+            if (!rule) return false
+            editor
+              .chain()
+              .focus()
+              .setNode('customElement', { customTypeId: type, customLabel: rule.label })
+              .run()
             return true
           }
-        })
+        }
         return shortcuts
       },
     }),

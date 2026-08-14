@@ -10,8 +10,8 @@ import type { Editor } from '@tiptap/react'
 import {
   SYSTEM_TEMPLATES,
   useFormattingTemplateStore,
+  DEFAULT_TEMPLATE_ID,
 } from '@/stores/formattingTemplateStore'
-import { INDUSTRY_STANDARD_ID } from '@/stores/formattingTypes'
 
 const DEFAULT_DOC = {
   type: 'doc',
@@ -26,9 +26,9 @@ export function applyScriptFormat(
   if (!editor || editor.isDestroyed) return
 
   const tpl = SYSTEM_TEMPLATES[templateId]
-  // Industry Standard is the implicit default — store represents it as null.
+  // The default template is the implicit default — store represents it as null.
   const idForStore =
-    tpl && templateId !== INDUSTRY_STANDARD_ID ? templateId : null
+    tpl && templateId !== DEFAULT_TEMPLATE_ID ? templateId : null
   useFormattingTemplateStore.getState().setActiveTemplateId(idForStore)
 
   // Tiptap's setContent has a tightly-typed signature; the prior inline call site

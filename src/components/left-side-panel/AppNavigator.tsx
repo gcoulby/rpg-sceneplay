@@ -17,6 +17,7 @@ import NotesPanel from './notes-tab/NotesPanel'
 import CharacterProfilesPanel from './character-panel/CharacterProfilesPanel'
 import IndexCardsPanel from './index-card-panel/IndexCardsPanel'
 import { useActivityBarStore } from '@/stores/activity-bar-store'
+import StoryCubes from './story-cubes/story-cubes'
 
 interface AppNavigatorProps {
   editor: Editor | null
@@ -69,6 +70,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
             <CharacterProfilesPanel editor={editor} projectId="" />
           )}
           {activeView === 'index-cards' && <IndexCardsPanel editor={editor} />}
+          {activeView === 'story-cubes' && <StoryCubes />}
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>{children}</ResizablePanel>

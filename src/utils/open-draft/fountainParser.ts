@@ -87,6 +87,13 @@ export function parseFountain(text: string): TipTapNode {
       continue;
     }
 
+    // Lyrics: line starts with ~ (fountain.io spec)
+    if (trimmed.startsWith('~') && trimmed.length > 1) {
+      nodes.push(makeNode('lyrics', trimmed.substring(1).trim()));
+      i++;
+      continue;
+    }
+
     // Default: action
     nodes.push(makeNode('action', trimmed));
     i++;

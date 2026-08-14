@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
 import {
-  ELEMENT_LABELS,
   NOTE_COLORS,
   type ElementType,
 } from '@/stores/editorStore'
@@ -17,27 +16,12 @@ import {
   getCurrentElementRule,
   getLockedFormatting,
 } from '@/utils/open-draft/effectiveFormatting'
+import { getElementMenuItems } from '@/components/context-menu/constants'
+import { setFormatType } from '@/actions/format-actions'
 
 const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform)
 const mod = isMac ? '⌘' : 'Ctrl+'
 const shift = isMac ? '⇧' : 'Shift+'
-
-// Element types shown in the submenu, with their shortcuts
-const ELEMENT_MENU_ITEMS: { type: ElementType; shortcut: string }[] = [
-  { type: 'sceneHeading', shortcut: `${mod}1` },
-  { type: 'action', shortcut: `${mod}2` },
-  { type: 'character', shortcut: `${mod}3` },
-  { type: 'dialogue', shortcut: `${mod}4` },
-  { type: 'parenthetical', shortcut: `${mod}5` },
-  { type: 'transition', shortcut: `${mod}6` },
-  { type: 'general', shortcut: `${mod}7` },
-  { type: 'shot', shortcut: `${mod}8` },
-  { type: 'newAct', shortcut: '' },
-  { type: 'endOfAct', shortcut: '' },
-  { type: 'lyrics', shortcut: '' },
-  { type: 'showEpisode', shortcut: '' },
-  { type: 'castList', shortcut: '' },
-]
 
 // Revision colors matching Final Draft production standard
 const REVISION_COLORS = [
@@ -355,7 +339,7 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
   }
 
   const handleSetElement = (type: ElementType) => {
-    editor.chain().focus().setNode(type).run()
+    setFormatType(editor, type)
     onClose()
   }
 
@@ -856,16 +840,13 @@ const ScriptContextMenu: React.FC<ScriptContextMenuProps> = ({
         </div>
         {elementSubOpen && (
           <div className={CTX_SUBMENU}>
-            {ELEMENT_MENU_ITEMS.filter(({ type }) => {
-              const rule = activeTemplate.rules[type]
-              return !rule || rule.enabled
-            }).map(({ type, shortcut }) => (
+            {getElementMenuItems(activeTemplate).map(({ type, label, shortcut }) => (
               <div
                 key={type}
                 className={`${CTX_ITEM}${currentNodeType === type ? CTX_ITEM_ACTIVE : ''}`}
                 onClick={() => handleSetElement(type)}
               >
-                <span>{ELEMENT_LABELS[type]}</span>
+                <span>{label}</span>
                 {shortcut && <span className={CTX_SHORTCUT}>{shortcut}</span>}
               </div>
             ))}

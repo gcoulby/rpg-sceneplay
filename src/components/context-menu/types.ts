@@ -63,4 +63,5 @@ export interface ContextMenuState {
 
 export interface ElementFormattingRule {
   enabled: boolean
+  label?: string
 }
