@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
 import {
   BookHeart,
   ChartAreaIcon,
+  Dices,
   IdCard,
   MapIcon,
   PencilLine,
@@ -21,6 +22,7 @@ import { MapScreen } from './components/screens/map/map-screen'
 import { useMainTabStore, type MainTab } from '@/stores/mainTabStore'
 import { CharacterSheet } from './components/screens/character-sheets/character-sheet'
 import Acknowledgements from './components/screens/acknowledgements'
+import OracleScreen from './components/screens/oracles'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   const activeTab = useMainTabStore((s) => s.activeTab)
@@ -63,6 +65,10 @@ function App() {
                 <ChartAreaIcon />
                 Stats
               </TabsTrigger>
+              <TabsTrigger value="oracles">
+                <Dices />
+                Oracles
+              </TabsTrigger>
               <TabsTrigger value="acknowledgements">
                 <BookHeart />
                 Acknowledgements
@@ -91,6 +97,11 @@ function App() {
             <TabsContent value="statistics">
               <div className="h-(--app-h)! w-full overflow-hidden">
                 {editor && <ScriptStatistics editor={editor} />}
+              </div>
+            </TabsContent>
+            <TabsContent value="oracles">
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                <OracleScreen />
               </div>
             </TabsContent>
             <TabsContent value="acknowledgements">

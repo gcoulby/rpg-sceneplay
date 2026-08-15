@@ -1,10 +1,26 @@
 import { create } from 'zustand'
-import type { OracleSource, OracleCollection, OracleCombo } from '@/oracles/types'
+import type {
+  OracleSource,
+  OracleCollection,
+  OracleCombo,
+  OracleTable,
+} from '@/oracles/types'
 import {
   BUNDLED_ORACLE_SOURCES,
   BUNDLED_ORACLE_COLLECTIONS,
   BUNDLED_ORACLE_COMBOS,
 } from '@/oracles/data'
+
+function flattenTables(collections: OracleCollection[]): OracleTable[] {
+  const tables: OracleTable[] = []
+  for (const collection of collections) {
+    for (const child of collection.children) {
+      if ('children' in child) tables.push(...flattenTables([child]))
+      else tables.push(child)
+    }
+  }
+  return tables
+}
 
 interface OracleState {
   userSources: OracleSource[]
@@ -18,6 +34,8 @@ interface OracleState {
   getAllSources: () => OracleSource[]
   getAllCollections: () => OracleCollection[]
   getAllCombos: () => OracleCombo[]
+  getAllTables: () => OracleTable[]
+  getTableById: (id: string) => OracleTable | undefined
 }
 
 export const useOracleStore = create<OracleState>((set, get) => ({
@@ -37,4 +55,6 @@ export const useOracleStore = create<OracleState>((set, get) => ({
     ...get().userCollections,
   ],
   getAllCombos: () => [...BUNDLED_ORACLE_COMBOS, ...get().userCombos],
+  getAllTables: () => flattenTables(get().getAllCollections()),
+  getTableById: (id) => get().getAllTables().find((t) => t.id === id),
 }))
