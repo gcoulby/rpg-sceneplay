@@ -17,7 +17,7 @@ import { useGoToScene } from '../utils/useGoToScene'
 import SceneFilterPanel from './SceneFilterPanel'
 import SceneListItem from './SceneListItem'
 import SynopsisDialog from '@/components/plugins/synopsis-dialog/synopsis-dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import * as ActivityPanel from '@/components/ui/activity-panel'
 
 interface ScenesPanelProps {
   editor: Editor | null
@@ -283,147 +283,149 @@ const ScenesPanel: React.FC<ScenesPanelProps> = ({
   }, [])
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center px-3.5 py-2 border-b border-(--fd-border) shrink-0 gap-2">
-        <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">
-          Scenes
-        </span>
-        <span className="text-xs text-(--fd-text) opacity-70">
+    <ActivityPanel.Shell>
+      <ActivityPanel.Header>
+        <ActivityPanel.Title>Scenes</ActivityPanel.Title>
+        <ActivityPanel.Meta>
           {hasActiveFilter || searchQuery ? `${filteredIndices.length}/` : ''}
           {scenes.length}
-        </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`ml-auto size-8 ${hasActiveFilter ? 'text-(--fd-accent)' : 'text-(--fd-text-muted)'}`}
-          onClick={() => setShowFilters((v) => !v)}
-          title="Filter scenes"
-        >
-          <Filter
-            className="size-4"
-            fill={hasActiveFilter ? 'currentColor' : 'none'}
+        </ActivityPanel.Meta>
+        <ActivityPanel.Interactions>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`ml-auto size-8 ${hasActiveFilter ? 'text-(--fd-accent)' : 'text-(--fd-text-muted)'}`}
+            onClick={() => setShowFilters((v) => !v)}
+            title="Filter scenes"
+          >
+            <Filter
+              className="size-4"
+              fill={hasActiveFilter ? 'currentColor' : 'none'}
+            />
+          </Button>
+        </ActivityPanel.Interactions>
+      </ActivityPanel.Header>
+      <ActivityPanel.SubHeader>
+        {showFilters && (
+          <SceneFilterPanel
+            allCharacters={allCharacters}
+            allLocations={allLocations}
+            allPrefixes={allPrefixes}
+            allTimes={allTimes}
+            filterCharacters={filterCharacters}
+            filterLocation={filterLocation}
+            filterPrefix={filterPrefix}
+            filterTime={filterTime}
+            filterColor={filterColor}
+            filterSynopsis={filterSynopsis}
+            hasActiveFilter={hasActiveFilter}
+            onAddCharacter={(c) =>
+              setFilterCharacters((prev) =>
+                prev.includes(c) ? prev : [...prev, c],
+              )
+            }
+            onRemoveCharacter={(c) =>
+              setFilterCharacters((prev) => prev.filter((x) => x !== c))
+            }
+            onLocationChange={setFilterLocation}
+            onPrefixChange={setFilterPrefix}
+            onTimeChange={setFilterTime}
+            onColorChange={setFilterColor}
+            onSynopsisChange={setFilterSynopsis}
+            onClearAll={clearAllFilters}
           />
-        </Button>
-      </div>
-
-      {showFilters && (
-        <SceneFilterPanel
-          allCharacters={allCharacters}
-          allLocations={allLocations}
-          allPrefixes={allPrefixes}
-          allTimes={allTimes}
-          filterCharacters={filterCharacters}
-          filterLocation={filterLocation}
-          filterPrefix={filterPrefix}
-          filterTime={filterTime}
-          filterColor={filterColor}
-          filterSynopsis={filterSynopsis}
-          hasActiveFilter={hasActiveFilter}
-          onAddCharacter={(c) =>
-            setFilterCharacters((prev) =>
-              prev.includes(c) ? prev : [...prev, c],
-            )
-          }
-          onRemoveCharacter={(c) =>
-            setFilterCharacters((prev) => prev.filter((x) => x !== c))
-          }
-          onLocationChange={setFilterLocation}
-          onPrefixChange={setFilterPrefix}
-          onTimeChange={setFilterTime}
-          onColorChange={setFilterColor}
-          onSynopsisChange={setFilterSynopsis}
-          onClearAll={clearAllFilters}
-        />
-      )}
-
-      <div className="flex-1 pb-1 overflow-y-auto" ref={listRef}>
-        <div
-          className={`flex items-center gap-1.5 px-3.5 py-2 border-b border-(--fd-border) ${scrollingUp ? 'sticky top-0 z-2 bg-(--fd-navigator-bg)' : ''}`}
-        >
-          <Search className="opacity-40 size-3.5 shrink-0" />
-          <Input
-            className="flex-1 min-w-0 h-auto bg-transparent border-none shadow-none text-(--fd-text) text-[13px] py-1 px-0 focus-visible:ring-0"
-            type="text"
-            placeholder="Search headings & synopses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-6 text-(--fd-text-muted) hover:text-(--fd-text)"
-              onClick={() => setSearchQuery('')}
-            >
-              <X className="size-3.5" />
-            </Button>
-          )}
+        )}
+        <div className="flex-1 pb-1 overflow-y-auto" ref={listRef}>
+          <div
+            className={`flex items-center gap-1.5 px-3.5 py-2 border-b border-(--fd-border) ${scrollingUp ? 'sticky top-0 z-2 bg-(--fd-navigator-bg)' : ''}`}
+          >
+            <Search className="opacity-40 size-3.5 shrink-0" />
+            <Input
+              className="flex-1 min-w-0 h-auto bg-transparent border-none shadow-none text-(--fd-text) text-[13px] py-1 px-0 focus-visible:ring-0"
+              type="text"
+              placeholder="Search headings & synopses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-6 text-(--fd-text-muted) hover:text-(--fd-text)"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="size-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
-        <ScrollArea className="w-full h-[calc(var(--app-h)-10dvh)]">
-          {filteredIndices.length === 0 ? (
-            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
-              {hasActiveFilter || searchQuery
-                ? 'No scenes match the current filters.'
-                : 'No scenes yet. Start writing a scene heading (INT. or EXT.)'}
-            </div>
-          ) : (
-            filteredIndices.map((sceneIdx) => (
-              <SceneListItem
-                key={scenes[sceneIdx].id}
-                scene={scenes[sceneIdx]}
-                detail={sceneDetails[sceneIdx]}
-                timing={sceneTimings[sceneIdx]}
-                actLabel={sceneActLabel(structure, sceneIdx)}
-                isExpanded={expandedSceneIdx === sceneIdx}
-                searchQuery={searchQuery}
-                onToggle={() => {
-                  setExpandedSceneIdx(
-                    expandedSceneIdx === sceneIdx ? null : sceneIdx,
-                  )
-                  goToScene(sceneIdx)
-                }}
-                onEditSynopsis={() =>
-                  setSynopsisModal({
-                    sceneIdx,
-                    id: scenes[sceneIdx].id,
-                    heading: scenes[sceneIdx].heading,
-                    synopsis: scenes[sceneIdx].synopsis,
-                    color: scenes[sceneIdx].color,
-                  })
-                }
-              />
-            ))
-          )}
-        </ScrollArea>
-      </div>
+      </ActivityPanel.SubHeader>
+      <ActivityPanel.Content headerOffset={showFilters ? '22dvh' : '10dvh'}>
+        {filteredIndices.length === 0 ? (
+          <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
+            {hasActiveFilter || searchQuery
+              ? 'No scenes match the current filters.'
+              : 'No scenes yet. Start writing a scene heading (INT. or EXT.)'}
+          </div>
+        ) : (
+          filteredIndices.map((sceneIdx) => (
+            <SceneListItem
+              key={scenes[sceneIdx].id}
+              scene={scenes[sceneIdx]}
+              detail={sceneDetails[sceneIdx]}
+              timing={sceneTimings[sceneIdx]}
+              actLabel={sceneActLabel(structure, sceneIdx)}
+              isExpanded={expandedSceneIdx === sceneIdx}
+              searchQuery={searchQuery}
+              onToggle={() => {
+                setExpandedSceneIdx(
+                  expandedSceneIdx === sceneIdx ? null : sceneIdx,
+                )
+                goToScene(sceneIdx)
+              }}
+              onEditSynopsis={() =>
+                setSynopsisModal({
+                  sceneIdx,
+                  id: scenes[sceneIdx].id,
+                  heading: scenes[sceneIdx].heading,
+                  synopsis: scenes[sceneIdx].synopsis,
+                  color: scenes[sceneIdx].color,
+                })
+              }
+            />
+          ))
+        )}
+        {/* </ScrollArea> */}
+        {/* </div> */}
 
-      <SynopsisDialog
-        key={synopsisModal?.id ?? 'none'}
-        open={synopsisModal !== null}
-        onOpenChange={(o) => {
-          if (!o) setSynopsisModal(null)
-        }}
-        sceneHeading={synopsisModal?.heading ?? ''}
-        synopsis={synopsisModal?.synopsis ?? ''}
-        sceneColor={synopsisModal?.color}
-        pageLength={
-          synopsisModal
-            ? sceneDetails[synopsisModal.sceneIdx]?.pageLength
-            : undefined
-        }
-        autoTimingSeconds={
-          synopsisModal
-            ? sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
-            : undefined
-        }
-        timingOverride={
-          synopsisModal
-            ? sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds
-            : undefined
-        }
-        onSave={handleSaveSynopsis}
-      />
-    </div>
+        <SynopsisDialog
+          key={synopsisModal?.id ?? 'none'}
+          open={synopsisModal !== null}
+          onOpenChange={(o) => {
+            if (!o) setSynopsisModal(null)
+          }}
+          sceneHeading={synopsisModal?.heading ?? ''}
+          synopsis={synopsisModal?.synopsis ?? ''}
+          sceneColor={synopsisModal?.color}
+          pageLength={
+            synopsisModal
+              ? sceneDetails[synopsisModal.sceneIdx]?.pageLength
+              : undefined
+          }
+          autoTimingSeconds={
+            synopsisModal
+              ? sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
+              : undefined
+          }
+          timingOverride={
+            synopsisModal
+              ? sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds
+              : undefined
+          }
+          onSave={handleSaveSynopsis}
+        />
+      </ActivityPanel.Content>
+    </ActivityPanel.Shell>
   )
 }
 

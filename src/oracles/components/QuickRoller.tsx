@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import DieChip from './DieChip'
 import {
   rollFormula,
@@ -14,8 +12,7 @@ interface FormulaRollerProps {
   compact?: boolean
 }
 
-export default function FormulaRoller({ compact }: FormulaRollerProps) {
-  const [formula, setFormula] = useState('2d6+2d4,1d8')
+export default function QuickRoller({ compact }: FormulaRollerProps) {
   const [result, setResult] = useState<RollResult | null>(null)
 
   const roll = (f: string) => {
@@ -25,6 +22,8 @@ export default function FormulaRoller({ compact }: FormulaRollerProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      {!compact && <span className="font-medium text-sm">Roller</span>}
+
       <div className="flex flex-row flex-wrap justify-center items-center gap-1.5">
         {QUICK_DICE.map((sides) => (
           <DieChip
@@ -35,24 +34,6 @@ export default function FormulaRoller({ compact }: FormulaRollerProps) {
             onClick={() => roll(`1d${sides}`)}
           />
         ))}
-      </div>
-
-      <div className="flex flex-row justify-center items-center gap-2">
-        <div className="flex flex-row items-end gap-2 w-full">
-          <div className="flex flex-col gap-1 grow">
-            <Input
-              type="text"
-              className={' w-full text-sm h-9'}
-              value={formula}
-              onChange={(e) => setFormula(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-1 mt-0.5 grow">
-            <Button size="lg" variant="secondary" onClick={() => roll(formula)}>
-              Roll
-            </Button>
-          </div>
-        </div>
       </div>
 
       {result && <DiceResult compact={compact} result={result} />}

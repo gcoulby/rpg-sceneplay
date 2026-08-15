@@ -1,11 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card'
-import { useOracleActivityStore, type OracleActivity } from '@/stores/oracleActivityStore'
+  useOracleActivityStore,
+  type OracleActivity,
+} from '@/stores/oracleActivityStore'
 import StoryCubesRoller from '@/oracles/components/StoryCubesRoller'
 import ComboRoller from '@/oracles/components/ComboRoller'
 import FateChartRoller from '@/oracles/components/FateChartRoller'
@@ -18,9 +16,9 @@ export default function OracleScreen() {
   const setActiveActivity = useOracleActivityStore((s) => s.setActiveActivity)
 
   return (
-    <div className="h-full w-full overflow-y-auto p-6">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Oracles</h1>
+    <div className="p-6 w-full h-full overflow-y-auto">
+      <div className="flex flex-col gap-4 mx-auto max-w-6xl">
+        <h1 className="font-semibold text-2xl">Oracles</h1>
         <Tabs
           value={activeActivity}
           onValueChange={(v) => setActiveActivity(v as OracleActivity)}
@@ -32,7 +30,7 @@ export default function OracleScreen() {
           </TabsList>
 
           <TabsContent value="inspiration">
-            <div className="mx-auto flex max-w-2xl flex-col gap-4">
+            <div className="flex flex-col gap-4 mx-auto max-w-4xl">
               <Card>
                 <CardHeader>
                   <CardTitle>Story Cubes</CardTitle>
@@ -53,7 +51,7 @@ export default function OracleScreen() {
           </TabsContent>
 
           <TabsContent value="roller">
-            <div className="mx-auto flex max-w-2xl flex-col gap-4">
+            <div className="flex flex-col gap-4 mx-auto max-w-4xl">
               <Card>
                 <CardHeader>
                   <CardTitle>Fate Chart</CardTitle>
@@ -72,7 +70,7 @@ export default function OracleScreen() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Formula</CardTitle>
+                  <CardTitle>Dice Roller</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FormulaRoller />

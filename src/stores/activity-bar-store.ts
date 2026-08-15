@@ -10,6 +10,7 @@ import {
   NotebookTabs,
   Dices,
   Lightbulb,
+  Eye,
 } from 'lucide-react'
 import { create } from 'zustand'
 
@@ -25,6 +26,7 @@ export type NavView =
   | 'index-cards'
   | 'oracles'
   | 'inspiration'
+  | 'dice-roller'
 
 export interface NavViewConfig {
   id: NavView
@@ -41,8 +43,9 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'notes', label: 'Notes', icon: StickyNote },
   { id: 'characters', label: 'Characters', icon: Users },
   { id: 'index-cards', label: 'Index Cards', icon: NotebookTabs },
-  { id: 'oracles', label: 'Oracles', icon: Dices },
+  { id: 'oracles', label: 'Oracles', icon: Eye },
   { id: 'inspiration', label: 'Inspiration', icon: Lightbulb },
+  { id: 'dice-roller', label: 'Dice Roller', icon: Dices },
 ]
 
 interface ActivityBarState {

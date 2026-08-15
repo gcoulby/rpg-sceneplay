@@ -5,7 +5,7 @@ import { computePageBlocks, type PageContentInfo } from '@/editor/pagination'
 import { useGoToScene } from '../utils/useGoToScene'
 import PageThumbnail from './PageThumbnail'
 import { LINE_HEIGHT_PX, FD_INDENTS, SPACE_BEFORE } from './pageThumbnailLayout'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import * as ActivityPanel from '@/components/ui/activity-panel'
 
 interface PagesPanelProps {
   editor: Editor | null
@@ -161,23 +161,18 @@ const PagesPanel: React.FC<PagesPanelProps> = ({ editor, scrollContainer }) => {
   )
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center px-3.5 py-2 border-b border-(--fd-border) shrink-0 gap-2">
-        <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">
-          Pages
-        </span>
-        <span className="text-xs text-(--fd-text) opacity-70">
-          {pageContent.length}
-        </span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto" ref={pageGridRef}>
-        {pageContent.length === 0 ? (
-          <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
-            No pages yet. Start writing to see page previews.
-          </div>
-        ) : (
-          <ScrollArea className="w-full h-[calc(var(--app-h)-3dvh)]">
+    <ActivityPanel.Shell>
+      <ActivityPanel.Header>
+        <ActivityPanel.Title>Pages</ActivityPanel.Title>
+        <ActivityPanel.Meta>{pageContent.length}</ActivityPanel.Meta>
+      </ActivityPanel.Header>
+      <ActivityPanel.Content>
+        <div className="flex-1 overflow-y-auto" ref={pageGridRef}>
+          {pageContent.length === 0 ? (
+            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
+              No pages yet. Start writing to see page previews.
+            </div>
+          ) : (
             <div className="flex flex-col justify-center items-center px-2 py-1.5">
               {pageContent.map((page, pageIdx) => (
                 <PageThumbnail
@@ -192,10 +187,10 @@ const PagesPanel: React.FC<PagesPanelProps> = ({ editor, scrollContainer }) => {
                 />
               ))}
             </div>
-          </ScrollArea>
-        )}
-      </div>
-    </div>
+          )}
+        </div>
+      </ActivityPanel.Content>
+    </ActivityPanel.Shell>
   )
 }
 

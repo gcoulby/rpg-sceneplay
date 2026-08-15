@@ -22,14 +22,20 @@ interface OracleTableBrowserProps {
   compact?: boolean
 }
 
-export default function OracleTableBrowser({ compact }: OracleTableBrowserProps) {
+export default function OracleTableBrowser({
+  compact,
+}: OracleTableBrowserProps) {
   const getAllCollections = useOracleStore((s) => s.getAllCollections)
   const getAllSources = useOracleStore((s) => s.getAllSources)
   const getTableById = useOracleStore((s) => s.getTableById)
   const getComboForTable = useOracleStore((s) => s.getComboForTable)
   const activeCollectionId = useOracleActivityStore((s) => s.activeCollectionId)
-  const setActiveCollectionId = useOracleActivityStore((s) => s.setActiveCollectionId)
-  const [tableResults, setTableResults] = useState<Record<string, TableRollResult>>({})
+  const setActiveCollectionId = useOracleActivityStore(
+    (s) => s.setActiveCollectionId,
+  )
+  const [tableResults, setTableResults] = useState<
+    Record<string, TableRollResult>
+  >({})
   const [comboResults, setComboResults] = useState<
     Record<string, { text: string; rolls: TableRollResult[] }>
   >({})
@@ -38,14 +44,22 @@ export default function OracleTableBrowser({ compact }: OracleTableBrowserProps)
   const sourcesById = new Map(getAllSources().map((s) => [s.id, s]))
   const activeCollection =
     collections.find((c) => c.id === activeCollectionId) ?? collections[0]
-  const tables = activeCollection ? flattenCollectionTables(activeCollection) : []
+  const tables = activeCollection
+    ? flattenCollectionTables(activeCollection)
+    : []
   const rows = buildBrowserRows(tables, getComboForTable)
 
   const rollOneTable = (table: OracleTable) => {
-    setTableResults((prev) => ({ ...prev, [table.id]: rollTable(table, getTableById) }))
+    setTableResults((prev) => ({
+      ...prev,
+      [table.id]: rollTable(table, getTableById),
+    }))
   }
   const rollOneCombo = (combo: OracleCombo) => {
-    setComboResults((prev) => ({ ...prev, [combo.id]: rollCombo(combo, getTableById) }))
+    setComboResults((prev) => ({
+      ...prev,
+      [combo.id]: rollCombo(combo, getTableById),
+    }))
   }
 
   return (
@@ -55,13 +69,16 @@ export default function OracleTableBrowser({ compact }: OracleTableBrowserProps)
         onValueChange={(v) => v && setActiveCollectionId(v)}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Choose a collection" />
+          <SelectValue placeholder="Choose a collection">
+            {activeCollection.name}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {collections.map((collection) => (
             <SelectItem key={collection.id} value={collection.id}>
-              {sourcesById.get(collection.sourceId)?.name ?? collection.sourceId} —{' '}
-              {collection.name}
+              {sourcesById.get(collection.sourceId)?.name ??
+                collection.sourceId}{' '}
+              — {collection.name}
             </SelectItem>
           ))}
         </SelectContent>
@@ -73,10 +90,14 @@ export default function OracleTableBrowser({ compact }: OracleTableBrowserProps)
             const { combo } = row
             const result = comboResults[combo.id]
             return (
-              <div key={combo.id} className="flex flex-col gap-1 border-b pb-2">
-                <div className="flex flex-row items-center justify-between gap-2">
-                  <span className="text-sm font-medium">{combo.name}</span>
-                  <Button size={compact ? 'sm' : 'default'} onClick={() => rollOneCombo(combo)}>
+              <div key={combo.id} className="flex flex-col gap-1 pb-2 border-b">
+                <div className="flex flex-row justify-between items-center gap-2">
+                  <span className="font-medium text-sm">{combo.name}</span>
+                  <Button
+                    variant="secondary"
+                    size={compact ? 'sm' : 'default'}
+                    onClick={() => rollOneCombo(combo)}
+                  >
                     Roll
                   </Button>
                 </div>
@@ -86,9 +107,13 @@ export default function OracleTableBrowser({ compact }: OracleTableBrowserProps)
                     {!compact && (
                       <span className="text-muted-foreground">
                         {' '}
-                        ({result.rolls
-                          .map((r) => `${r.table.name}: ${describeTableRoll(r)}`)
-                          .join(' · ')})
+                        (
+                        {result.rolls
+                          .map(
+                            (r) => `${r.table.name}: ${describeTableRoll(r)}`,
+                          )
+                          .join(' · ')}
+                        )
                       </span>
                     )}
                   </span>
@@ -100,13 +125,14 @@ export default function OracleTableBrowser({ compact }: OracleTableBrowserProps)
           const { table } = row
           const result = tableResults[table.id]
           return (
-            <div key={table.id} className="flex flex-col gap-1 border-b pb-2">
-              <div className="flex flex-row items-center justify-between gap-2">
-                <span className="text-sm font-medium">{table.name}</span>
-                <Button size={compact ? 'sm' : 'default'} onClick={() => rollOneTable(table)}>
-                  Roll
-                </Button>
-              </div>
+            <div key={table.id} className="flex flex-col">
+              <Button
+                className="flex flex-row justify-between items-center cursor-pointer"
+                variant="ghost"
+                onClick={() => rollOneTable(table)}
+              >
+                <span className="font-medium text-sm">{table.name}</span>
+              </Button>
               {result && (
                 <span className="text-sm">
                   <span className="text-muted-foreground">{result.roll}:</span>{' '}
@@ -114,14 +140,15 @@ export default function OracleTableBrowser({ compact }: OracleTableBrowserProps)
                 </span>
               )}
               {!compact && (
-                <details className="text-xs text-muted-foreground">
+                <details className="text-muted-foreground text-xs">
                   <summary className="cursor-pointer">
                     {table.rows.length} rows ({table.diceType})
                   </summary>
-                  <ul className="mt-1 flex flex-col gap-0.5">
+                  <ul className="flex flex-col gap-0.5 mt-1">
                     {table.rows.map((r, i) => (
                       <li key={i}>
-                        {r.min === r.max ? r.min : `${r.min}-${r.max}`}: {r.text}
+                        {r.min === r.max ? r.min : `${r.min}-${r.max}`}:{' '}
+                        {r.text}
                       </li>
                     ))}
                   </ul>

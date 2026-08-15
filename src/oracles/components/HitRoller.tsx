@@ -16,58 +16,61 @@ const HIT_TYPE_CLASSES: Record<HitRollResult['hitType'], string> = {
 }
 
 export default function HitRoller({ compact }: HitRollerProps) {
-  const [stat, setStat] = useState(0)
-  const [add, setAdd] = useState(0)
+  const [modifier, setModifier] = useState('0')
   const [result, setResult] = useState<HitRollResult | null>(null)
 
-  const roll = () => setResult(rollHit(stat, add))
+  const roll = () => setResult(rollHit(0, Number(modifier)))
 
   return (
     <div className="flex flex-col gap-3">
-      {!compact && <span className="text-sm font-medium">Hit Roll</span>}
-
-      <div className="flex flex-row flex-wrap items-end gap-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Stat</label>
+      <div className="flex flex-row items-end gap-2 w-full">
+        <div className="flex flex-col gap-1 grow">
+          <label className="text-muted-foreground text-xs">Modifier</label>
           <Input
             type="number"
-            className={compact ? 'h-7 w-14 text-sm' : 'w-16'}
-            value={stat}
-            onChange={(e) => setStat(Number(e.target.value) || 0)}
+            className={' w-full text-sm'}
+            value={modifier}
+            onChange={(e) => setModifier(e.target.value)}
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Add</label>
-          <Input
-            type="number"
-            className={compact ? 'h-7 w-14 text-sm' : 'w-16'}
-            value={add}
-            onChange={(e) => setAdd(Number(e.target.value) || 0)}
-          />
+        <div className="flex flex-col gap-1 grow">
+          <Button size="lg" variant="secondary" onClick={roll}>
+            Roll
+          </Button>
         </div>
-        <Button size={compact ? 'sm' : 'default'} onClick={roll}>
-          Roll
-        </Button>
       </div>
 
       {result && (
-        <div className="flex flex-row items-center gap-3">
+        <div className="flex flex-row justify-center items-center gap-3">
           <div className="flex flex-row items-center gap-1.5">
             <DieChip
               value={result.actionDie}
-              label="action"
-              variant="accent"
+              variant="action"
               size={compact ? 'sm' : 'default'}
             />
-            <span className="text-muted-foreground">+</span>
+            <span className="px-1 text-muted-foreground">+</span>
+            <span className="px-1 text-muted-foreground">
+              {result.modifier}
+            </span>
+            <span className="px-4 text-muted-foreground">vs</span>
             <DieChip
               value={result.challenge1}
-              label="chal"
+              sides={10}
+              variant={
+                result.challenge1 < result.actionDie + result.modifier
+                  ? 'muted'
+                  : 'default'
+              }
               size={compact ? 'sm' : 'default'}
             />
             <DieChip
               value={result.challenge2}
-              label="chal"
+              sides={10}
+              variant={
+                result.challenge2 < result.actionDie + result.modifier
+                  ? 'muted'
+                  : 'default'
+              }
               size={compact ? 'sm' : 'default'}
             />
           </div>
@@ -81,14 +84,22 @@ export default function HitRoller({ compact }: HitRollerProps) {
             >
               {result.hitType}
             </span>
-            {result.isMatch && (
-              <span className="text-xs font-medium text-primary">Match!</span>
-            )}
-            {!compact && (
-              <span className="text-xs text-muted-foreground">
-                Score {result.score} ({result.actionDie}+{result.stat}+{result.add})
+
+            <span className="flex flex-row gap-1 text-muted-foreground text-xs">
+              <span className="">Score</span>{' '}
+              <span className="text-foreground">{result.score}</span>{' '}
+              <span>(</span>
+              <span className="text-foreground">{result.actionDie}</span>
+              <span>+</span>
+              <span
+                className={
+                  result.modifier < 0 ? `text-red-600` : `text-foreground`
+                }
+              >
+                {result.modifier}
               </span>
-            )}
+              <span>)</span>
+            </span>
           </div>
         </div>
       )}

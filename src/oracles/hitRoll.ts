@@ -3,7 +3,7 @@ export type HitType = 'Strong Hit' | 'Weak Hit' | 'Miss'
 export interface HitRollResult {
   actionDie: number
   stat: number
-  add: number
+  modifier: number
   score: number
   challenge1: number
   challenge2: number
@@ -27,12 +27,16 @@ export function rollHit(stat = 0, add = 0): HitRollResult {
 
   const beatsBoth = score > challenge1 && score > challenge2
   const beatsOne = score > challenge1 || score > challenge2
-  const hitType: HitType = beatsBoth ? 'Strong Hit' : beatsOne ? 'Weak Hit' : 'Miss'
+  const hitType: HitType = beatsBoth
+    ? 'Strong Hit'
+    : beatsOne
+      ? 'Weak Hit'
+      : 'Miss'
 
   return {
     actionDie,
     stat,
-    add,
+    modifier: add,
     score,
     challenge1,
     challenge2,

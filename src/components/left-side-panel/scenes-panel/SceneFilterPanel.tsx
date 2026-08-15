@@ -72,7 +72,7 @@ const SceneFilterPanel: React.FC<SceneFilterPanelProps> = ({
   )
 
   return (
-    <div className="px-3.5 pt-2 pb-2.5 border-b border-(--fd-border) flex flex-col gap-1.5 shrink-0">
+    <div className="w-full px-3.5 pt-2 pb-2.5 border-b border-(--fd-border) flex flex-col gap-1.5 shrink-0">
       <div className="flex flex-col gap-1.5">
         <Select
           value=""

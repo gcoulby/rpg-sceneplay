@@ -17,7 +17,10 @@ import NotesPanel from './notes-tab/NotesPanel'
 import CharacterProfilesPanel from './character-panel/CharacterProfilesPanel'
 import IndexCardsPanel from './index-card-panel/IndexCardsPanel'
 import { useActivityBarStore } from '@/stores/activity-bar-store'
-import OraclesPanel from './oracles-panel/OraclesPanel'
+import OraclesPanel from './oracles/OraclesPanel'
+import { InspirationPanel } from './oracles/inspiration-panel'
+import { RollerPanel } from './oracles/roller-panel'
+import { OraclePanel } from './oracles/oracle-panel'
 
 interface AppNavigatorProps {
   editor: Editor | null
@@ -70,7 +73,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
             <CharacterProfilesPanel editor={editor} projectId="" />
           )}
           {activeView === 'index-cards' && <IndexCardsPanel editor={editor} />}
-          {activeView === 'oracles' && <OraclesPanel />}
+          {activeView === 'oracles' && <OraclePanel />}
+          {activeView === 'inspiration' && <InspirationPanel />}
+          {activeView === 'dice-roller' && <RollerPanel />}
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>{children}</ResizablePanel>

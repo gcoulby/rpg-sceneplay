@@ -48,43 +48,32 @@ function CollectionNode({
 
   return (
     <AccordionItem value={collection.id} className="border-b">
-      <AccordionTrigger className="px-2 py-2 text-sm font-medium hover:no-underline">
+      <AccordionTrigger className="bg-muted px-2 py-2 font-medium text-sm hover:no-underline">
         {collection.name}
       </AccordionTrigger>
       <AccordionContent className="px-0 pb-1">
-        <div className="flex flex-col gap-0.5 pl-2">
+        <div className="flex flex-col gap-0.5 p-2">
           {rows.map((row) => {
             const id = row.kind === 'combo' ? row.combo.id : row.table.id
             const name = row.kind === 'combo' ? row.combo.name : row.table.name
-            const result = results[id]
+
             return (
-              <div
+              <Button
                 key={id}
-                className="group flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-muted"
+                variant="ghost"
+                className="group flex justify-between items-center gap-2 px-2 py-1 rounded-md"
+                onClick={() => {
+                  onSelect(row)
+                  onRoll(row)
+                }}
               >
-                <button
-                  className="flex-1 truncate text-left text-sm"
-                  onClick={() => onSelect(row)}
-                >
-                  {name}
-                  {row.kind === 'combo' && (
-                    <span className="ml-1.5 text-[10px] uppercase text-primary">combo</span>
-                  )}
-                </button>
-                {result && (
-                  <span className="truncate text-xs text-muted-foreground">
-                    {'roll' in result ? describeTableRoll(result) : result.text}
+                {name}
+                {row.kind === 'combo' && (
+                  <span className="ml-1.5 text-[10px] text-primary uppercase">
+                    combo
                   </span>
                 )}
-                <Button
-                  size="xs"
-                  variant="ghost"
-                  className="opacity-0 group-hover:opacity-100"
-                  onClick={() => onRoll(row)}
-                >
-                  Roll
-                </Button>
-              </div>
+              </Button>
             )
           })}
         </div>
@@ -134,8 +123,11 @@ export default function OracleBrowserFull() {
   }
 
   return (
-    <div className="flex h-[70vh] min-h-100 flex-col gap-3">
-      <Tabs value={activeSourceId} onValueChange={(v) => v && setActiveSourceId(v)}>
+    <div className="flex flex-col gap-3 h-[70vh] min-h-100">
+      <Tabs
+        value={activeSourceId}
+        onValueChange={(v) => v && setActiveSourceId(v)}
+      >
         <TabsList>
           {sources.map((source) => (
             <TabsTrigger key={source.id} value={source.id}>
@@ -146,8 +138,8 @@ export default function OracleBrowserFull() {
 
         {sources.map((source) => (
           <TabsContent key={source.id} value={source.id}>
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
-              <div className="overflow-y-auto rounded-lg border lg:col-span-2 lg:max-h-[60vh]">
+            <div className="gap-3 grid grid-cols-1 lg:grid-cols-5">
+              <div className="lg:col-span-2 border rounded-lg lg:max-h-[60vh] overflow-y-auto">
                 <Accordion>
                   {collections
                     .filter((c) => c.sourceId === source.id && !c.parentId)
@@ -170,17 +162,22 @@ export default function OracleBrowserFull() {
                 </Accordion>
               </div>
 
-              <div className="rounded-lg border p-3 lg:col-span-3 lg:max-h-[60vh] lg:overflow-y-auto">
+              <div className="lg:col-span-3 p-3 border rounded-lg lg:max-h-[60vh] lg:overflow-y-auto">
                 {!selection && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Select a table on the left to browse it, or hit Roll.
                   </p>
                 )}
                 {selection?.kind === 'table' && (
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex justify-between items-center">
                       <h3 className="font-semibold">{selection.table.name}</h3>
-                      <Button size="sm" onClick={() => rollRow({ kind: 'table', table: selection.table })}>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          rollRow({ kind: 'table', table: selection.table })
+                        }
+                      >
                         Roll
                       </Button>
                     </div>
@@ -193,7 +190,9 @@ export default function OracleBrowserFull() {
                             <span className="font-medium text-muted-foreground">
                               {result.roll}:
                             </span>{' '}
-                            <span className="font-semibold">{describeTableRoll(result)}</span>
+                            <span className="font-semibold">
+                              {describeTableRoll(result)}
+                            </span>
                           </p>
                         )
                       )
@@ -203,15 +202,18 @@ export default function OracleBrowserFull() {
                         <li
                           key={i}
                           className={cn(
-                            'flex gap-2 rounded px-1 py-0.5',
+                            'flex gap-2 px-1 py-0.5 rounded',
                             results[selection.table.id] &&
                               'roll' in results[selection.table.id] &&
-                              (results[selection.table.id] as TableRollResult).row === row &&
+                              (results[selection.table.id] as TableRollResult)
+                                .row === row &&
                               'bg-primary/10 font-medium',
                           )}
                         >
-                          <span className="w-14 shrink-0 text-muted-foreground">
-                            {row.min === row.max ? row.min : `${row.min}–${row.max}`}
+                          <span className="w-14 text-muted-foreground shrink-0">
+                            {row.min === row.max
+                              ? row.min
+                              : `${row.min}–${row.max}`}
                           </span>
                           <span>{row.text}</span>
                         </li>
@@ -221,9 +223,14 @@ export default function OracleBrowserFull() {
                 )}
                 {selection?.kind === 'combo' && (
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex justify-between items-center">
                       <h3 className="font-semibold">{selection.combo.name}</h3>
-                      <Button size="sm" onClick={() => rollRow({ kind: 'combo', combo: selection.combo })}>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          rollRow({ kind: 'combo', combo: selection.combo })
+                        }
+                      >
                         Roll
                       </Button>
                     </div>
@@ -233,10 +240,15 @@ export default function OracleBrowserFull() {
                         result &&
                         'text' in result && (
                           <div className="text-sm">
-                            <p className="text-lg font-semibold">{result.text}</p>
+                            <p className="font-semibold text-lg">
+                              {result.text}
+                            </p>
                             <p className="text-muted-foreground">
                               {result.rolls
-                                .map((r) => `${r.table.name}: ${describeTableRoll(r)}`)
+                                .map(
+                                  (r) =>
+                                    `${r.table.name}: ${describeTableRoll(r)}`,
+                                )
                                 .join(' · ')}
                             </p>
                           </div>

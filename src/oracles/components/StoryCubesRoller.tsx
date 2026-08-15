@@ -1,7 +1,13 @@
 import { useState } from 'react'
-import type { IconType } from 'react-icons'
+import { type IconType } from 'react-icons'
 import * as gi from 'react-icons/gi'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const GLYPHS = Object.values(gi)
 
@@ -21,9 +27,9 @@ export default function StoryCubesRoller({ compact }: StoryCubesRollerProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 mb-4">
       {!compact && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Inspired by{' '}
           <a
             target="_blank"
@@ -45,26 +51,53 @@ export default function StoryCubesRoller({ compact }: StoryCubesRollerProps) {
         </p>
       )}
       <div className="flex flex-row justify-center items-center gap-2">
-        <Button size={compact ? 'sm' : 'default'} onClick={() => generateCubes(3)}>
-          Roll 3
+        <Button
+          size="lg"
+          variant="secondary"
+          className={`${compact ? 'w-full' : 'w-1/3'} `}
+          onClick={() => generateCubes(3)}
+        >
+          Roll 3 {compact && 'Story Cubes'}
         </Button>
         {!compact && (
           <>
-            <Button onClick={() => generateCubes(6)}>Roll 6</Button>
-            <Button onClick={() => generateCubes(9)}>Roll 9</Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              className="w-1/3"
+              onClick={() => generateCubes(6)}
+            >
+              Roll 6
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              className="w-1/3"
+              onClick={() => generateCubes(9)}
+            >
+              Roll 9
+            </Button>
           </>
         )}
       </div>
       <div className="flex flex-wrap justify-center items-center gap-2">
         {cubes.map((cube, index) => (
           <div
-            className="flex bg-foreground p-3 border rounded-xl text-background"
+            className="flex bg-slate-200 shadow-2xl p-2 border rounded-xl text-background"
             key={index}
           >
-            {cube({ size: compact ? 24 : 40 })}
+            <Tooltip>
+              <TooltipTrigger>
+                {cube({ size: compact ? 34 : 40 })}
+              </TooltipTrigger>
+              <TooltipContent className="shadow-2xl">
+                <p>{cube.name.substring(2)}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         ))}
       </div>
+      {compact && <Separator />}
     </div>
   )
 }

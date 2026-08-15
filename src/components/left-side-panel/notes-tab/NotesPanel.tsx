@@ -6,6 +6,7 @@ import { useAssetStore } from '@/stores/assetStore'
 import { getNoteColorHex } from './noteTypes'
 import ScriptNotesTab from './ScriptNotesTab'
 import GeneralNotesTab from './GeneralNotesTab'
+import * as ActivityPanel from '@/components/ui/activity-panel'
 
 interface NotesPanelProps {
   editor: Editor | null
@@ -151,70 +152,71 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ editor }) => {
   }, [])
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden">
-      <div className="flex items-center px-3 py-2.5 border-b border-(--fd-border) shrink-0 gap-2">
-        <span className="font-semibold text-xs uppercase tracking-[0.5px] text-(--fd-text-muted)">
-          Notes
-        </span>
-      </div>
-
+    <ActivityPanel.Shell>
+      <ActivityPanel.Header>
+        <ActivityPanel.Title>Notes</ActivityPanel.Title>
+      </ActivityPanel.Header>
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as 'general' | 'script')}
         className="flex flex-col flex-1 min-h-0"
       >
-        <TabsList className="w-full shrink-0 rounded-none border-b border-(--fd-border) bg-transparent h-auto p-0">
-          <TabsTrigger
+        <ActivityPanel.SubHeader>
+          <TabsList className="w-full shrink-0 rounded-none border-b border-(--fd-border) bg-transparent h-auto p-0">
+            <TabsTrigger
+              value="general"
+              className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            >
+              General
+              {generalNotes.length > 0 ? ` (${generalNotes.length})` : ''}
+            </TabsTrigger>
+            <TabsTrigger
+              value="script"
+              className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            >
+              Script{notes.length > 0 ? ` (${notes.length})` : ''}
+            </TabsTrigger>
+          </TabsList>
+        </ActivityPanel.SubHeader>
+        <ActivityPanel.Content headerOffset="8dvh">
+          <TabsContent
             value="general"
-            className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            className="flex flex-col flex-1 mt-0 min-h-0"
           >
-            General{generalNotes.length > 0 ? ` (${generalNotes.length})` : ''}
-          </TabsTrigger>
-          <TabsTrigger
+            <GeneralNotesTab
+              generalNotes={generalNotes}
+              assets={assets}
+              onAdd={handleAddGeneralNote}
+              onUpdateTitle={(id, title) => updateGeneralNote(id, { title })}
+              onUpdateContent={(id, content) =>
+                updateGeneralNote(id, { content })
+              }
+              onUpdateColor={(id, color) => updateGeneralNote(id, { color })}
+              onDelete={deleteGeneralNote}
+              formatDate={formatDate}
+            />
+          </TabsContent>
+
+          <TabsContent
             value="script"
-            className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            className="flex flex-col flex-1 mt-0 min-h-0"
           >
-            Script{notes.length > 0 ? ` (${notes.length})` : ''}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent
-          value="general"
-          className="flex flex-col flex-1 mt-0 min-h-0"
-        >
-          <GeneralNotesTab
-            generalNotes={generalNotes}
-            assets={assets}
-            onAdd={handleAddGeneralNote}
-            onUpdateTitle={(id, title) => updateGeneralNote(id, { title })}
-            onUpdateContent={(id, content) =>
-              updateGeneralNote(id, { content })
-            }
-            onUpdateColor={(id, color) => updateGeneralNote(id, { color })}
-            onDelete={deleteGeneralNote}
-            formatDate={formatDate}
-          />
-        </TabsContent>
-
-        <TabsContent
-          value="script"
-          className="flex flex-col flex-1 mt-0 min-h-0"
-        >
-          <ScriptNotesTab
-            notes={notes}
-            noteFilter={noteFilter}
-            onFilterChange={setNoteFilter}
-            getSceneName={getSceneName}
-            assets={assets}
-            onContentChange={(id, content) => updateNote(id, { content })}
-            onColorChange={handleColorChange}
-            onDelete={handleDeleteNote}
-            onNavigateToNote={handleNavigateToNote}
-            formatDate={formatDate}
-          />
-        </TabsContent>
+            <ScriptNotesTab
+              notes={notes}
+              noteFilter={noteFilter}
+              onFilterChange={setNoteFilter}
+              getSceneName={getSceneName}
+              assets={assets}
+              onContentChange={(id, content) => updateNote(id, { content })}
+              onColorChange={handleColorChange}
+              onDelete={handleDeleteNote}
+              onNavigateToNote={handleNavigateToNote}
+              formatDate={formatDate}
+            />
+          </TabsContent>
+        </ActivityPanel.Content>
       </Tabs>
-    </div>
+    </ActivityPanel.Shell>
   )
 }
 

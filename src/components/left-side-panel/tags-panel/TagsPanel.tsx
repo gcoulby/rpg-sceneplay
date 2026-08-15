@@ -14,6 +14,7 @@ import {
 import type { TagItem } from './tagTypes'
 import TagsViewTab from './TagsViewTab'
 import TagsManageTab from './TagsManageTab'
+import * as ActivityPanel from '@/components/ui/activity-panel'
 
 interface TagsPanelProps {
   editor: Editor | null
@@ -316,113 +317,115 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ editor }) => {
   }, [newCatName, newCatColor, addTagCategory])
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden">
-      <div className="flex items-center px-3 py-2.5 border-b border-(--fd-border) shrink-0 gap-2">
-        <span className="font-semibold text-xs uppercase tracking-[0.5px] text-(--fd-text-muted)">
-          Production Tags
-        </span>
-        <Badge variant="secondary" className="mr-auto text-[10px]">
-          {tags.length}
-        </Badge>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`size-7 ${tagsVisible ? 'text-(--fd-accent)' : 'text-(--fd-text-muted) hover:text-(--fd-text)'}`}
-          onClick={() => setTagsVisible(!tagsVisible)}
-          title={tagsVisible ? 'Hide tag highlights' : 'Show tag highlights'}
-          aria-label={
-            tagsVisible ? 'Hide tag highlights' : 'Show tag highlights'
-          }
-        >
-          {tagsVisible ? (
-            <Eye className="size-3.5" />
-          ) : (
-            <EyeOff className="size-3.5" />
-          )}
-        </Button>
-      </div>
-
+    <ActivityPanel.Shell>
+      <ActivityPanel.Header>
+        <ActivityPanel.Title>Tags</ActivityPanel.Title>
+        <ActivityPanel.Interactions>
+          <Badge variant="secondary" className="mr-auto text-[10px]">
+            {tags.length}
+          </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`size-7 ${tagsVisible ? 'text-(--fd-accent)' : 'text-(--fd-text-muted) hover:text-(--fd-text)'}`}
+            onClick={() => setTagsVisible(!tagsVisible)}
+            title={tagsVisible ? 'Hide tag highlights' : 'Show tag highlights'}
+            aria-label={
+              tagsVisible ? 'Hide tag highlights' : 'Show tag highlights'
+            }
+          >
+            {tagsVisible ? (
+              <Eye className="size-3.5" />
+            ) : (
+              <EyeOff className="size-3.5" />
+            )}
+          </Button>
+        </ActivityPanel.Interactions>
+      </ActivityPanel.Header>
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as 'view' | 'manage')}
         className="flex flex-col flex-1 min-h-0"
       >
-        <TabsList className="w-full shrink-0 rounded-none border-b border-(--fd-border) bg-transparent h-auto p-0">
-          <TabsTrigger
+        <ActivityPanel.SubHeader>
+          <TabsList className="w-full shrink-0 rounded-none border-b border-(--fd-border) bg-transparent h-auto p-0">
+            <TabsTrigger
+              value="view"
+              className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            >
+              View
+            </TabsTrigger>
+            <TabsTrigger
+              value="manage"
+              className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            >
+              Manage
+              {pendingTagSelection && (
+                <span className="inline-block w-1.5 h-1.5 bg-(--fd-accent) rounded-full ml-1.25 align-middle" />
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </ActivityPanel.SubHeader>
+        <ActivityPanel.Content headerOffset="8dvh">
+          <TabsContent
             value="view"
-            className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            className="flex-1 mt-0 min-h-0 overflow-y-auto"
           >
-            View
-          </TabsTrigger>
-          <TabsTrigger
+            <TagsViewTab
+              tagCategories={tagCategories}
+              tagsByCategory={tagsByCategory}
+              occurrencesByTag={occurrencesByTag}
+              hasTags={tags.length > 0}
+              onNavigateToEntity={handleNavigateToTag}
+              onNavigateToOccurrence={handleNavigateToOccurrence}
+            />
+          </TabsContent>
+
+          <TabsContent
             value="manage"
-            className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+            className="flex flex-col flex-1 mt-0 min-h-0"
           >
-            Manage
-            {pendingTagSelection && (
-              <span className="inline-block w-1.5 h-1.5 bg-(--fd-accent) rounded-full ml-1.25 align-middle" />
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent
-          value="view"
-          className="flex-1 mt-0 min-h-0 overflow-y-auto"
-        >
-          <TagsViewTab
-            tagCategories={tagCategories}
-            tagsByCategory={tagsByCategory}
-            occurrencesByTag={occurrencesByTag}
-            hasTags={tags.length > 0}
-            onNavigateToEntity={handleNavigateToTag}
-            onNavigateToOccurrence={handleNavigateToOccurrence}
-          />
-        </TabsContent>
-
-        <TabsContent
-          value="manage"
-          className="flex flex-col flex-1 mt-0 min-h-0"
-        >
-          <TagsManageTab
-            tagCategories={tagCategories}
-            tagsByCategory={tagsByCategory}
-            occurrencesByTag={occurrencesByTag}
-            pendingTagSelection={pendingTagSelection}
-            pendingCategoryId={pendingCategoryId}
-            newEntityName={newEntityName}
-            onNewEntityNameChange={setNewEntityName}
-            onPickCategory={handlePickCategory}
-            onCreateNewEntity={handleCreateNewEntity}
-            onAddToExistingEntity={handleAddToExistingEntity}
-            onBackToCategories={() => setPendingCategoryId(null)}
-            onCancelPending={handleCancelPending}
-            expandedCats={expandedCats}
-            onExpandedCatsChange={setExpandedCats}
-            expandedTagId={expandedTagId}
-            onToggleEntity={(id) =>
-              setExpandedTagId(expandedTagId === id ? null : id)
-            }
-            onUpdateEntityName={(id, name) => updateTag(id, { name })}
-            onUpdateEntityNotes={(id, notes) => updateTag(id, { notes })}
-            onDeleteEntity={handleDeleteEntity}
-            onDeleteCategory={deleteTagCategory}
-            onNavigateToOccurrence={handleNavigateToOccurrence}
-            onRemoveOccurrence={handleRemoveOccurrence}
-            registerItemRef={(id, el) => {
-              if (el) tagItemRefs.current.set(id, el)
-            }}
-            showAddForm={showAddForm}
-            newCatName={newCatName}
-            newCatColor={newCatColor}
-            onNewCatNameChange={setNewCatName}
-            onNewCatColorChange={setNewCatColor}
-            onOpenAddForm={() => setShowAddForm(true)}
-            onSubmitAddForm={handleAddCategory}
-            onCancelAddForm={() => setShowAddForm(false)}
-          />
-        </TabsContent>
+            <TagsManageTab
+              tagCategories={tagCategories}
+              tagsByCategory={tagsByCategory}
+              occurrencesByTag={occurrencesByTag}
+              pendingTagSelection={pendingTagSelection}
+              pendingCategoryId={pendingCategoryId}
+              newEntityName={newEntityName}
+              onNewEntityNameChange={setNewEntityName}
+              onPickCategory={handlePickCategory}
+              onCreateNewEntity={handleCreateNewEntity}
+              onAddToExistingEntity={handleAddToExistingEntity}
+              onBackToCategories={() => setPendingCategoryId(null)}
+              onCancelPending={handleCancelPending}
+              expandedCats={expandedCats}
+              onExpandedCatsChange={setExpandedCats}
+              expandedTagId={expandedTagId}
+              onToggleEntity={(id) =>
+                setExpandedTagId(expandedTagId === id ? null : id)
+              }
+              onUpdateEntityName={(id, name) => updateTag(id, { name })}
+              onUpdateEntityNotes={(id, notes) => updateTag(id, { notes })}
+              onDeleteEntity={handleDeleteEntity}
+              onDeleteCategory={deleteTagCategory}
+              onNavigateToOccurrence={handleNavigateToOccurrence}
+              onRemoveOccurrence={handleRemoveOccurrence}
+              registerItemRef={(id, el) => {
+                if (el) tagItemRefs.current.set(id, el)
+              }}
+              showAddForm={showAddForm}
+              newCatName={newCatName}
+              newCatColor={newCatColor}
+              onNewCatNameChange={setNewCatName}
+              onNewCatColorChange={setNewCatColor}
+              onOpenAddForm={() => setShowAddForm(true)}
+              onSubmitAddForm={handleAddCategory}
+              onCancelAddForm={() => setShowAddForm(false)}
+            />
+          </TabsContent>
+        </ActivityPanel.Content>
       </Tabs>
-    </div>
+    </ActivityPanel.Shell>
   )
 }
 
