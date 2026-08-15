@@ -1,8 +1,23 @@
 import type { Editor } from '@tiptap/react'
+import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 
+/** Sets the current block to `type`, wrapping in a `customElement` node
+ *  (with `customTypeId`/`customLabel`) when `type` isn't a real Tiptap node
+ *  — i.e. a template-defined custom element like Task/Resolve. */
 export const setFormatType = (editor: Editor | null, type: string) => {
   if (!editor) return
-  editor.chain().focus().setNode(type).run()
+  if (editor.schema.nodes[type]) {
+    editor.chain().focus().setNode(type).run()
+    return
+  }
+  const activeTemplate = useFormattingTemplateStore.getState().getActiveTemplate()
+  const rule = activeTemplate.rules[type]
+  if (!rule) return
+  editor
+    .chain()
+    .focus()
+    .setNode('customElement', { customTypeId: type, customLabel: rule.label })
+    .run()
 }
 
 const getFocussedEditor = (editor: Editor | null) => {

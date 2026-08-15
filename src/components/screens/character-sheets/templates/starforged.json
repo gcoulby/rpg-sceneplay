@@ -1,0 +1,128 @@
+{
+  "id": "starforged",
+  "name": "Starforged",
+  "description": "Ironsworn's sci-fi sibling: Edge/Heart/Iron/Shadow/Wits, Health/Spirit/Supply/Momentum, and Quest/Bond/Discovery legacy clocks for charting the Forge.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Character",
+        "modules": [
+          {
+            "id": "core",
+            "type": "core-block",
+            "label": "Core Block",
+            "layout": { "w": 3, "h": 3 },
+            "config": {
+              "statLabels": [
+                { "id": "edge", "label": "EDGE" },
+                { "id": "heart", "label": "HEART" },
+                { "id": "iron", "label": "IRON" },
+                { "id": "shadow", "label": "SHADOW" },
+                { "id": "wits", "label": "WITS" }
+              ]
+            },
+            "values": {
+              "characterName": "",
+              "portraitAssetId": null,
+              "hpCurrent": 2,
+              "hpMax": 5,
+              "stats": {}
+            }
+          },
+          {
+            "id": "vitals",
+            "type": "resources",
+            "label": "Vitals",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": {
+              "rows": [
+                { "id": "health", "label": "Health", "current": 5, "max": 5 },
+                { "id": "spirit", "label": "Spirit", "current": 5, "max": 5 },
+                { "id": "supply", "label": "Supply", "current": 5, "max": 5 },
+                { "id": "momentum", "label": "Momentum", "current": 2, "max": 10 }
+              ]
+            }
+          },
+          {
+            "id": "quests",
+            "type": "clock",
+            "label": "Quests",
+            "layout": { "w": 2, "h": 2 },
+            "config": { "segments": 10 },
+            "values": { "filled": 0 }
+          },
+          {
+            "id": "bonds-track",
+            "type": "clock",
+            "label": "Bonds",
+            "layout": { "w": 2, "h": 2 },
+            "config": { "segments": 10 },
+            "values": { "filled": 0 }
+          },
+          {
+            "id": "discoveries",
+            "type": "clock",
+            "label": "Discoveries",
+            "layout": { "w": 2, "h": 2 },
+            "config": { "segments": 10 },
+            "values": { "filled": 0 }
+          }
+        ]
+      },
+      {
+        "id": "ship-crew",
+        "label": "Ship & Crew",
+        "modules": [
+          {
+            "id": "gear",
+            "type": "gear",
+            "label": "Gear & Cargo",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": { "items": [], "currencies": [] }
+          },
+          {
+            "id": "bonds",
+            "type": "traits",
+            "label": "Bonds",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "assets",
+            "type": "list",
+            "label": "Assets",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "impacts",
+            "type": "conditions",
+            "label": "Impacts",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": {
+              "items": [
+                { "id": "wounded", "label": "Wounded", "active": false },
+                { "id": "shaken", "label": "Shaken", "active": false },
+                { "id": "unregulated", "label": "Unregulated", "active": false }
+              ]
+            }
+          },
+          {
+            "id": "journal",
+            "type": "backstory",
+            "label": "Journal",
+            "layout": { "w": 6, "h": 3 },
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

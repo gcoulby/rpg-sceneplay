@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, Maximize2 } from 'lucide-react'
+import { ChevronDown, IdCard, Maximize2 } from 'lucide-react'
 import CharacterCompletenessRing from './CharacterCompletenessRing'
 import CharacterFieldsForm from './CharacterFieldsForm'
 import { stripHtml } from './characterUtils'
@@ -37,6 +37,7 @@ interface CharacterCardProps {
   onOpenLightbox: (url: string, name: string) => void
   onTriggerUpload: (e: React.MouseEvent<HTMLButtonElement>) => void
   onPickFromAssets: () => void
+  onOpenSheet: () => void
 }
 
 const CharacterCard: React.FC<CharacterCardProps> = ({
@@ -61,6 +62,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
   onOpenLightbox,
   onTriggerUpload,
   onPickFromAssets,
+  onOpenSheet,
 }) => {
   const primaryImageId = profile.images?.[0]
   const descPreview = !isExpanded ? stripHtml(profile.description || '') : ''
@@ -137,6 +139,19 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
         )}
 
         <CharacterCompletenessRing profile={profile} />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`size-5 shrink-0 ${profile.sheetId ? 'text-(--fd-accent)' : 'text-(--fd-text-muted)'}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenSheet()
+          }}
+          title={profile.sheetId ? 'Open character sheet' : 'Create character sheet'}
+        >
+          <IdCard className="size-3.5" />
+        </Button>
 
         <Button
           variant="ghost"

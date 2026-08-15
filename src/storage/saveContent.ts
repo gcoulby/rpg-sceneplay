@@ -20,6 +20,7 @@ import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import { spellChecker } from '@/editor/spellchecker'
 import { grammarIgnore } from '@/editor/grammar/grammarIgnore'
 import { useMapStore } from '@/components/screens/map/useMapStore'
+import { useSheetStore } from '@/components/screens/character-sheets/store/useSheetStore'
 
 /**
  * Every `_`-prefixed key `buildSaveContent` writes. Used to separate app
@@ -52,6 +53,7 @@ export const SAVE_METADATA_KEYS = [
   '_pageLayout',
   '_map',
   '_locationMapRefs',
+  '_sheets',
 ] as const
 
 export type SaveMetadataKey = (typeof SAVE_METADATA_KEYS)[number]
@@ -68,6 +70,7 @@ export function buildSaveContent(
   const store = useEditorStore.getState()
   const tplStore = useFormattingTemplateStore.getState()
   const mapStore = useMapStore.getState()
+  const sheetStore = useSheetStore.getState()
   const doc = editor.getJSON()
   return {
     ...doc,
@@ -98,6 +101,7 @@ export function buildSaveContent(
     _pageLayout: store.pageLayout,
     _map: mapStore.map,
     _locationMapRefs: mapStore.locationMapRefs,
+    _sheets: sheetStore.sheets,
   }
 }
 

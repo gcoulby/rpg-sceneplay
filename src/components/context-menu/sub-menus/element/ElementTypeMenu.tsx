@@ -5,13 +5,16 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from '@/components/ui/context-menu'
-import { ELEMENT_LABELS, type ElementType } from '@/stores/editorStore'
-import { ELEMENT_MENU_ITEMS } from '../../constants'
+import type { ElementType } from '@/stores/editorStore'
+import { getElementMenuItems } from '../../constants'
 import type { ElementFormattingRule } from '../../types'
 
 interface ElementTypeMenuProps {
   currentNodeType: ElementType
-  activeTemplate: { rules: Partial<Record<ElementType, ElementFormattingRule>> }
+  activeTemplate: {
+    rules: Partial<Record<ElementType, ElementFormattingRule>>
+    elementMenuOrder?: string[]
+  }
   onSelect: (type: ElementType) => void
 }
 
@@ -20,19 +23,16 @@ export function ElementTypeMenu({
   activeTemplate,
   onSelect,
 }: ElementTypeMenuProps) {
-  const visibleItems = ELEMENT_MENU_ITEMS.filter(({ type }) => {
-    const rule = activeTemplate.rules[type]
-    return !rule || rule.enabled
-  })
+  const visibleItems = getElementMenuItems(activeTemplate)
 
   return (
     <ContextMenuSub>
       <ContextMenuSubTrigger>Element</ContextMenuSubTrigger>
       <ContextMenuSubContent>
-        {visibleItems.map(({ type, shortcut }) => (
+        {visibleItems.map(({ type, label, shortcut }) => (
           <ContextMenuItem key={type} onClick={() => onSelect(type)}>
             {currentNodeType === type ? '✓ ' : ''}
-            {ELEMENT_LABELS[type]}
+            {label}
             {shortcut && <ContextMenuShortcut>{shortcut}</ContextMenuShortcut>}
           </ContextMenuItem>
         ))}

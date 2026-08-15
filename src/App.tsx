@@ -6,12 +6,19 @@ import { useEditorStore } from './stores/editorStore'
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts'
 import AppNavigator from './components/left-side-panel/AppNavigator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
-import { ChartAreaIcon, MapIcon, PencilLine, SquareKanban } from 'lucide-react'
+import {
+  ChartAreaIcon,
+  IdCard,
+  MapIcon,
+  PencilLine,
+  SquareKanban,
+} from 'lucide-react'
 import BeatBoard from './components/screens/beat-board'
 import ScriptStatistics from './components/screens/analytics/ScriptStatistics'
 import { ScriptContextMenuController } from '@/components/context-menu/ScriptContextMenuController'
 import { MapScreen } from './components/screens/map/map-screen'
 import { useMainTabStore, type MainTab } from '@/stores/mainTabStore'
+import { CharacterSheet } from './components/screens/character-sheets/character-sheet'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   const activeTab = useMainTabStore((s) => s.activeTab)
@@ -35,6 +42,13 @@ function App() {
                 <PencilLine />
                 Editor
               </TabsTrigger>
+              <TabsTrigger
+                value="character-sheet"
+                className="data-active:bg-primary data-active:text-primary-foreground"
+              >
+                <IdCard />
+                Character Sheet
+              </TabsTrigger>
               <TabsTrigger value="map">
                 <MapIcon />
                 Map
@@ -51,6 +65,11 @@ function App() {
             <TabsContent value="editor" keepMounted>
               <div className="h-(--app-h)! w-full overflow-hidden">
                 <ScreenplayEditor />
+              </div>
+            </TabsContent>
+            <TabsContent value="character-sheet" keepMounted>
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                <CharacterSheet />
               </div>
             </TabsContent>
             <TabsContent value="map">

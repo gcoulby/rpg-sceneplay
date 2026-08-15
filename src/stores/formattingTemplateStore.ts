@@ -14,6 +14,7 @@ import { ONE_HOUR_DRAMA_TEMPLATE, ONE_HOUR_DRAMA_ID } from './templates/oneHourD
 import { STAGE_PLAY_TEMPLATE, STAGE_PLAY_ID } from './templates/stagePlayTemplate';
 import { RADIO_PLAY_TEMPLATE, RADIO_PLAY_ID } from './templates/radioPlayTemplate';
 import { AV_SCRIPT_TEMPLATE, AV_SCRIPT_ID } from './templates/avScriptTemplate';
+import { RPG_SCENEPLAY_TEMPLATE, RPG_SCENEPLAY_ID } from './templates/rpgSceneplayTemplate';
 import {
   listTemplates,
   putTemplate,
@@ -28,10 +29,12 @@ export const SYSTEM_TEMPLATES: Record<string, FormattingTemplate> = {
   [STAGE_PLAY_ID]: STAGE_PLAY_TEMPLATE,
   [RADIO_PLAY_ID]: RADIO_PLAY_TEMPLATE,
   [AV_SCRIPT_ID]: AV_SCRIPT_TEMPLATE,
+  [RPG_SCENEPLAY_ID]: RPG_SCENEPLAY_TEMPLATE,
 };
 
 /** Ordered list of system templates for the format picker. */
 export const SYSTEM_TEMPLATE_LIST: FormattingTemplate[] = [
+  RPG_SCENEPLAY_TEMPLATE,
   INDUSTRY_STANDARD_TEMPLATE,
   ONE_HOUR_DRAMA_TEMPLATE,
   MULTICAM_SITCOM_TEMPLATE,
@@ -39,6 +42,12 @@ export const SYSTEM_TEMPLATE_LIST: FormattingTemplate[] = [
   RADIO_PLAY_TEMPLATE,
   AV_SCRIPT_TEMPLATE,
 ];
+
+/** The default template for new documents and the implicit "no explicit
+ *  selection" state (`activeTemplateId === null`). RPG Sceneplay, since this
+ *  app is built around solo-TTRPG sceneplays. */
+export const DEFAULT_TEMPLATE_ID = RPG_SCENEPLAY_ID;
+export const DEFAULT_TEMPLATE = RPG_SCENEPLAY_TEMPLATE;
 
 interface FormattingTemplateState {
   /** All user-created templates */
@@ -94,7 +103,7 @@ export const useFormattingTemplateStore = create<FormattingTemplateState>((set, 
       const found = templates.find((t) => t.id === activeTemplateId);
       if (found) return found;
     }
-    return INDUSTRY_STANDARD_TEMPLATE;
+    return DEFAULT_TEMPLATE;
   },
 
   getEnabledElements: () => {

@@ -1,0 +1,42 @@
+{
+  "id": "minimalist-universal",
+  "name": "Minimalist Universal",
+  "description": "A bare-bones system-agnostic starting point: one health tracker, a custom stats block, and notes.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Sheet",
+        "modules": [
+          {
+            "id": "core",
+            "type": "core-block",
+            "label": "Core Block",
+            "config": { "statLabels": [] },
+            "values": {
+              "characterName": "",
+              "portraitAssetId": null,
+              "hpCurrent": 10,
+              "hpMax": 10,
+              "stats": {}
+            }
+          },
+          {
+            "id": "custom-stats",
+            "type": "custom-stats",
+            "label": "Stats",
+            "config": { "rows": [] },
+            "values": {}
+          },
+          {
+            "id": "notes",
+            "type": "notes",
+            "label": "Notes",
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

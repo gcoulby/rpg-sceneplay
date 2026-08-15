@@ -1,0 +1,94 @@
+{
+  "id": "astroprisma",
+  "name": "Astroprisma",
+  "description": "For retro-futuristic solo hexcrawl exploration: ship systems, faction standing, an oracle roller, and a cycle-by-cycle star log.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Pilot & Ship",
+        "modules": [
+          {
+            "id": "core",
+            "type": "character-details",
+            "label": "Pilot",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": {
+              "rows": [
+                { "id": "callsign", "label": "Callsign", "value": "" },
+                { "id": "ship", "label": "Ship Name", "value": "" },
+                { "id": "origin", "label": "Origin", "value": "" }
+              ]
+            }
+          },
+          {
+            "id": "ship-systems",
+            "type": "resources",
+            "label": "Ship Systems",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": {
+              "rows": [
+                { "id": "hull", "label": "Hull", "current": 5, "max": 5 },
+                { "id": "fuel", "label": "Fuel", "current": 5, "max": 5 },
+                { "id": "supplies", "label": "Supplies", "current": 5, "max": 5 }
+              ]
+            }
+          },
+          {
+            "id": "oracle",
+            "type": "custom-buttons",
+            "label": "Oracle",
+            "layout": { "w": 3, "h": 2 },
+            "config": {
+              "buttons": [
+                { "id": "yes-no", "label": "Yes / No (2d6)", "formula": "2d6" },
+                { "id": "event", "label": "Event Check", "formula": "1d6" }
+              ]
+            },
+            "values": {}
+          },
+          {
+            "id": "factions",
+            "type": "custom-stats",
+            "label": "Faction Standing",
+            "layout": { "w": 3, "h": 2 },
+            "config": { "rows": [] },
+            "values": {}
+          }
+        ]
+      },
+      {
+        "id": "star-log",
+        "label": "Star Log",
+        "modules": [
+          {
+            "id": "map-tiles",
+            "type": "list",
+            "label": "Star System Map",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "cycle-clock",
+            "type": "clock",
+            "label": "Current Cycle",
+            "layout": { "w": 3, "h": 2 },
+            "config": { "segments": 6 },
+            "values": { "filled": 0 }
+          },
+          {
+            "id": "journal",
+            "type": "backstory",
+            "label": "Cycle Log",
+            "layout": { "w": 6, "h": 3 },
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

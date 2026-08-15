@@ -24,9 +24,9 @@ import {
   useFormattingTemplateStore,
   SYSTEM_TEMPLATES,
   SYSTEM_TEMPLATE_LIST,
+  DEFAULT_TEMPLATE_ID,
+  DEFAULT_TEMPLATE,
 } from '@/stores/formattingTemplateStore'
-import { INDUSTRY_STANDARD_ID } from '@/stores/formattingTypes'
-import { INDUSTRY_STANDARD_TEMPLATE } from '@/stores/industryStandardTemplate'
 import type { FormattingTemplate } from '@/stores/formattingTypes'
 import TemplateEditorDialog from './template-editor-dialog'
 import TemplateConflictDialog from './template-conflict-dialog'
@@ -73,16 +73,12 @@ export default function TemplateSelectDialog({
     loadTemplates()
   }, [loadTemplates])
 
-  const resolvedActiveId = activeTemplateId || INDUSTRY_STANDARD_ID
+  const resolvedActiveId = activeTemplateId || DEFAULT_TEMPLATE_ID
 
   const getSelectedTemplate = (): FormattingTemplate => {
-    if (!selectedId || selectedId === INDUSTRY_STANDARD_ID) {
-      return INDUSTRY_STANDARD_TEMPLATE
-    }
+    if (!selectedId) return DEFAULT_TEMPLATE
     if (SYSTEM_TEMPLATES[selectedId]) return SYSTEM_TEMPLATES[selectedId]
-    return (
-      templates.find((t) => t.id === selectedId) || INDUSTRY_STANDARD_TEMPLATE
-    )
+    return templates.find((t) => t.id === selectedId) || DEFAULT_TEMPLATE
   }
 
   const isEmptyDoc = (): boolean => {
@@ -94,7 +90,7 @@ export default function TemplateSelectDialog({
   }
 
   const applyTemplate = (template: FormattingTemplate) => {
-    if (template.id === INDUSTRY_STANDARD_ID) {
+    if (template.id === DEFAULT_TEMPLATE_ID) {
       setActiveTemplateId(null)
     } else {
       setActiveTemplateId(template.id)
@@ -169,9 +165,7 @@ export default function TemplateSelectDialog({
   const renderTemplateItem = (t: FormattingTemplate) => {
     const isSystem = t.category === 'system'
     const isSelected =
-      (t.id === INDUSTRY_STANDARD_ID &&
-        (!selectedId || selectedId === INDUSTRY_STANDARD_ID)) ||
-      t.id === selectedId
+      (t.id === DEFAULT_TEMPLATE_ID && !selectedId) || t.id === selectedId
     const isCurrent = t.id === resolvedActiveId
     return (
       <div
@@ -246,7 +240,7 @@ export default function TemplateSelectDialog({
                 onClick={async () => {
                   if (confirm(`Delete template "${t.name}"?`)) {
                     await deleteTemplate(t.id)
-                    if (selectedId === t.id) setSelectedId(INDUSTRY_STANDARD_ID)
+                    if (selectedId === t.id) setSelectedId(DEFAULT_TEMPLATE_ID)
                     showToast({
                       description: 'Template deleted',
                       type: 'success',

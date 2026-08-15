@@ -11,6 +11,8 @@ import { parseFountain } from '@/utils/open-draft/fountainParser'
 import { clearEditorHistory } from '@/editor/clearHistory'
 import { useProjectStore } from '@/stores/projectStore'
 import { parseDocx } from '@/utils/open-draft/docxImporter'
+import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
+import { remapImportedDoc } from '@/utils/open-draft/importRemap'
 
 function getStore(editor: Editor | null) {
   // Clear previous document state before importing
@@ -45,11 +47,16 @@ export const handleImport = async (editor: Editor | null) => {
     const isNative = isSceneplayFile(name)
 
     const store = getStore(editor)
+    const activeTemplate = useFormattingTemplateStore.getState().getActiveTemplate()
 
     let doc
     if (ext === 'fdx') {
       const parsed = parseFDXFull(text)
-      doc = parsed.doc
+      doc = remapImportedDoc(
+        parsed.doc as Parameters<typeof remapImportedDoc>[0],
+        activeTemplate,
+        'fdx',
+      )
       if (parsed.pageLayout) {
         store.setPageLayout({
           ...store.pageLayout,
@@ -91,7 +98,11 @@ export const handleImport = async (editor: Editor | null) => {
     } else if (isNative) {
       try {
         const parsed = parseOdraft(text)
-        doc = parsed.content
+        doc = remapImportedDoc(
+          parsed.content as Parameters<typeof remapImportedDoc>[0],
+          activeTemplate,
+          'odraft',
+        )
         // Restore the script's notes, tags, beats and character profiles —
         // otherwise an imported file loses everything but the text.
         hydrateEditorStoresFromContent(parsed.content)
@@ -111,7 +122,11 @@ export const handleImport = async (editor: Editor | null) => {
         return
       }
     } else {
-      doc = parseFountain(text)
+      doc = remapImportedDoc(
+        parseFountain(text) as Parameters<typeof remapImportedDoc>[0],
+        activeTemplate,
+        'fountain',
+      )
     }
     editor.commands.setContent(doc, true)
     clearEditorHistory(editor)

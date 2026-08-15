@@ -92,6 +92,25 @@ export interface FormattingTemplate {
   scriptTypeGroup?: string;
   /** Short tagline shown in the format-picker card. */
   scriptTypeTagline?: string;
+  /**
+   * Fixed, ordered, restricted list of element ids this template exposes in
+   * the element picker, right-click Element submenu, and number-key
+   * shortcuts (position N -> key N, 1-9). When unset, those UIs fall back to
+   * their default built-in-only behaviour (contextual ordering / Mod-1..8).
+   * Types outside this list still exist in the shared schema and can arrive
+   * via import — this only restricts what the editor UI offers for new
+   * content, per template.
+   */
+  elementMenuOrder?: string[];
+  /**
+   * Import-time type remapping applied only when this template defines
+   * `elementMenuOrder`. Maps a source-format type id (as produced by the
+   * .fdx/.fountain parser) to a target rule id in this template's `rules`.
+   * Any parsed node whose (possibly remapped) type isn't in
+   * `elementMenuOrder` and isn't itself the target of a mapping falls into
+   * the 'unknown' bucket, preserving the source type as `originalType`.
+   */
+  importMapping?: Partial<Record<'fdx' | 'fountain', Record<string, string>>>;
 }
 
 /** The 13 built-in element type ids (matches ElementType union). */

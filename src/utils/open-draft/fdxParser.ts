@@ -319,6 +319,10 @@ export function parseFDXFull(xmlString: string): FDXParseResult {
       nodeType = resolved.id;
     } else {
       nodeType = 'general';
+      // Preserve the raw, unrecognised FDX Type string so templates with a
+      // restricted element set (see importRemap.ts) can report/recover it
+      // instead of losing it behind the generic 'general' fallback.
+      attrs.rawFdxType = fdxType;
     }
 
     const sceneNumber = para.getAttribute('Number');

@@ -1,15 +1,15 @@
 import React from 'react'
+import { IdCard } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import CharacterFieldsForm from './CharacterFieldsForm'
-import type {
-  CharacterProfile,
-  CharacterRelationship,
-} from '@/stores/editorStore'
+import type { CharacterProfile, CharacterRelationship } from '@/stores/editorStore'
+import { openCharacterSheet } from '@/components/screens/character-sheets/store/openCharacterSheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface CharacterDetailDialogProps {
@@ -50,11 +50,26 @@ const CharacterDetailDialog: React.FC<CharacterDetailDialogProps> = ({
   onTriggerUpload,
   onPickFromAssets,
   onOpenChange,
-}) => (
+}) => {
+  return (
   <Dialog open={charName !== null} onOpenChange={onOpenChange}>
     <DialogContent className="flex flex-col gap-0 p-0 max-w-2/3! max-h-[85vh]">
-      <DialogHeader className="px-5 py-3.5 border-b border-(--fd-border) shrink-0">
+      <DialogHeader className="flex-row items-center justify-between px-5 py-3.5 border-b border-(--fd-border) shrink-0">
         <DialogTitle className="text-base">{charName}</DialogTitle>
+        {charName && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => {
+              openCharacterSheet(charName)
+              onOpenChange(false)
+            }}
+          >
+            <IdCard className="mr-1 size-3.5" />
+            Open Sheet
+          </Button>
+        )}
       </DialogHeader>
       <ScrollArea className="w-full h-[65vh]">
         {charName && profile && (
@@ -81,6 +96,7 @@ const CharacterDetailDialog: React.FC<CharacterDetailDialogProps> = ({
       </ScrollArea>
     </DialogContent>
   </Dialog>
-)
+  )
+}
 
 export default CharacterDetailDialog

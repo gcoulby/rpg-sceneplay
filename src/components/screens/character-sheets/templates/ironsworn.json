@@ -1,0 +1,126 @@
+{
+  "id": "ironsworn",
+  "name": "Ironsworn",
+  "description": "Edge/Heart/Iron/Shadow/Wits stats, Health/Spirit/Supply/Momentum resources, and trackers for vows, bonds and assets — for Ironsworn's grim fantasy frontier.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Character",
+        "modules": [
+          {
+            "id": "core",
+            "type": "core-block",
+            "label": "Core Block",
+            "layout": { "w": 3, "h": 3 },
+            "config": {
+              "statLabels": [
+                { "id": "edge", "label": "EDGE" },
+                { "id": "heart", "label": "HEART" },
+                { "id": "iron", "label": "IRON" },
+                { "id": "shadow", "label": "SHADOW" },
+                { "id": "wits", "label": "WITS" }
+              ]
+            },
+            "values": {
+              "characterName": "",
+              "portraitAssetId": null,
+              "hpCurrent": 2,
+              "hpMax": 5,
+              "stats": {}
+            }
+          },
+          {
+            "id": "vitals",
+            "type": "resources",
+            "label": "Vitals",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": {
+              "rows": [
+                { "id": "health", "label": "Health", "current": 5, "max": 5 },
+                { "id": "spirit", "label": "Spirit", "current": 5, "max": 5 },
+                { "id": "supply", "label": "Supply", "current": 5, "max": 5 },
+                { "id": "momentum", "label": "Momentum", "current": 2, "max": 10 }
+              ]
+            }
+          },
+          {
+            "id": "moves",
+            "type": "custom-buttons",
+            "label": "Moves",
+            "layout": { "w": 3, "h": 2 },
+            "config": {
+              "buttons": [
+                { "id": "face-danger", "label": "Face Danger", "formula": "1d6+{EDGE}" },
+                { "id": "strike", "label": "Strike", "formula": "1d6+{IRON}" }
+              ]
+            },
+            "values": {}
+          },
+          {
+            "id": "legacies",
+            "type": "clock",
+            "label": "Quests",
+            "layout": { "w": 3, "h": 2 },
+            "config": { "segments": 10 },
+            "values": { "filled": 0 }
+          }
+        ]
+      },
+      {
+        "id": "vows-bonds",
+        "label": "Vows & Bonds",
+        "modules": [
+          {
+            "id": "vows",
+            "type": "list",
+            "label": "Vows",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "bonds",
+            "type": "traits",
+            "label": "Bonds",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "assets",
+            "type": "list",
+            "label": "Assets",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "debilities",
+            "type": "conditions",
+            "label": "Debilities",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": {
+              "items": [
+                { "id": "wounded", "label": "Wounded", "active": false },
+                { "id": "shaken", "label": "Shaken", "active": false },
+                { "id": "unprepared", "label": "Unprepared", "active": false },
+                { "id": "encumbered", "label": "Encumbered", "active": false }
+              ]
+            }
+          },
+          {
+            "id": "journal",
+            "type": "backstory",
+            "label": "Journal",
+            "layout": { "w": 6, "h": 3 },
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

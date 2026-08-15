@@ -1,0 +1,120 @@
+{
+  "id": "dnd-5e",
+  "name": "D&D 5e",
+  "description": "Six-stat core block, D&D-flavored skills, spell slots, gear and conditions — a familiar starting point if you're running 5e solo or with a light group.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Character",
+        "modules": [
+          {
+            "id": "core",
+            "type": "core-block",
+            "label": "Core Block",
+            "layout": { "w": 3, "h": 3 },
+            "config": {
+              "statLabels": [
+                { "id": "str", "label": "STR" },
+                { "id": "dex", "label": "DEX" },
+                { "id": "con", "label": "CON" },
+                { "id": "int", "label": "INT" },
+                { "id": "wis", "label": "WIS" },
+                { "id": "cha", "label": "CHA" }
+              ]
+            },
+            "values": {
+              "characterName": "",
+              "portraitAssetId": null,
+              "hpCurrent": 10,
+              "hpMax": 10,
+              "stats": {}
+            }
+          },
+          {
+            "id": "spell-slots",
+            "type": "charges",
+            "label": "Spell Slots",
+            "layout": { "w": 3, "h": 1 },
+            "config": {},
+            "values": { "current": 4, "max": 4 }
+          },
+          {
+            "id": "skills",
+            "type": "skills",
+            "label": "Skills",
+            "layout": { "w": 3, "h": 3 },
+            "config": { "showRoll": true },
+            "values": {
+              "rows": [
+                { "id": "acrobatics", "name": "Acrobatics", "modifier": 0 },
+                { "id": "perception", "name": "Perception", "modifier": 0 },
+                { "id": "stealth", "name": "Stealth", "modifier": 0 },
+                { "id": "persuasion", "name": "Persuasion", "modifier": 0 },
+                { "id": "investigation", "name": "Investigation", "modifier": 0 },
+                { "id": "athletics", "name": "Athletics", "modifier": 0 }
+              ]
+            }
+          },
+          {
+            "id": "actions",
+            "type": "custom-buttons",
+            "label": "Actions",
+            "layout": { "w": 3, "h": 2 },
+            "config": {
+              "buttons": [
+                { "id": "attack", "label": "Attack", "formula": "1d20+{STR}" },
+                { "id": "damage", "label": "Damage", "formula": "1d8" },
+                { "id": "save-dc", "label": "Spell Save", "formula": "1d20+{WIS}" }
+              ]
+            },
+            "values": {}
+          }
+        ]
+      },
+      {
+        "id": "inventory",
+        "label": "Inventory & Notes",
+        "modules": [
+          {
+            "id": "gear",
+            "type": "gear",
+            "label": "Gear",
+            "layout": { "w": 3, "h": 3 },
+            "config": { "carryCapacity": 150 },
+            "values": { "items": [], "currencies": [{ "id": "gp", "label": "GP", "value": 0 }] }
+          },
+          {
+            "id": "conditions",
+            "type": "conditions",
+            "label": "Conditions",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": {
+              "items": [
+                { "id": "prone", "label": "Prone", "active": false },
+                { "id": "poisoned", "label": "Poisoned", "active": false }
+              ]
+            }
+          },
+          {
+            "id": "features",
+            "type": "list",
+            "label": "Features & Traits",
+            "layout": { "w": 3, "h": 2 },
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "backstory",
+            "type": "backstory",
+            "label": "Backstory",
+            "layout": { "w": 3, "h": 3 },
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

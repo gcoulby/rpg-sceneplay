@@ -1,0 +1,101 @@
+{
+  "id": "fantasy-adventurer",
+  "name": "Fantasy Adventurer",
+  "description": "A classic fantasy TTRPG layout: core stats, HP, spell slots, gear and conditions.",
+  "moduleLayout": {
+    "tabs": [
+      {
+        "id": "main",
+        "label": "Character",
+        "modules": [
+          {
+            "id": "core",
+            "type": "core-block",
+            "label": "Core Block",
+            "config": {
+              "statLabels": [
+                { "id": "str", "label": "STR" },
+                { "id": "dex", "label": "DEX" },
+                { "id": "con", "label": "CON" },
+                { "id": "int", "label": "INT" },
+                { "id": "wis", "label": "WIS" },
+                { "id": "cha", "label": "CHA" }
+              ]
+            },
+            "values": {
+              "characterName": "",
+              "portraitAssetId": null,
+              "hpCurrent": 10,
+              "hpMax": 10,
+              "stats": {}
+            }
+          },
+          {
+            "id": "spell-slots",
+            "type": "charges",
+            "label": "Spell Slots",
+            "config": {},
+            "values": { "current": 3, "max": 3 }
+          },
+          {
+            "id": "skills",
+            "type": "skills",
+            "label": "Skills",
+            "config": { "showRoll": true },
+            "values": {
+              "rows": [
+                { "id": "perception", "name": "Perception", "modifier": 0 },
+                { "id": "stealth", "name": "Stealth", "modifier": 0 },
+                { "id": "persuasion", "name": "Persuasion", "modifier": 0 }
+              ]
+            }
+          },
+          {
+            "id": "actions",
+            "type": "custom-buttons",
+            "label": "Actions",
+            "config": {
+              "buttons": [
+                { "id": "attack", "label": "Attack", "formula": "1d20+{STR}" },
+                { "id": "damage", "label": "Damage", "formula": "1d8" }
+              ]
+            },
+            "values": {}
+          }
+        ]
+      },
+      {
+        "id": "inventory",
+        "label": "Inventory",
+        "modules": [
+          {
+            "id": "gear",
+            "type": "gear",
+            "label": "Gear",
+            "config": {},
+            "values": { "items": [] }
+          },
+          {
+            "id": "conditions",
+            "type": "conditions",
+            "label": "Conditions",
+            "config": {},
+            "values": {
+              "items": [
+                { "id": "prone", "label": "Prone", "active": false },
+                { "id": "poisoned", "label": "Poisoned", "active": false }
+              ]
+            }
+          },
+          {
+            "id": "notes",
+            "type": "notes",
+            "label": "Notes",
+            "config": {},
+            "values": { "text": "" }
+          }
+        ]
+      }
+    ]
+  }
+}

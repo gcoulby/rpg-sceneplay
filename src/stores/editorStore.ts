@@ -461,6 +461,9 @@ export interface CharacterProfile {
   sampleDialogue: string
   /** Asset IDs of images associated with this character */
   images: string[]
+  /** Linked character sheet, if any. Sheets are standalone records managed by
+   *  useSheetStore; this is a reference only, never the sheet data itself. */
+  sheetId: string | null
 }
 
 export interface CharacterRelationship {
@@ -1216,6 +1219,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
             verbalTics: '',
             sampleDialogue: '',
             images: [],
+            sheetId: null,
             ...updates,
           },
         ],
