@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useOracleStore } from '@/stores/oracleStore'
 import type { OracleCollection, OracleSource } from '@/oracles/types'
+import { TOOL_CREDITS } from '@/oracles/toolCredits'
 import {
   Card,
   CardHeader,
@@ -8,6 +9,33 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card'
+
+function SourceCard({ source }: { source: OracleSource }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{source.name}</CardTitle>
+        <CardDescription>{source.author}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1 text-sm">
+        <span>License: {source.license}</span>
+        {source.url && (
+          <a
+            href={source.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary underline underline-offset-2"
+          >
+            {source.url}
+          </a>
+        )}
+        {source.note && (
+          <span className="text-muted-foreground">{source.note}</span>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 function collectSourceIds(
   collections: OracleCollection[],
@@ -52,28 +80,18 @@ export default function Acknowledgements() {
           </p>
         </div>
         {sources.map((source) => (
-          <Card key={source.id}>
-            <CardHeader>
-              <CardTitle>{source.name}</CardTitle>
-              <CardDescription>{source.author}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-1 text-sm">
-              <span>License: {source.license}</span>
-              {source.url && (
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary underline underline-offset-2"
-                >
-                  {source.url}
-                </a>
-              )}
-              {source.note && (
-                <span className="text-muted-foreground">{source.note}</span>
-              )}
-            </CardContent>
-          </Card>
+          <SourceCard key={source.id} source={source} />
+        ))}
+
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold">Tools & Inspiration</h2>
+          <p className="text-muted-foreground text-sm">
+            Tools and mechanics this app builds on that aren't oracle table
+            data.
+          </p>
+        </div>
+        {TOOL_CREDITS.map((source) => (
+          <SourceCard key={source.id} source={source} />
         ))}
       </div>
     </div>

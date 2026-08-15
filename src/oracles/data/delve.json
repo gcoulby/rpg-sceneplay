@@ -4715,5 +4715,16 @@
       ]
     }
   ],
-  "combos": []
+  "combos": [
+    {
+      "id": "delve/collections/oracles/feature#aspect-focus",
+      "name": "Aspect/Focus",
+      "sourceId": "ironsworn-delve",
+      "parts": [
+        "delve/oracles/feature/aspect",
+        "delve/oracles/feature/focus"
+      ],
+      "template": "{0} {1}"
+    }
+  ]
 }

@@ -36,6 +36,9 @@ interface OracleState {
   getAllCombos: () => OracleCombo[]
   getAllTables: () => OracleTable[]
   getTableById: (id: string) => OracleTable | undefined
+  /** The combo a table is a part of, if any — lets the Oracle table
+   *  browser present Action+Theme (etc.) as one roll instead of two. */
+  getComboForTable: (tableId: string) => OracleCombo | undefined
 }
 
 export const useOracleStore = create<OracleState>((set, get) => ({
@@ -57,4 +60,6 @@ export const useOracleStore = create<OracleState>((set, get) => ({
   getAllCombos: () => [...BUNDLED_ORACLE_COMBOS, ...get().userCombos],
   getAllTables: () => flattenTables(get().getAllCollections()),
   getTableById: (id) => get().getAllTables().find((t) => t.id === id),
+  getComboForTable: (tableId) =>
+    get().getAllCombos().find((c) => c.parts.includes(tableId)),
 }))

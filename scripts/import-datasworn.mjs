@@ -56,6 +56,17 @@ const KNOWN_COMBOS = [
     name: 'Descriptor/Focus',
     parts: ['descriptor', 'focus'],
   },
+  {
+    collectionId: 'delve/collections/oracles/feature',
+    name: 'Aspect/Focus',
+    parts: ['aspect', 'focus'],
+  },
+  {
+    collectionId: 'starforged/collections/oracles/space/sector_name',
+    name: 'Sector Name',
+    parts: ['prefix', 'suffix'],
+    template: '{0}{1}',
+  },
 ]
 
 function mapRow(row) {
@@ -129,7 +140,7 @@ function buildCombos(collections, sourceId) {
         name: combo.name,
         sourceId,
         parts,
-        template: parts.map((_, i) => `{${i}}`).join(' '),
+        template: combo.template ?? parts.map((_, i) => `{${i}}`).join(' '),
       })
     }
   }

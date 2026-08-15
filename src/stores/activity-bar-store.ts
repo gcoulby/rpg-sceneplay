@@ -9,6 +9,7 @@ import {
   Users,
   NotebookTabs,
   Dices,
+  Lightbulb,
 } from 'lucide-react'
 import { create } from 'zustand'
 
@@ -23,6 +24,7 @@ export type NavView =
   | 'characters'
   | 'index-cards'
   | 'oracles'
+  | 'inspiration'
 
 export interface NavViewConfig {
   id: NavView
@@ -40,6 +42,7 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'characters', label: 'Characters', icon: Users },
   { id: 'index-cards', label: 'Index Cards', icon: NotebookTabs },
   { id: 'oracles', label: 'Oracles', icon: Dices },
+  { id: 'inspiration', label: 'Inspiration', icon: Lightbulb },
 ]
 
 interface ActivityBarState {

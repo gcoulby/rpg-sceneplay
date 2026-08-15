@@ -7,11 +7,11 @@ import {
 } from '@/components/ui/card'
 import { useOracleActivityStore, type OracleActivity } from '@/stores/oracleActivityStore'
 import StoryCubesRoller from '@/oracles/components/StoryCubesRoller'
-import ActionThemeRoller from '@/oracles/components/ActionThemeRoller'
+import ComboRoller from '@/oracles/components/ComboRoller'
 import FateChartRoller from '@/oracles/components/FateChartRoller'
 import HitRoller from '@/oracles/components/HitRoller'
 import FormulaRoller from '@/oracles/components/FormulaRoller'
-import OracleTableBrowser from '@/oracles/components/OracleTableBrowser'
+import OracleBrowserFull from '@/oracles/components/OracleBrowserFull'
 
 export default function OracleScreen() {
   const activeActivity = useOracleActivityStore((s) => s.activeActivity)
@@ -19,7 +19,7 @@ export default function OracleScreen() {
 
   return (
     <div className="h-full w-full overflow-y-auto p-6">
-      <div className="mx-auto flex max-w-3xl flex-col gap-4">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4">
         <h1 className="text-2xl font-semibold">Oracles</h1>
         <Tabs
           value={activeActivity}
@@ -32,7 +32,7 @@ export default function OracleScreen() {
           </TabsList>
 
           <TabsContent value="inspiration">
-            <div className="flex flex-col gap-4">
+            <div className="mx-auto flex max-w-2xl flex-col gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Story Cubes</CardTitle>
@@ -43,17 +43,17 @@ export default function OracleScreen() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Action / Theme</CardTitle>
+                  <CardTitle>Combos</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ActionThemeRoller />
+                  <ComboRoller />
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="roller">
-            <div className="flex flex-col gap-4">
+            <div className="mx-auto flex max-w-2xl flex-col gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Fate Chart</CardTitle>
@@ -82,14 +82,7 @@ export default function OracleScreen() {
           </TabsContent>
 
           <TabsContent value="oracle">
-            <Card>
-              <CardHeader>
-                <CardTitle>Oracle Tables</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <OracleTableBrowser />
-              </CardContent>
-            </Card>
+            <OracleBrowserFull />
           </TabsContent>
         </Tabs>
       </div>
