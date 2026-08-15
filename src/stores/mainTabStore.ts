@@ -9,6 +9,7 @@ export type MainTab =
   | 'beat-board'
   | 'statistics'
   | 'character-sheet'
+  | 'acknowledgements'
 
 interface MainTabState {
   activeTab: MainTab

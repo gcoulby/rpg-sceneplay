@@ -43,7 +43,7 @@ const ActivityBar: React.FC<ActivityBarProps> = ({
                   aria-pressed={isActive}
                   onClick={() => handleClick(id)}
                   variant="ghost"
-                  className={`relative flex items-center justify-center w-10 h-10 rounded-md transition-colors duration-100 cursor-pointer ${
+                  className={`relative flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-100 cursor-pointer ${
                     isActive
                       ? 'text-(--fd-text) bg-(--fd-overlay-subtle)'
                       : 'text-(--fd-text-muted) hover:text-(--fd-text) hover:bg-(--fd-overlay-subtle)'

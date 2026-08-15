@@ -21,6 +21,7 @@ import { spellChecker } from '@/editor/spellchecker'
 import { grammarIgnore } from '@/editor/grammar/grammarIgnore'
 import { useMapStore } from '@/components/screens/map/useMapStore'
 import { useSheetStore } from '@/components/screens/character-sheets/store/useSheetStore'
+import { useOracleStore } from '@/stores/oracleStore'
 
 /**
  * Every `_`-prefixed key `buildSaveContent` writes. Used to separate app
@@ -54,6 +55,9 @@ export const SAVE_METADATA_KEYS = [
   '_map',
   '_locationMapRefs',
   '_sheets',
+  '_oracleSources',
+  '_oracleCollections',
+  '_oracleCombos',
 ] as const
 
 export type SaveMetadataKey = (typeof SAVE_METADATA_KEYS)[number]
@@ -71,6 +75,7 @@ export function buildSaveContent(
   const tplStore = useFormattingTemplateStore.getState()
   const mapStore = useMapStore.getState()
   const sheetStore = useSheetStore.getState()
+  const oracleStore = useOracleStore.getState()
   const doc = editor.getJSON()
   return {
     ...doc,
@@ -102,6 +107,9 @@ export function buildSaveContent(
     _map: mapStore.map,
     _locationMapRefs: mapStore.locationMapRefs,
     _sheets: sheetStore.sheets,
+    _oracleSources: oracleStore.userSources,
+    _oracleCollections: oracleStore.userCollections,
+    _oracleCombos: oracleStore.userCombos,
   }
 }
 

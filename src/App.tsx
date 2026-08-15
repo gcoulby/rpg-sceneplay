@@ -7,6 +7,7 @@ import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts'
 import AppNavigator from './components/left-side-panel/AppNavigator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
 import {
+  BookHeart,
   ChartAreaIcon,
   IdCard,
   MapIcon,
@@ -19,6 +20,7 @@ import { ScriptContextMenuController } from '@/components/context-menu/ScriptCon
 import { MapScreen } from './components/screens/map/map-screen'
 import { useMainTabStore, type MainTab } from '@/stores/mainTabStore'
 import { CharacterSheet } from './components/screens/character-sheets/character-sheet'
+import Acknowledgements from './components/screens/acknowledgements'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   const activeTab = useMainTabStore((s) => s.activeTab)
@@ -55,11 +57,15 @@ function App() {
               </TabsTrigger>
               <TabsTrigger value="beat-board">
                 <SquareKanban />
-                Beat Board
+                Beats
               </TabsTrigger>
               <TabsTrigger value="statistics">
                 <ChartAreaIcon />
-                Script Statistics
+                Stats
+              </TabsTrigger>
+              <TabsTrigger value="acknowledgements">
+                <BookHeart />
+                Acknowledgements
               </TabsTrigger>
             </TabsList>
             <TabsContent value="editor" keepMounted>
@@ -85,6 +91,11 @@ function App() {
             <TabsContent value="statistics">
               <div className="h-(--app-h)! w-full overflow-hidden">
                 {editor && <ScriptStatistics editor={editor} />}
+              </div>
+            </TabsContent>
+            <TabsContent value="acknowledgements">
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                <Acknowledgements />
               </div>
             </TabsContent>
           </Tabs>
