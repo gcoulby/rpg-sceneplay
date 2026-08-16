@@ -38,40 +38,40 @@ function App() {
             onValueChange={(v) => setActiveTab(v as MainTab)}
             className="gap-0 bg-background"
           >
-            <TabsList className="h-(--tabbar-h)! p-0 gap-2 bg-background">
+            <TabsList className="order-last h-(--tabbar-h)! w-full justify-around gap-2 border-t bg-background p-0 md:order-first md:w-auto md:justify-start md:border-t-0">
               <TabsTrigger
                 value="editor"
                 className="data-active:bg-primary data-active:text-primary-foreground"
               >
                 <PencilLine />
-                Editor
+                <span className="hidden md:inline">Editor</span>
               </TabsTrigger>
               <TabsTrigger
                 value="character-sheet"
                 className="data-active:bg-primary data-active:text-primary-foreground"
               >
                 <IdCard />
-                Character Sheet
+                <span className="hidden md:inline">Character Sheet</span>
               </TabsTrigger>
               <TabsTrigger value="map">
                 <MapIcon />
-                Map
+                <span className="hidden md:inline">Map</span>
               </TabsTrigger>
               <TabsTrigger value="beat-board">
                 <SquareKanban />
-                Beats
+                <span className="hidden md:inline">Beats</span>
               </TabsTrigger>
               <TabsTrigger value="statistics">
                 <ChartAreaIcon />
-                Stats
+                <span className="hidden md:inline">Stats</span>
               </TabsTrigger>
               <TabsTrigger value="oracles">
                 <Dices />
-                Oracles
+                <span className="hidden md:inline">Oracles</span>
               </TabsTrigger>
               <TabsTrigger value="acknowledgements">
                 <BookHeart />
-                Acknowledgements
+                <span className="hidden md:inline">Acknowledgements</span>
               </TabsTrigger>
             </TabsList>
             <TabsContent value="editor" keepMounted>

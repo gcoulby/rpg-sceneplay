@@ -32,19 +32,27 @@ import FontPicker from './font-picker' // adjust path
 import ToolbarZoomControl from './toolbar-zoom-control'
 import { useToolbar } from './use-toolbar'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface HeaderPanelToolbarProps {
   onOpenGoToPage: () => void
+  wrap?: boolean
 }
 
 export function HeaderPanelToolbar({
   onOpenGoToPage,
+  wrap = false,
 }: HeaderPanelToolbarProps) {
   const toolbar = useToolbar({ onOpenGoToPage })
 
   return (
     <div
-      className="flex flex-wrap items-center gap-1 px-3 py-1.5 border-b h-10! toolbar"
+      className={cn(
+        'flex items-center gap-1 px-3 py-1.5 border-b toolbar *:shrink-0',
+        wrap
+          ? 'flex-wrap h-auto'
+          : 'flex-nowrap h-10! overflow-x-auto overflow-y-hidden no-scrollbar',
+      )}
       role="toolbar"
     >
       <Button

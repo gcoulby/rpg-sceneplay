@@ -17,6 +17,7 @@ import DiagnosticsDialog from '../plugins/diagnostics/diagnostics-dialog'
 import HelpDialog, { type HelpTab } from '../help/HelpDialog'
 import { HeaderPanelMenuBar } from './header-panel-menubar'
 import { HeaderPanelToolbar } from './toolbar/header-panel-toolbar'
+import { MobileHeaderMenu } from './mobile-header-menu'
 import MapSettingsDialog from '@/components/screens/map/MapSettingsDialog'
 
 export default function AppShell() {
@@ -68,11 +69,17 @@ export default function AppShell() {
 
   return (
     <header className="p-0">
-      <div className="flex flex-col gap-0">
+      <div className="hidden flex-col gap-0 md:flex">
         <HeaderPanelMenuBar menus={menus} runOrConfirm={runOrConfirm} />
 
         <HeaderPanelToolbar onOpenGoToPage={() => setGoToPageOpen(true)} />
       </div>
+
+      <MobileHeaderMenu
+        menus={menus}
+        runOrConfirm={runOrConfirm}
+        onOpenGoToPage={() => setGoToPageOpen(true)}
+      />
 
       <ConfirmationDialog
         open={pendingAction !== null}
