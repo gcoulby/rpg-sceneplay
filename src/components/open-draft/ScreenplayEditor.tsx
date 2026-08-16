@@ -35,6 +35,7 @@ import {
   CastList,
   FontSize,
   ScriptNoteMark,
+  RollAnchorNode,
   TagMark,
   FormatOverride,
   CustomElement,
@@ -85,6 +86,8 @@ import {
   resolveMoresContds,
 } from '@/stores/editorStore'
 import type { ElementType } from '@/stores/editorStore'
+import { useRollNoteStore } from '@/stores/rollNoteStore'
+import { useActivityBarStore } from '@/stores/activity-bar-store'
 import FormatPanel from './FormatPanel'
 import ElementPicker from './ElementPicker'
 import CharacterAutocomplete from './CharacterAutocomplete'
@@ -1202,6 +1205,7 @@ const ScreenplayEditor: React.FC = () => {
         AvDirection,
         AvKeymap,
         ScriptNoteMark,
+        RollAnchorNode,
         TagMark,
         PaginationExtension,
         ContdCaseExtension,
@@ -2764,6 +2768,28 @@ const ScreenplayEditor: React.FC = () => {
 
       // Open the notes panel if not already open
       if (!store.scriptNotesOpen) store.toggleScriptNotes()
+    }
+
+    const editorEl = editor.view.dom
+    editorEl.addEventListener('click', handleClick)
+    return () => editorEl.removeEventListener('click', handleClick)
+  }, [editor])
+
+  // --- Click on a roll anchor glyph → jump to it in the Rolls sidebar ---
+  useEffect(() => {
+    if (!editor) return
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      const anchorEl = target.closest(
+        '.roll-anchor-glyph',
+      ) as HTMLElement | null
+      if (!anchorEl) return
+
+      const anchorId = anchorEl.getAttribute('data-anchor-id')
+      if (!anchorId) return
+
+      useActivityBarStore.getState().setActiveView('rolls')
+      useRollNoteStore.getState().setFocusedRollId(anchorId)
     }
 
     const editorEl = editor.view.dom

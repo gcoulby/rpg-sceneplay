@@ -8,6 +8,7 @@ export interface ExistingTagInfo {
 interface ExistingAnnotations {
   existingNoteId: string | null
   existingTagInfo: ExistingTagInfo | null
+  existingRollAnchorId: string | null
 }
 
 export function getExistingAnnotations(editor: Editor): ExistingAnnotations {
@@ -31,5 +32,17 @@ export function getExistingAnnotations(editor: Editor): ExistingAnnotations {
     ? { tagId: tagMark.attrs.tagId as string, categoryId: tagMark.attrs.categoryId as string }
     : null
 
-  return { existingNoteId, existingTagInfo }
+  const rollAnchorType = editor.schema.nodes.rollAnchor
+  const rollAnchorNode =
+    rollAnchorType &&
+    (pos.nodeAfter?.type === rollAnchorType
+      ? pos.nodeAfter
+      : pos.nodeBefore?.type === rollAnchorType
+        ? pos.nodeBefore
+        : undefined)
+  const existingRollAnchorId = rollAnchorNode
+    ? (rollAnchorNode.attrs.anchorId as string)
+    : null
+
+  return { existingNoteId, existingTagInfo, existingRollAnchorId }
 }

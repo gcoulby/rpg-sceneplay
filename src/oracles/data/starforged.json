@@ -16,7 +16,10 @@
           "id": "starforged/oracles/campaign_launch/background_assets",
           "name": "Background Assets",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -124,7 +127,10 @@
           "id": "starforged/oracles/campaign_launch/backstory_prompts",
           "name": "Backstory Prompts",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -207,7 +213,10 @@
           "id": "starforged/oracles/campaign_launch/starship_history",
           "name": "Starship History",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -275,7 +284,10 @@
           "id": "starforged/oracles/campaign_launch/starship_quirks",
           "name": "Starship Quirks",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -383,7 +395,10 @@
           "id": "starforged/oracles/campaign_launch/sector_trouble",
           "name": "Sector Trouble",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -491,7 +506,10 @@
           "id": "starforged/oracles/campaign_launch/inciting_incident",
           "name": "Inciting Incident",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -606,7 +624,10 @@
           "id": "starforged/oracles/characters/first_look",
           "name": "First Look",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -809,7 +830,10 @@
           "id": "starforged/oracles/characters/initial_disposition",
           "name": "Initial Disposition",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -877,7 +901,10 @@
           "id": "starforged/oracles/characters/role",
           "name": "Character Role",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -1126,7 +1153,10 @@
           "id": "starforged/oracles/characters/goal",
           "name": "Character Goal",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -1335,7 +1365,10 @@
           "id": "starforged/oracles/characters/revealed_aspect",
           "name": "Revealed Character Aspect",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -1849,7 +1882,10 @@
               "id": "starforged/oracles/characters/name/given",
               "name": "Given Name",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -2357,7 +2393,10 @@
               "id": "starforged/oracles/characters/name/callsign",
               "name": "Callsign",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -2865,7 +2904,10 @@
               "id": "starforged/oracles/characters/name/family_name",
               "name": "Family Name",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -3382,7 +3424,10 @@
           "id": "starforged/oracles/core/action",
           "name": "Action",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -3890,7 +3935,10 @@
           "id": "starforged/oracles/core/theme",
           "name": "Theme",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -4398,7 +4446,10 @@
           "id": "starforged/oracles/core/descriptor",
           "name": "Descriptor",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -4906,7 +4957,10 @@
           "id": "starforged/oracles/core/focus",
           "name": "Focus",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -5421,7 +5475,10 @@
           "id": "starforged/oracles/creatures/environment",
           "name": "Environment",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -5459,7 +5516,10 @@
           "id": "starforged/oracles/creatures/scale",
           "name": "Scale",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -5503,7 +5563,10 @@
           "id": "starforged/oracles/creatures/ultra_scale",
           "name": "Ultra-scale",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -5526,7 +5589,10 @@
           "id": "starforged/oracles/creatures/first_look",
           "name": "Creature First Look",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -5784,7 +5850,10 @@
           "id": "starforged/oracles/creatures/encountered_behavior",
           "name": "Encountered Behavior",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -5897,7 +5966,10 @@
           "id": "starforged/oracles/creatures/revealed_aspect",
           "name": "Revealed Creature Aspect",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -6161,7 +6233,10 @@
               "id": "starforged/oracles/creatures/basic_form/space",
               "name": "Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -6259,7 +6334,10 @@
               "id": "starforged/oracles/creatures/basic_form/interior",
               "name": "Interior",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -6357,7 +6435,10 @@
               "id": "starforged/oracles/creatures/basic_form/land",
               "name": "Land",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -6455,7 +6536,10 @@
               "id": "starforged/oracles/creatures/basic_form/liquid",
               "name": "Liquid",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -6553,7 +6637,10 @@
               "id": "starforged/oracles/creatures/basic_form/air",
               "name": "Air",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -6660,7 +6747,10 @@
           "id": "starforged/oracles/derelicts/location",
           "name": "Location",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -6683,7 +6773,10 @@
           "id": "starforged/oracles/derelicts/condition",
           "name": "Condition",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -6721,7 +6814,10 @@
           "id": "starforged/oracles/derelicts/outer_first_look",
           "name": "Outer First Look",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -6779,7 +6875,10 @@
           "id": "starforged/oracles/derelicts/inner_first_look",
           "name": "Inner First Look",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -6954,7 +7053,10 @@
               "id": "starforged/oracles/derelicts/access/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7002,7 +7104,10 @@
               "id": "starforged/oracles/derelicts/access/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7111,7 +7216,10 @@
               "id": "starforged/oracles/derelicts/access/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7175,7 +7283,10 @@
               "id": "starforged/oracles/derelicts/access/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7216,7 +7327,10 @@
               "id": "starforged/oracles/derelicts/community/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7284,7 +7398,10 @@
               "id": "starforged/oracles/derelicts/community/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7353,7 +7470,10 @@
               "id": "starforged/oracles/derelicts/community/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7417,7 +7537,10 @@
               "id": "starforged/oracles/derelicts/community/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7458,7 +7581,10 @@
               "id": "starforged/oracles/derelicts/engineering/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7526,7 +7652,10 @@
               "id": "starforged/oracles/derelicts/engineering/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7595,7 +7724,10 @@
               "id": "starforged/oracles/derelicts/engineering/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7659,7 +7791,10 @@
               "id": "starforged/oracles/derelicts/engineering/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7700,7 +7835,10 @@
               "id": "starforged/oracles/derelicts/living/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7768,7 +7906,10 @@
               "id": "starforged/oracles/derelicts/living/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7837,7 +7978,10 @@
               "id": "starforged/oracles/derelicts/living/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7901,7 +8045,10 @@
               "id": "starforged/oracles/derelicts/living/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -7942,7 +8089,10 @@
               "id": "starforged/oracles/derelicts/medical/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8010,7 +8160,10 @@
               "id": "starforged/oracles/derelicts/medical/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8079,7 +8232,10 @@
               "id": "starforged/oracles/derelicts/medical/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8143,7 +8299,10 @@
               "id": "starforged/oracles/derelicts/medical/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8184,7 +8343,10 @@
               "id": "starforged/oracles/derelicts/operations/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8252,7 +8414,10 @@
               "id": "starforged/oracles/derelicts/operations/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8321,7 +8486,10 @@
               "id": "starforged/oracles/derelicts/operations/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8385,7 +8553,10 @@
               "id": "starforged/oracles/derelicts/operations/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8426,7 +8597,10 @@
               "id": "starforged/oracles/derelicts/production/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8494,7 +8668,10 @@
               "id": "starforged/oracles/derelicts/production/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8563,7 +8740,10 @@
               "id": "starforged/oracles/derelicts/production/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8627,7 +8807,10 @@
               "id": "starforged/oracles/derelicts/production/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8668,7 +8851,10 @@
               "id": "starforged/oracles/derelicts/research/area",
               "name": "Area",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8736,7 +8922,10 @@
               "id": "starforged/oracles/derelicts/research/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8805,7 +8994,10 @@
               "id": "starforged/oracles/derelicts/research/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8869,7 +9061,10 @@
               "id": "starforged/oracles/derelicts/research/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8910,7 +9105,10 @@
               "id": "starforged/oracles/derelicts/type/planetside",
               "name": "Planetside",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8928,7 +9126,10 @@
               "id": "starforged/oracles/derelicts/type/orbital",
               "name": "Orbital",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8946,7 +9147,10 @@
               "id": "starforged/oracles/derelicts/type/deep_space",
               "name": "Deep Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -8972,7 +9176,10 @@
               "id": "starforged/oracles/derelicts/zones/starship",
               "name": "Starship",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -9015,7 +9222,10 @@
               "id": "starforged/oracles/derelicts/zones/settlement",
               "name": "Settlement",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -9067,7 +9277,10 @@
           "id": "starforged/oracles/factions/type",
           "name": "Faction Type",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9093,7 +9306,10 @@
           "id": "starforged/oracles/factions/influence",
           "name": "Influence",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9136,7 +9352,10 @@
           "id": "starforged/oracles/factions/dominion",
           "name": "Dominion",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9264,7 +9483,10 @@
           "id": "starforged/oracles/factions/dominion_leadership",
           "name": "Dominion: Leadership",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9322,7 +9544,10 @@
           "id": "starforged/oracles/factions/guild",
           "name": "Guild",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9405,7 +9630,10 @@
           "id": "starforged/oracles/factions/fringe_group",
           "name": "Fringe Group",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9473,7 +9701,10 @@
           "id": "starforged/oracles/factions/projects",
           "name": "Faction Projects",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9647,7 +9878,10 @@
           "id": "starforged/oracles/factions/relationships",
           "name": "Faction Relationships",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9795,7 +10029,10 @@
           "id": "starforged/oracles/factions/quirks",
           "name": "Faction Quirks",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -9969,7 +10206,10 @@
           "id": "starforged/oracles/factions/rumors",
           "name": "Faction Rumors",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -10149,7 +10389,10 @@
               "id": "starforged/oracles/factions/name/template",
               "name": "Faction Name Template",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -10177,7 +10420,10 @@
               "id": "starforged/oracles/factions/name/legacy",
               "name": "Legacy",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -10435,7 +10681,10 @@
               "id": "starforged/oracles/factions/name/affiliation",
               "name": "Affiliation",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -10568,7 +10817,10 @@
               "id": "starforged/oracles/factions/name/identity",
               "name": "Identity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -10835,7 +11087,10 @@
           "id": "starforged/oracles/location_themes/type",
           "name": "Theme Type",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -10889,7 +11144,10 @@
               "id": "starforged/oracles/location_themes/chaotic/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -10963,7 +11221,10 @@
               "id": "starforged/oracles/location_themes/chaotic/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11032,7 +11293,10 @@
               "id": "starforged/oracles/location_themes/chaotic/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11073,7 +11337,10 @@
               "id": "starforged/oracles/location_themes/fortified/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11147,7 +11414,10 @@
               "id": "starforged/oracles/location_themes/fortified/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11216,7 +11486,10 @@
               "id": "starforged/oracles/location_themes/fortified/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11257,7 +11530,10 @@
               "id": "starforged/oracles/location_themes/haunted/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11331,7 +11607,10 @@
               "id": "starforged/oracles/location_themes/haunted/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11400,7 +11679,10 @@
               "id": "starforged/oracles/location_themes/haunted/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11441,7 +11723,10 @@
               "id": "starforged/oracles/location_themes/infested/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11515,7 +11800,10 @@
               "id": "starforged/oracles/location_themes/infested/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11584,7 +11872,10 @@
               "id": "starforged/oracles/location_themes/infested/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11625,7 +11916,10 @@
               "id": "starforged/oracles/location_themes/inhabited/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11699,7 +11993,10 @@
               "id": "starforged/oracles/location_themes/inhabited/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11768,7 +12065,10 @@
               "id": "starforged/oracles/location_themes/inhabited/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11809,7 +12109,10 @@
               "id": "starforged/oracles/location_themes/mechanical/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11883,7 +12186,10 @@
               "id": "starforged/oracles/location_themes/mechanical/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11952,7 +12258,10 @@
               "id": "starforged/oracles/location_themes/mechanical/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -11993,7 +12302,10 @@
               "id": "starforged/oracles/location_themes/ruined/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -12067,7 +12379,10 @@
               "id": "starforged/oracles/location_themes/ruined/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -12136,7 +12451,10 @@
               "id": "starforged/oracles/location_themes/ruined/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -12177,7 +12495,10 @@
               "id": "starforged/oracles/location_themes/sacred/feature",
               "name": "Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -12251,7 +12572,10 @@
               "id": "starforged/oracles/location_themes/sacred/peril",
               "name": "Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -12320,7 +12644,10 @@
               "id": "starforged/oracles/location_themes/sacred/opportunity",
               "name": "Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -12362,7 +12689,10 @@
           "id": "starforged/oracles/misc/story_complication",
           "name": "Story Complication",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -12515,7 +12845,10 @@
           "id": "starforged/oracles/misc/story_clue",
           "name": "Story Clue",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -12679,7 +13012,10 @@
           "id": "starforged/oracles/misc/anomaly_effect",
           "name": "Anomaly Effect",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -12852,7 +13188,10 @@
           "id": "starforged/oracles/misc/combat_action",
           "name": "Combat Action",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13032,7 +13371,10 @@
           "id": "starforged/oracles/moves/begin_a_session",
           "name": "Begin a Session",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13090,7 +13432,10 @@
           "id": "starforged/oracles/moves/make_a_discovery",
           "name": "Make a Discovery",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13213,7 +13558,10 @@
           "id": "starforged/oracles/moves/confront_chaos",
           "name": "Confront Chaos",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13336,7 +13684,10 @@
           "id": "starforged/oracles/moves/take_decisive_action",
           "name": "Take Decisive Action",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13374,7 +13725,10 @@
           "id": "starforged/oracles/moves/endure_harm",
           "name": "Endure Harm",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13407,7 +13761,10 @@
           "id": "starforged/oracles/moves/endure_stress",
           "name": "Endure Stress",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13435,7 +13792,10 @@
           "id": "starforged/oracles/moves/withstand_damage",
           "name": "Withstand Damage",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13483,7 +13843,10 @@
           "id": "starforged/oracles/moves/pay_the_price",
           "name": "Pay the Price",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13597,7 +13960,10 @@
               "id": "starforged/oracles/moves/ask_the_oracle/almost_certain",
               "name": "Almost Certain",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13615,7 +13981,10 @@
               "id": "starforged/oracles/moves/ask_the_oracle/likely",
               "name": "Likely",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13633,7 +14002,10 @@
               "id": "starforged/oracles/moves/ask_the_oracle/fifty_fifty",
               "name": "50/50",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13651,7 +14023,10 @@
               "id": "starforged/oracles/moves/ask_the_oracle/unlikely",
               "name": "Unlikely",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13669,7 +14044,10 @@
               "id": "starforged/oracles/moves/ask_the_oracle/small_chance",
               "name": "Small Chance",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13696,7 +14074,10 @@
           "id": "starforged/oracles/planets/class",
           "name": "Planetary Class",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -13765,7 +14146,10 @@
               "id": "starforged/oracles/planets/desert/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13873,7 +14257,10 @@
               "id": "starforged/oracles/planets/desert/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13911,7 +14298,10 @@
               "id": "starforged/oracles/planets/desert/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -13970,7 +14360,10 @@
               "id": "starforged/oracles/planets/desert/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14054,7 +14447,10 @@
               "id": "starforged/oracles/planets/desert/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14098,7 +14494,10 @@
                   "id": "starforged/oracles/planets/desert/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14131,7 +14530,10 @@
                   "id": "starforged/oracles/planets/desert/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14164,7 +14566,10 @@
                   "id": "starforged/oracles/planets/desert/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14197,7 +14602,10 @@
               "id": "starforged/oracles/planets/furnace/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14305,7 +14713,10 @@
               "id": "starforged/oracles/planets/furnace/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14338,7 +14749,10 @@
               "id": "starforged/oracles/planets/furnace/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14397,7 +14811,10 @@
               "id": "starforged/oracles/planets/furnace/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14481,7 +14898,10 @@
               "id": "starforged/oracles/planets/furnace/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14525,7 +14945,10 @@
                   "id": "starforged/oracles/planets/furnace/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14558,7 +14981,10 @@
                   "id": "starforged/oracles/planets/furnace/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14591,7 +15017,10 @@
                   "id": "starforged/oracles/planets/furnace/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14624,7 +15053,10 @@
               "id": "starforged/oracles/planets/grave/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14732,7 +15164,10 @@
               "id": "starforged/oracles/planets/grave/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14765,7 +15200,10 @@
               "id": "starforged/oracles/planets/grave/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14824,7 +15262,10 @@
               "id": "starforged/oracles/planets/grave/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14908,7 +15349,10 @@
               "id": "starforged/oracles/planets/grave/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -14942,7 +15386,10 @@
                   "id": "starforged/oracles/planets/grave/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14975,7 +15422,10 @@
                   "id": "starforged/oracles/planets/grave/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -14998,7 +15448,10 @@
                   "id": "starforged/oracles/planets/grave/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -15031,7 +15484,10 @@
               "id": "starforged/oracles/planets/ice/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15139,7 +15595,10 @@
               "id": "starforged/oracles/planets/ice/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15177,7 +15636,10 @@
               "id": "starforged/oracles/planets/ice/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15236,7 +15698,10 @@
               "id": "starforged/oracles/planets/ice/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15320,7 +15785,10 @@
               "id": "starforged/oracles/planets/ice/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15364,7 +15832,10 @@
                   "id": "starforged/oracles/planets/ice/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -15397,7 +15868,10 @@
                   "id": "starforged/oracles/planets/ice/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -15430,7 +15904,10 @@
                   "id": "starforged/oracles/planets/ice/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -15463,7 +15940,10 @@
               "id": "starforged/oracles/planets/jovian/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15571,7 +16051,10 @@
               "id": "starforged/oracles/planets/jovian/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15599,7 +16082,10 @@
               "id": "starforged/oracles/planets/jovian/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15658,7 +16144,10 @@
               "id": "starforged/oracles/planets/jovian/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15742,7 +16231,10 @@
               "id": "starforged/oracles/planets/jovian/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15786,7 +16278,10 @@
                   "id": "starforged/oracles/planets/jovian/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -15819,7 +16314,10 @@
                   "id": "starforged/oracles/planets/jovian/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -15852,7 +16350,10 @@
                   "id": "starforged/oracles/planets/jovian/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -15885,7 +16386,10 @@
               "id": "starforged/oracles/planets/jungle/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -15993,7 +16497,10 @@
               "id": "starforged/oracles/planets/jungle/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16026,7 +16533,10 @@
               "id": "starforged/oracles/planets/jungle/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16085,7 +16595,10 @@
               "id": "starforged/oracles/planets/jungle/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16169,7 +16682,10 @@
               "id": "starforged/oracles/planets/jungle/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16203,7 +16719,10 @@
                   "id": "starforged/oracles/planets/jungle/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -16236,7 +16755,10 @@
                   "id": "starforged/oracles/planets/jungle/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -16269,7 +16791,10 @@
                   "id": "starforged/oracles/planets/jungle/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -16312,7 +16837,10 @@
               "id": "starforged/oracles/planets/ocean/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16420,7 +16948,10 @@
               "id": "starforged/oracles/planets/ocean/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16458,7 +16989,10 @@
               "id": "starforged/oracles/planets/ocean/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16517,7 +17051,10 @@
               "id": "starforged/oracles/planets/ocean/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16601,7 +17138,10 @@
               "id": "starforged/oracles/planets/ocean/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16645,7 +17185,10 @@
                   "id": "starforged/oracles/planets/ocean/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -16678,7 +17221,10 @@
                   "id": "starforged/oracles/planets/ocean/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -16711,7 +17257,10 @@
                   "id": "starforged/oracles/planets/ocean/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -16754,7 +17303,10 @@
               "id": "starforged/oracles/planets/rocky/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16862,7 +17414,10 @@
               "id": "starforged/oracles/planets/rocky/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16890,7 +17445,10 @@
               "id": "starforged/oracles/planets/rocky/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -16949,7 +17507,10 @@
               "id": "starforged/oracles/planets/rocky/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17033,7 +17594,10 @@
               "id": "starforged/oracles/planets/rocky/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17077,7 +17641,10 @@
                   "id": "starforged/oracles/planets/rocky/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17110,7 +17677,10 @@
                   "id": "starforged/oracles/planets/rocky/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17143,7 +17713,10 @@
                   "id": "starforged/oracles/planets/rocky/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17176,7 +17749,10 @@
               "id": "starforged/oracles/planets/shattered/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17284,7 +17860,10 @@
               "id": "starforged/oracles/planets/shattered/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17317,7 +17896,10 @@
               "id": "starforged/oracles/planets/shattered/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17376,7 +17958,10 @@
               "id": "starforged/oracles/planets/shattered/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17460,7 +18045,10 @@
               "id": "starforged/oracles/planets/shattered/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17494,7 +18082,10 @@
                   "id": "starforged/oracles/planets/shattered/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17527,7 +18118,10 @@
                   "id": "starforged/oracles/planets/shattered/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17555,7 +18149,10 @@
                   "id": "starforged/oracles/planets/shattered/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17588,7 +18185,10 @@
               "id": "starforged/oracles/planets/tainted/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17696,7 +18296,10 @@
               "id": "starforged/oracles/planets/tainted/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17724,7 +18327,10 @@
               "id": "starforged/oracles/planets/tainted/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17783,7 +18389,10 @@
               "id": "starforged/oracles/planets/tainted/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17867,7 +18476,10 @@
               "id": "starforged/oracles/planets/tainted/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -17901,7 +18513,10 @@
                   "id": "starforged/oracles/planets/tainted/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17934,7 +18549,10 @@
                   "id": "starforged/oracles/planets/tainted/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17957,7 +18575,10 @@
                   "id": "starforged/oracles/planets/tainted/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -17990,7 +18611,10 @@
               "id": "starforged/oracles/planets/vital/name",
               "name": "Sample Names",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d20",
+              "dice": {
+                "kind": "single",
+                "sides": 20
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18098,7 +18722,10 @@
               "id": "starforged/oracles/planets/vital/atmosphere",
               "name": "Atmosphere",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18121,7 +18748,10 @@
               "id": "starforged/oracles/planets/vital/observed_from_space",
               "name": "Observed From Space",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18180,7 +18810,10 @@
               "id": "starforged/oracles/planets/vital/feature",
               "name": "Planetside Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18264,7 +18897,10 @@
               "id": "starforged/oracles/planets/vital/life",
               "name": "Life",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18292,7 +18928,10 @@
               "id": "starforged/oracles/planets/vital/diversity",
               "name": "Diversity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18324,7 +18963,10 @@
               "id": "starforged/oracles/planets/vital/biomes",
               "name": "Biomes",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18438,7 +19080,10 @@
                   "id": "starforged/oracles/planets/vital/settlements/terminus",
                   "name": "Terminus",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -18471,7 +19116,10 @@
                   "id": "starforged/oracles/planets/vital/settlements/outlands",
                   "name": "Outlands",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -18504,7 +19152,10 @@
                   "id": "starforged/oracles/planets/vital/settlements/expanse",
                   "name": "Expanse",
                   "sourceId": "ironsworn-starforged",
-                  "diceType": "d100",
+                  "dice": {
+                    "kind": "single",
+                    "sides": 100
+                  },
                   "rows": [
                     {
                       "min": 1,
@@ -18547,7 +19198,10 @@
               "id": "starforged/oracles/planets/peril/lifebearing",
               "name": "Lifebearing",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18726,7 +19380,10 @@
               "id": "starforged/oracles/planets/peril/lifeless",
               "name": "Lifeless",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -18873,7 +19530,10 @@
               "id": "starforged/oracles/planets/opportunity/lifebearing",
               "name": "Lifebearing",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -19006,7 +19666,10 @@
               "id": "starforged/oracles/planets/opportunity/lifeless",
               "name": "Lifeless",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -19123,7 +19786,10 @@
           "id": "starforged/oracles/settlements/location",
           "name": "Location",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -19146,7 +19812,10 @@
           "id": "starforged/oracles/settlements/first_look",
           "name": "First Look",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -19260,7 +19929,10 @@
           "id": "starforged/oracles/settlements/initial_contact",
           "name": "Initial Contact",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -19323,7 +19995,10 @@
           "id": "starforged/oracles/settlements/authority",
           "name": "Authority",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -19366,7 +20041,10 @@
           "id": "starforged/oracles/settlements/projects",
           "name": "Settlement Projects",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -19540,7 +20218,10 @@
           "id": "starforged/oracles/settlements/trouble",
           "name": "Settlement Trouble",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -19719,7 +20400,10 @@
           "id": "starforged/oracles/settlements/name",
           "name": "Settlement Name",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -20227,7 +20911,10 @@
           "id": "starforged/oracles/settlements/name_tags",
           "name": "Name tags",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d10",
+          "dice": {
+            "kind": "single",
+            "sides": 10
+          },
           "rows": [
             {
               "min": 1,
@@ -20291,7 +20978,10 @@
               "id": "starforged/oracles/settlements/population/terminus",
               "name": "Terminus",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -20324,7 +21014,10 @@
               "id": "starforged/oracles/settlements/population/outlands",
               "name": "Outlands",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -20357,7 +21050,10 @@
               "id": "starforged/oracles/settlements/population/expanse",
               "name": "Expanse",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -20399,7 +21095,10 @@
           "id": "starforged/oracles/space/stellar_object",
           "name": "Stellar Object",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -20472,7 +21171,10 @@
           "id": "starforged/oracles/space/peril",
           "name": "Spaceborne Peril",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -20651,7 +21353,10 @@
           "id": "starforged/oracles/space/opportunity",
           "name": "Spaceborne Opportunity",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -20790,7 +21495,10 @@
               "id": "starforged/oracles/space/sighting/terminus",
               "name": "Terminus",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -20905,7 +21613,10 @@
               "id": "starforged/oracles/space/sighting/outlands",
               "name": "Outlands",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -21020,7 +21731,10 @@
               "id": "starforged/oracles/space/sighting/expanse",
               "name": "Expanse",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -21143,7 +21857,10 @@
               "id": "starforged/oracles/space/sector_name/prefix",
               "name": "Prefix",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -21401,7 +22118,10 @@
               "id": "starforged/oracles/space/sector_name/suffix",
               "name": "Suffix",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -21668,7 +22388,10 @@
           "id": "starforged/oracles/starships/type",
           "name": "Starship Type",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -21788,7 +22511,10 @@
           "id": "starforged/oracles/starships/fleet",
           "name": "Fleet",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -21837,7 +22563,10 @@
           "id": "starforged/oracles/starships/initial_contact",
           "name": "Initial Contact",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -21905,7 +22634,10 @@
           "id": "starforged/oracles/starships/first_look",
           "name": "First Look",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -22024,7 +22756,10 @@
           "id": "starforged/oracles/starships/starship_name",
           "name": "Starship Name",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -22538,7 +23273,10 @@
               "id": "starforged/oracles/starships/mission/terminus",
               "name": "Terminus",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -22707,7 +23445,10 @@
               "id": "starforged/oracles/starships/mission/outlands",
               "name": "Outlands",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -22876,7 +23617,10 @@
               "id": "starforged/oracles/starships/mission/expanse",
               "name": "Expanse",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -23054,7 +23798,10 @@
           "id": "starforged/oracles/vaults/location",
           "name": "Location",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -23077,7 +23824,10 @@
           "id": "starforged/oracles/vaults/scale",
           "name": "Scale",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -23110,7 +23860,10 @@
           "id": "starforged/oracles/vaults/form",
           "name": "Form",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -23143,7 +23896,10 @@
           "id": "starforged/oracles/vaults/shape",
           "name": "Shape",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -23231,7 +23987,10 @@
           "id": "starforged/oracles/vaults/material",
           "name": "Material",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -23289,7 +24048,10 @@
           "id": "starforged/oracles/vaults/outer_first_look",
           "name": "Outer First Look",
           "sourceId": "ironsworn-starforged",
-          "diceType": "d100",
+          "dice": {
+            "kind": "single",
+            "sides": 100
+          },
           "rows": [
             {
               "min": 1,
@@ -23454,7 +24216,10 @@
               "id": "starforged/oracles/vaults/interior/first_look",
               "name": "Inner First Look",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -23623,7 +24388,10 @@
               "id": "starforged/oracles/vaults/interior/feature",
               "name": "Interior Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -23807,7 +24575,10 @@
               "id": "starforged/oracles/vaults/interior/peril",
               "name": "Interior Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -23921,7 +24692,10 @@
               "id": "starforged/oracles/vaults/interior/opportunity",
               "name": "Interior Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -23987,7 +24761,10 @@
               "id": "starforged/oracles/vaults/sanctum/purpose",
               "name": "Vault Purpose",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -24141,7 +24918,10 @@
               "id": "starforged/oracles/vaults/sanctum/feature",
               "name": "Sanctum Feature",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -24325,7 +25105,10 @@
               "id": "starforged/oracles/vaults/sanctum/peril",
               "name": "Sanctum Peril",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,
@@ -24439,7 +25222,10 @@
               "id": "starforged/oracles/vaults/sanctum/opportunity",
               "name": "Sanctum Opportunity",
               "sourceId": "ironsworn-starforged",
-              "diceType": "d100",
+              "dice": {
+                "kind": "single",
+                "sides": 100
+              },
               "rows": [
                 {
                   "min": 1,

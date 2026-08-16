@@ -15,6 +15,7 @@ import {
   type FateRollResult,
 } from '../fateChart'
 import { Badge } from '@/components/ui/badge'
+import type { RollValue } from '../rollTypes'
 
 const CHAOS_RANKS = Array.from({ length: 9 }, (_, i) => 9 - i) // 9..1
 
@@ -72,15 +73,34 @@ function FateResultChip({ result }: FateResultChipProps) {
 
 interface FateChartRollerProps {
   compact?: boolean
+  onResult?: (value: RollValue) => void
 }
 
-export default function FateChartRoller({ compact }: FateChartRollerProps) {
+export default function FateChartRoller({
+  compact,
+  onResult,
+}: FateChartRollerProps) {
   const [oddsRank, setOddsRank] = useState(4) // 50/50
   const [chaosRank, setChaosRank] = useState(5)
   const [result, setResult] = useState<FateRollResult | null>(null)
   const [showChart, setShowChart] = useState(false)
 
-  const roll = () => setResult(rollFate(oddsRank, chaosRank))
+  const roll = () => {
+    const rolled = rollFate(oddsRank, chaosRank)
+    setResult(rolled)
+    onResult?.({
+      kind: 'fate',
+      result: rolled.result.replace('Exceptional ', 'Extreme ') as
+        | 'Yes'
+        | 'No'
+        | 'Extreme Yes'
+        | 'Extreme No',
+      roll: rolled.roll,
+      target: rolled.cell.chance,
+      chaosRank,
+      exceptional: rolled.result.startsWith('Exceptional'),
+    })
+  }
   const activeCell = getFateCell(oddsRank, chaosRank)
 
   return (

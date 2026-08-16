@@ -14,6 +14,7 @@ import {
   rollTable,
   rollCombo,
   describeTableRoll,
+  formatDiceSpec,
   type TableRollResult,
 } from '../rollTable'
 import { flattenCollectionTables, buildBrowserRows } from '../oracleRows'
@@ -135,14 +136,16 @@ export default function OracleTableBrowser({
               </Button>
               {result && (
                 <span className="text-sm">
-                  <span className="text-muted-foreground">{result.roll}:</span>{' '}
+                  <span className="text-muted-foreground">
+                    {result.lookupValue}:
+                  </span>{' '}
                   {describeTableRoll(result)}
                 </span>
               )}
               {!compact && (
                 <details className="text-muted-foreground text-xs">
                   <summary className="cursor-pointer">
-                    {table.rows.length} rows ({table.diceType})
+                    {table.rows.length} rows ({formatDiceSpec(table.dice)})
                   </summary>
                   <ul className="flex flex-col gap-0.5 mt-1">
                     {table.rows.map((r, i) => (

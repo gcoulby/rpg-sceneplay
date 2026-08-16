@@ -20,6 +20,7 @@ import { useActivityBarStore } from '@/stores/activity-bar-store'
 import { InspirationPanel } from './oracles/inspiration-panel'
 import { RollerPanel } from './oracles/roller-panel'
 import { OraclePanel } from './oracles/oracle-panel'
+import RollsPanel from './rolls-tab/RollsPanel'
 
 interface AppNavigatorProps {
   editor: Editor | null
@@ -75,6 +76,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
           {activeView === 'oracles' && <OraclePanel />}
           {activeView === 'inspiration' && <InspirationPanel />}
           {activeView === 'dice-roller' && <RollerPanel />}
+          {activeView === 'rolls' && <RollsPanel editor={editor} />}
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>{children}</ResizablePanel>

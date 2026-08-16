@@ -3756,6 +3756,42 @@ html.android .version-history-panel {
   border-bottom: none !important;
 }
 
+.roll-anchor-glyph {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0 0.2em;
+  border-radius: 3px;
+  border-bottom: 2px solid transparent;
+  font-size: 0.9em;
+  line-height: 1;
+  user-select: none;
+}
+
+.roll-anchor-glyph[data-roll-category='fate'] {
+  background-color: #6fa8dc22;
+  border-bottom-color: #6fa8dc;
+}
+
+.roll-anchor-glyph[data-roll-category='oracle'] {
+  background-color: #b58ee022;
+  border-bottom-color: #b58ee0;
+}
+
+.roll-anchor-glyph[data-roll-category='dice'] {
+  background-color: #e89b4f22;
+  border-bottom-color: #e89b4f;
+}
+
+.roll-anchor-glyph[data-roll-category='storycubes'] {
+  background-color: #6abf6922;
+  border-bottom-color: #6abf69;
+}
+
+.roll-anchor-glyph[data-roll-category='manual'] {
+  background-color: #9aa0a622;
+  border-bottom-color: #9aa0a6;
+}
+
 .char-fs-view-toggle {
   display: flex;
   gap: 2px;

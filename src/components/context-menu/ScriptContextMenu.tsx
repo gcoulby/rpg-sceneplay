@@ -21,6 +21,7 @@ import { ElementTypeMenu } from './sub-menus/element/ElementTypeMenu'
 import { GrammarSuggestionItems } from './sub-menus/dictionary/GrammarSuggestionItems'
 import { ProductionTagMenuItems } from './sub-menus/notes/ProductionTagMenuItems'
 import { ScriptNoteMenuItems } from './sub-menus/notes/ScriptNoteMenuItems'
+import { RollAnchorMenuItems } from './sub-menus/rolls/RollAnchorMenuItems'
 import { SpellingSuggestionItems } from './sub-menus/dictionary/SpellingSuggestionItems'
 import { TextStyleMenu } from './sub-menus/style/TextStyleMenu'
 import { getExistingAnnotations } from './helpers/getExistingAnnotations'
@@ -29,6 +30,7 @@ import { useElementFormatting } from '@/actions/useElementFormatting'
 import { useGrammarActions } from '@/actions/useGrammarActions'
 import { useProductionTagActions } from '@/actions/useProductionTagActions'
 import { useScriptNoteActions } from '@/actions/useScriptNoteActions'
+import { useRollAnchorActions } from '@/actions/useRollAnchorActions'
 import { useSelectionRestore } from '@/actions/useSelectionRestore'
 import { useSpellingActions } from '@/actions/useSpellingActions'
 import { DUAL_DIALOGUE_TYPES } from './constants'
@@ -41,10 +43,13 @@ export function ScriptContextMenu({
   grammarInfo,
   onClose,
   overrideSelection,
+  onOpenRollDialog,
 }: ScriptContextMenuProps) {
   const { savedSelection, resolvedFrom, currentNodeType, hasSelection } =
     useSelectionRestore(editor, overrideSelection)
-  const { existingNoteId, existingTagInfo } = getExistingAnnotations(editor)
+  const { existingNoteId, existingTagInfo, existingRollAnchorId } =
+    getExistingAnnotations(editor)
+  const rollAnchor = useRollAnchorActions(editor, onClose, existingRollAnchorId)
 
   const formatting = useElementFormatting(editor)
   const notes = useScriptNoteActions(
@@ -174,6 +179,15 @@ export function ScriptContextMenu({
           onAdd={notes.addScriptNote}
           onEdit={notes.editScriptNote}
           onDelete={notes.deleteScriptNote}
+        />
+        <RollAnchorMenuItems
+          existingRollAnchorId={existingRollAnchorId}
+          onOpenRollDialog={() => {
+            const insertPos = savedSelection.from
+            onClose()
+            onOpenRollDialog(insertPos)
+          }}
+          onDelete={rollAnchor.deleteRollAnchor}
         />
         <ContextMenuSeparator />
 

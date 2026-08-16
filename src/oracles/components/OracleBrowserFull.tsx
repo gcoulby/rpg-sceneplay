@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Accordion,
   AccordionContent,
@@ -17,6 +18,8 @@ import {
   describeTableRoll,
   type TableRollResult,
 } from '../rollTable'
+import { tableResultToRollValue, comboResultToRollValue } from '../toRollValue'
+import type { RollValue } from '../rollTypes'
 
 type Selection =
   | { kind: 'table'; table: OracleTable }
@@ -96,7 +99,15 @@ function CollectionNode({
   )
 }
 
-export default function OracleBrowserFull() {
+interface OracleBrowserFullProps {
+  layout?: 'page' | 'dialog'
+  onResult?: (value: RollValue) => void
+}
+
+export default function OracleBrowserFull({
+  layout = 'page',
+  onResult,
+}: OracleBrowserFullProps = {}) {
   const getAllSources = useOracleStore((s) => s.getAllSources)
   const getAllCollections = useOracleStore((s) => s.getAllCollections)
   const getTableById = useOracleStore((s) => s.getTableById)
@@ -106,24 +117,40 @@ export default function OracleBrowserFull() {
   const collections = getAllCollections()
   const [activeSourceId, setActiveSourceId] = useState(sources[0]?.id)
   const [selection, setSelection] = useState<Selection>(null)
+  const [modifier, setModifier] = useState(0)
   const [results, setResults] = useState<
     Record<string, TableRollResult | { text: string; rolls: TableRollResult[] }>
   >({})
 
   const rollRow = (row: BrowserRow) => {
     if (row.kind === 'table') {
-      const result = rollTable(row.table, getTableById)
+      const canModify =
+        row.table.modifierAllowed &&
+        (row.table.dice.kind === 'single' || row.table.dice.kind === 'sum')
+      const result = rollTable(
+        row.table,
+        getTableById,
+        0,
+        canModify ? modifier : 0,
+      )
       setResults((prev) => ({ ...prev, [row.table.id]: result }))
       setSelection({ kind: 'table', table: row.table })
+      onResult?.(tableResultToRollValue(result))
     } else {
       const result = rollCombo(row.combo, getTableById)
       setResults((prev) => ({ ...prev, [row.combo.id]: result }))
       setSelection({ kind: 'combo', combo: row.combo })
+      onResult?.(comboResultToRollValue(row.combo, result))
     }
   }
 
   return (
-    <div className="flex flex-col gap-3 h-[70vh] min-h-100">
+    <div
+      className={cn(
+        'flex flex-col gap-3',
+        layout === 'page' && 'h-[70vh] min-h-100',
+      )}
+    >
       <Tabs
         value={activeSourceId}
         onValueChange={(v) => v && setActiveSourceId(v)}
@@ -170,25 +197,40 @@ export default function OracleBrowserFull() {
                 )}
                 {selection?.kind === 'table' && (
                   <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center gap-2">
                       <h3 className="font-semibold">{selection.table.name}</h3>
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          rollRow({ kind: 'table', table: selection.table })
-                        }
-                      >
-                        Roll
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {selection.table.modifierAllowed &&
+                          (selection.table.dice.kind === 'single' ||
+                            selection.table.dice.kind === 'sum') && (
+                            <Input
+                              type="number"
+                              value={modifier}
+                              onChange={(e) =>
+                                setModifier(Number(e.target.value) || 0)
+                              }
+                              className="w-20 h-8"
+                              aria-label="Modifier"
+                            />
+                          )}
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            rollRow({ kind: 'table', table: selection.table })
+                          }
+                        >
+                          Roll
+                        </Button>
+                      </div>
                     </div>
                     {(() => {
                       const result = results[selection.table.id]
                       return (
                         result &&
-                        'roll' in result && (
+                        'lookupValue' in result && (
                           <p className="text-sm">
                             <span className="font-medium text-muted-foreground">
-                              {result.roll}:
+                              {result.lookupValue}:
                             </span>{' '}
                             <span className="font-semibold">
                               {describeTableRoll(result)}
@@ -204,7 +246,7 @@ export default function OracleBrowserFull() {
                           className={cn(
                             'flex gap-2 px-1 py-0.5 rounded',
                             results[selection.table.id] &&
-                              'roll' in results[selection.table.id] &&
+                              'lookupValue' in results[selection.table.id] &&
                               (results[selection.table.id] as TableRollResult)
                                 .row === row &&
                               'bg-primary/10 font-medium',

@@ -7,20 +7,29 @@ import {
   type RollResult,
 } from '@/components/screens/character-sheets/formula/rollFormula'
 import DiceResult from './DiceResult'
+import type { RollValue } from '../rollTypes'
 
 const QUICK_DICE = [4, 6, 8, 10, 12, 20, 100]
 
 interface FormulaRollerProps {
   compact?: boolean
+  onResult?: (value: RollValue) => void
 }
 
-export default function FormulaRoller({ compact }: FormulaRollerProps) {
+export default function FormulaRoller({ compact, onResult }: FormulaRollerProps) {
   const [formula, setFormula] = useState('2d6+2d4,1d8')
   const [result, setResult] = useState<RollResult | null>(null)
 
   const roll = (f: string) => {
     if (!f.trim()) return
-    setResult(rollFormula(f))
+    const rolled = rollFormula(f)
+    setResult(rolled)
+    onResult?.({
+      kind: 'dice',
+      expression: rolled.formula,
+      rolls: rolled.terms.flatMap((t) => t.rolls),
+      total: rolled.total,
+    })
   }
 
   return (

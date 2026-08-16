@@ -5,6 +5,7 @@ import { spellCheckPluginKey } from '@/editor/extensions/SpellCheck'
 import { grammarPluginKey } from '@/editor/extensions/Grammar'
 import { spellChecker } from '@/editor/spellchecker'
 import { ScriptContextMenu } from './ScriptContextMenu'
+import RollDialog from '@/components/roll-dialog/RollDialog'
 import type { ContextMenuState, GrammarInfo, SpellInfo } from './types'
 import { CLOSED_STATE } from './constants'
 
@@ -13,6 +14,10 @@ export function ScriptContextMenuController() {
   const isTouch = useIsTouchDevice()
 
   const [menuState, setMenuState] = useState<ContextMenuState>(CLOSED_STATE)
+  const [rollDialogState, setRollDialogState] = useState<{
+    open: boolean
+    insertPos: number | null
+  }>({ open: false, insertPos: null })
 
   useEffect(() => {
     if (!isTouch) return
@@ -141,16 +146,31 @@ export function ScriptContextMenuController() {
     setMenuState((state) => ({ ...state, visible: false }))
   }, [])
 
-  if (!editor || !menuState.visible) return null
+  if (!editor) return null
 
   return (
-    <ScriptContextMenu
-      editor={editor}
-      position={menuState.position}
-      spellInfo={menuState.spellInfo}
-      grammarInfo={menuState.grammarInfo}
-      onClose={handleClose}
-      overrideSelection={menuState.savedSelection}
-    />
+    <>
+      {menuState.visible && (
+        <ScriptContextMenu
+          editor={editor}
+          position={menuState.position}
+          spellInfo={menuState.spellInfo}
+          grammarInfo={menuState.grammarInfo}
+          onClose={handleClose}
+          overrideSelection={menuState.savedSelection}
+          onOpenRollDialog={(insertPos) =>
+            setRollDialogState({ open: true, insertPos })
+          }
+        />
+      )}
+      <RollDialog
+        editor={editor}
+        open={rollDialogState.open}
+        onOpenChange={(open) =>
+          setRollDialogState((s) => ({ ...s, open }))
+        }
+        insertPos={rollDialogState.insertPos}
+      />
+    </>
   )
 }

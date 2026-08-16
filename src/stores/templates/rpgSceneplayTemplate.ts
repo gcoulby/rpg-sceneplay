@@ -28,8 +28,8 @@ export const RPG_ELEMENT_ORDER = [
   'sceneHeading',
   'task',
   'action',
-  'actionResult',
   'resolve',
+  'resolveDescription',
   'transition',
   'character',
   'dialogue',
@@ -166,7 +166,7 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
       marginTop: 12,
       leftIndent: 4.5,
       nextOnEnter: 'sceneHeading',
-      placeholder: 'CUT TO:',
+      placeholder: 'Transition:',
     }),
     // Disabled but present so Film Screenplay's shared schema stays intact —
     // these still exist as valid node types, just hidden from this template's UI.
@@ -198,9 +198,10 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
     resolveDescription: rule(
       'resolveDescription',
       'Resolution Description',
-      true,
+      false,
       {
         marginTop: 12,
+        italic: true,
         nextOnEnter: 'transition',
         placeholder: 'Describe the resolution...',
       },

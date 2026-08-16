@@ -69,6 +69,28 @@ const KNOWN_COMBOS = [
   },
 ]
 
+/** Maps a Datasworn dice string ("1d100", "1d66", "2d6", ...) onto a DiceSpec. */
+function mapDiceSpec(notation) {
+  const match = /^(\d+)d(\d+)$/i.exec(notation ?? '1d100')
+  if (!match) return { kind: 'single', sides: 100 }
+  const count = parseInt(match[1], 10)
+  const sides = match[2]
+
+  if (count === 1) {
+    // A sides string of repeated identical digits (e.g. "66", "666") encodes
+    // positional dice rolled together (d66 = two d6s read as tens/units).
+    // "100" is not repeated-digit, so it stays a single percentile roll.
+    const isRepeatedDigits = sides.length > 1 && [...sides].every((d) => d === sides[0])
+    if (isRepeatedDigits) {
+      const die = parseInt(sides[0], 10)
+      return { kind: 'positional', dice: Array(sides.length).fill(die) }
+    }
+    return { kind: 'single', sides: parseInt(sides, 10) }
+  }
+
+  return { kind: 'sum', dice: Array(count).fill(parseInt(sides, 10)) }
+}
+
 function mapRow(row) {
   if (row.min == null || row.max == null) return null
   const mapped = { min: row.min, max: row.max }
@@ -83,7 +105,7 @@ function mapTable(node, sourceId) {
     id: node._id,
     name: node.name,
     sourceId,
-    diceType: (node.dice ?? '1d100').replace(/^1d/, 'd'),
+    dice: mapDiceSpec(node.dice),
     rows: (node.rows ?? []).map(mapRow).filter((r) => r !== null),
   }
 }
