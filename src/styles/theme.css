@@ -51,7 +51,7 @@
 
 :root {
   --fd-bg: #2b2b2b;
-  --fd-page-bg: #fff1d9;
+  --fd-page-bg: #f0f0f0;
   --fd-toolbar-bg: #353535;
   --fd-menu-bg: #333333;
   --fd-menu-hover: #4a4a4a;
@@ -87,7 +87,7 @@
 
 [data-theme='light'] {
   --fd-bg: #e8e8e8;
-  --fd-page-bg: #fff1d9;
+  --fd-page-bg: #f0f0f0;
   --fd-toolbar-bg: #f4f4f4;
   --fd-menu-bg: #f6f6f6;
   --fd-menu-hover: #e0e0e0;
@@ -3498,6 +3498,70 @@ html.android .version-history-panel {
 .cast-list {
   text-transform: uppercase;
   padding-left: 0.25in;
+}
+
+/* ============ CONTINUOUS (NON-PAGINATED) LAYOUT ============
+   An alternative to the print-accurate paginated page: no fixed
+   physical page width, no zoom scaling, no page-break separators.
+   Screenplay element indents use relative units (em) instead of the
+   fixed inches above — fixed print margins (e.g. a 3.5in character
+   indent) would consume most of a phone-width viewport. This is a
+   simplified, not print-accurate, reflow; printing/exporting always
+   uses the paginated layout's real measurements regardless of which
+   view mode is active on screen. */
+.page.continuous {
+  width: 100%;
+  max-width: 46em;
+  min-height: 0;
+  /* .editor-main is a flex row; without this the page is stretched to the
+     container's height (cross-axis stretch is the flex default) instead of
+     growing with its content, clipping anything past one viewport height. */
+  align-self: flex-start;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  box-shadow: none;
+  /* No "sheet of paper" look here — it's a plain text column that blends
+     into the app background rather than a page. Text color has to follow
+     (the base .screenplay-content color is a hardcoded #000 for the
+     always-light printed-page background) or it'd go unreadable in dark
+     theme. */
+  background: var(--fd-bg);
+}
+.page.continuous .screenplay-content {
+  color: var(--fd-text);
+}
+/* .screenplay-element is included in these selectors (matching the
+   compound class the runtime template-CSS generator also targets, see
+   templateCss.ts) purely to win the specificity tie against that
+   JS-injected <style id="opendraft-template-css"> — it always overrides
+   the built-in per-element indents, even for the default template, and
+   is inserted after this stylesheet in the DOM. */
+.page.continuous .screenplay-element.character {
+  padding-left: 2em;
+  padding-right: 0;
+}
+.page.continuous .screenplay-element.parenthetical {
+  padding-left: 2.75em;
+  padding-right: 0;
+}
+.page.continuous .screenplay-element.dialogue,
+.page.continuous .screenplay-element.lyrics {
+  padding-left: 1.25em;
+  padding-right: 1.25em;
+}
+.page.continuous .screenplay-element.transition {
+  padding-left: 0;
+  padding-right: 0;
+}
+.page.continuous .screenplay-element.cast-list {
+  padding-left: 0.5em;
+}
+/* Scene numbers are positioned outside the text column using the same
+   page-width math as the paginated indents; there's no room for that
+   in a fluid-width column, so they're hidden in continuous mode. */
+.page.continuous.show-scene-numbers .scene-heading[data-scene-number]::before,
+.page.continuous.show-scene-numbers .scene-heading[data-scene-number]::after {
+  display: none;
 }
 
 .dual-dialogue {

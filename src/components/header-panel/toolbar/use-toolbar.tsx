@@ -46,6 +46,9 @@ export function useToolbar({ onOpenGoToPage }: UseToolbarArgs) {
   const theme = useEditorStore((s) => s.theme)
   const setTheme = useEditorStore((s) => s.setTheme)
 
+  const viewMode = useEditorStore((s) => s.viewMode)
+  const setViewMode = useEditorStore((s) => s.setViewMode)
+
   const mod = getShortcutModifier()
   const locked = getLockedFormattingOption(editor)
   const activeTemplate = useFormattingTemplateStore((s) =>
@@ -291,6 +294,11 @@ export function useToolbar({ onOpenGoToPage }: UseToolbarArgs) {
     theme: {
       active: theme,
       toggle: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+    },
+    viewMode: {
+      active: viewMode,
+      toggle: () =>
+        setViewMode(viewMode === 'continuous' ? 'paginated' : 'continuous'),
     },
   }
 }

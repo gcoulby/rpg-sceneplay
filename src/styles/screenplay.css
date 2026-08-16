@@ -3147,6 +3147,7 @@ body {
 .dual-dialogue-column + .dual-dialogue-column {
   border-left: 1px dashed var(--fd-border, #444);
 }
+
 /* Tighter indents for dialogue elements inside dual columns */
 .dual-dialogue .screenplay-element.character {
   padding-left: 0.8in;

@@ -114,6 +114,7 @@ export function createPaginationPlugin(
   onUpdate: (state: PaginationState) => void,
   getLayout: () => PageLayout,
   getHints: () => TemplateHints = () => EMPTY_HINTS,
+  getContinuous: () => boolean = () => false,
 ) {
   return new Plugin({
     key: paginationPluginKey,
@@ -139,7 +140,8 @@ export function createPaginationPlugin(
         const ps = paginationPluginKey.getState(state) as
           | PaginationState
           | undefined
-        if (!ps || ps.breaks.length === 0) return DecorationSet.empty
+        if (!ps || ps.breaks.length === 0 || getContinuous())
+          return DecorationSet.empty
         const layout = getLayout()
         const { linesPerPage, sepHeightPx } = getPageMetrics(layout)
         const lineHeightPx = LINE_HEIGHT_PT * (96 / 72)

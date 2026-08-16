@@ -16,6 +16,8 @@ import {
   FaMoon,
   FaSun,
   FaHighlighter,
+  FaFileAlt,
+  FaScroll,
 } from 'react-icons/fa'
 import { RiFontSize } from 'react-icons/ri'
 import { Toggle } from '@/components/ui/toggle'
@@ -289,6 +291,25 @@ export function HeaderPanelToolbar({
 
       <Toggle
         size="sm"
+        pressed={toolbar.viewMode.active === 'continuous'}
+        onPressedChange={toolbar.viewMode.toggle}
+        aria-label="Continuous Layout"
+        title={
+          toolbar.viewMode.active === 'continuous'
+            ? 'Switch to paginated layout'
+            : 'Switch to continuous layout'
+        }
+        className="cursor-pointer"
+      >
+        {toolbar.viewMode.active === 'continuous' ? (
+          <FaScroll className="size-3" />
+        ) : (
+          <FaFileAlt className="size-3" />
+        )}
+      </Toggle>
+
+      <Toggle
+        size="sm"
         pressed={toolbar.theme.active === 'light'}
         onPressedChange={toolbar.theme.toggle}
         aria-label="Production Tags"
@@ -297,7 +318,7 @@ export function HeaderPanelToolbar({
         {toolbar.theme.active === 'light' ? <FaSun /> : <FaMoon />}
       </Toggle>
 
-      <ToolbarZoomControl />
+      {toolbar.viewMode.active !== 'continuous' && <ToolbarZoomControl />}
     </div>
   )
 }

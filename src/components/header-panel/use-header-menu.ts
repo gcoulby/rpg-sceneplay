@@ -136,6 +136,8 @@ export function useHeaderMenus({
     setTheme,
     zoomLevel,
     setZoomLevel,
+    viewMode,
+    setViewMode,
     sceneNumbersVisible,
     setSceneNumbersVisible,
     sceneNumbersLocked,
@@ -594,6 +596,16 @@ export function useHeaderMenus({
           },
           { separator: true, label: '' },
           {
+            icon: FaFileAlt,
+            label:
+              viewMode === 'continuous'
+                ? '\u2713 Continuous Layout'
+                : 'Continuous Layout',
+            action: () =>
+              setViewMode(viewMode === 'continuous' ? 'paginated' : 'continuous'),
+          },
+          { separator: true, label: '' },
+          {
             icon: FaAdjust,
             label: theme === 'light' ? '\u2713 Light Theme' : 'Light Theme',
             action: () => setTheme(theme === 'light' ? 'dark' : 'light'),
@@ -707,6 +719,7 @@ export function useHeaderMenus({
       sceneNumbersLocked,
       theme,
       zoomLevel,
+      viewMode,
       onAboutOpen,
       onDiagnosticsOpen,
       onOpenMapSettings,
@@ -720,6 +733,7 @@ export function useHeaderMenus({
       setSceneNumbersLocked,
       setTheme,
       setZoomLevel,
+      setViewMode,
     ],
   )
 }
