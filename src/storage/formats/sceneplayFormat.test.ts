@@ -3,6 +3,9 @@ import {
   serializeOdraft,
   parseOdraft,
   parseOdraftLoose,
+  serializeSceneplayZip,
+  parseSceneplayZip,
+  parseSceneplayAny,
   ODRAFT_VERSION,
 } from './sceneplayFormat'
 import { SAVE_METADATA_KEYS } from '../saveContent'
@@ -111,13 +114,77 @@ describe('backward and forward compatibility', () => {
       meta: {},
       content: {},
     })
-    expect(() => parseOdraft(future)).toThrow(/newer version of OpenDraft/)
+    expect(() => parseOdraft(future)).toThrow(/newer version of Sceneplay/)
   })
 
   it('rejects non-JSON and foreign JSON', () => {
     expect(() => parseOdraft('not json')).toThrow(/not valid JSON/)
     expect(() => parseOdraft('{"format":"something-else"}')).toThrow(
       /unrecognized format/,
+    )
+  })
+})
+
+describe('v3 zip-archive round-trip', () => {
+  it('preserves every save-metadata key through a zip write/read', async () => {
+    const content = fullContent()
+    const blob = await serializeSceneplayZip(META, content)
+    const parsed = await parseSceneplayZip(await blob.arrayBuffer())
+    for (const key of SAVE_METADATA_KEYS) {
+      expect(parsed.content[key], `${key} must survive the round-trip`).toEqual(
+        content[key],
+      )
+    }
+    expect(parsed.content.type).toBe('doc')
+    expect(parsed.version).toBe(ODRAFT_VERSION)
+    expect(parsed.meta.title).toBe('The Long Goodbye')
+  })
+
+  it('round-trips embedded assets as raw bytes, not base64 text', async () => {
+    const assets = [
+      {
+        id: 'a1',
+        filename: 'x.png',
+        mime_type: 'image/png',
+        data_base64: 'AAEC', // decodes to bytes [0, 1, 2]
+      },
+    ]
+    const blob = await serializeSceneplayZip(META, fullContent(), { assets })
+    const parsed = await parseSceneplayZip(await blob.arrayBuffer())
+    expect(parsed.assets).toEqual(assets)
+  })
+
+  it('parseSceneplayAny detects a zip archive and reads it', async () => {
+    const blob = await serializeSceneplayZip(META, fullContent())
+    const buf = await blob.arrayBuffer()
+    const parsed = await parseSceneplayAny(buf)
+    expect(parsed.version).toBe(ODRAFT_VERSION)
+    expect(parsed.meta.title).toBe('The Long Goodbye')
+  })
+
+  it('parseSceneplayAny falls back to flat JSON for a pre-v3 file', async () => {
+    // A file written before the archive format existed — no zip magic bytes,
+    // just JSON text. This is the backward-compat path: old files must keep
+    // opening after the format change.
+    const json = serializeOdraft(META, fullContent())
+    const buf = new TextEncoder().encode(json).buffer
+    const parsed = await parseSceneplayAny(buf)
+    expect(parsed.meta.title).toBe('The Long Goodbye')
+    expect(parsed.content._sheets).toBeDefined()
+  })
+
+  it('refuses a zip from a newer Sceneplay version', async () => {
+    const blob = await serializeSceneplayZip(META, fullContent())
+    // Tamper with the manifest to claim a future version, same shape as the
+    // flat-JSON "refuses a newer version" test above.
+    const JSZipCtor = (await import('jszip')).default
+    const zip = await JSZipCtor.loadAsync(await blob.arrayBuffer())
+    const manifest = JSON.parse(await zip.file('manifest.json')!.async('string'))
+    manifest.odraft_version = ODRAFT_VERSION + 1
+    zip.file('manifest.json', JSON.stringify(manifest))
+    const tampered = await zip.generateAsync({ type: 'arraybuffer' })
+    await expect(parseSceneplayZip(tampered)).rejects.toThrow(
+      /newer version of Sceneplay/,
     )
   })
 })

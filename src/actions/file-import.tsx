@@ -1,9 +1,12 @@
 import { DEFAULT_TAG_CATEGORIES, useEditorStore } from '@/stores/editorStore'
 import { clearTrackChanges } from './shared'
 import type { Editor } from '@tiptap/react'
-import { openBinaryFile, openTextFile } from '@/storage/fileOps'
+import { openBinaryFile } from '@/storage/fileOps'
 import { parseFDXFull } from '@/utils/open-draft/fdxParser'
-import { parseOdraft, isSceneplayFile } from '@/storage/formats/sceneplayFormat'
+import {
+  parseSceneplayAny,
+  isSceneplayFile,
+} from '@/storage/formats/sceneplayFormat'
 import { hydrateEditorStoresFromContent } from '@/storage/hydrateStores'
 import { unpackAssets } from '@/storage/assetStore'
 import { showToast } from '@/actions/show-toast'
@@ -33,7 +36,7 @@ export const handleImport = async (editor: Editor | null) => {
   if (!editor) return
 
   try {
-    const result = await openTextFile([
+    const result = await openBinaryFile([
       {
         name: 'Screenplay',
         extensions: ['sceneplay', 'fountain', 'fdx', 'odraft', 'txt'],
@@ -41,10 +44,14 @@ export const handleImport = async (editor: Editor | null) => {
     ])
     if (!result) return
 
-    const { name, content: text } = result
+    const { name, content: buf } = result
     const ext = name.split('.').pop()?.toLowerCase()
     // `.sceneplay` and `.odraft` are the same schema under two extensions.
     const isNative = isSceneplayFile(name)
+    // fdx/fountain/txt are always text; native files may be a zip (v3) or
+    // flat JSON (v1/v2) — parseSceneplayAny sniffs which, so it reads `buf`
+    // directly rather than needing this decode.
+    const text = isNative ? '' : new TextDecoder().decode(buf)
 
     const store = getStore(editor)
     const activeTemplate = useFormattingTemplateStore.getState().getActiveTemplate()
@@ -97,7 +104,7 @@ export const handleImport = async (editor: Editor | null) => {
       }
     } else if (isNative) {
       try {
-        const parsed = parseOdraft(text)
+        const parsed = await parseSceneplayAny(buf)
         doc = remapImportedDoc(
           parsed.content as Parameters<typeof remapImportedDoc>[0],
           activeTemplate,

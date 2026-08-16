@@ -14,8 +14,8 @@
  */
 import type { StorageDoc, StorageDocSummary, StorageProvider } from '../types'
 import {
-  serializeOdraft,
-  parseOdraftLoose,
+  serializeSceneplayZip,
+  parseSceneplayAny,
   SCENEPLAY_EXTENSION,
   type ScriptMeta,
 } from '../formats/sceneplayFormat'
@@ -101,7 +101,7 @@ class DiskHandleProvider implements StorageProvider {
         types: [
           {
             description: 'Sceneplay',
-            accept: { 'application/json': [`.${SCENEPLAY_EXTENSION}`] },
+            accept: { 'application/zip': [`.${SCENEPLAY_EXTENSION}`] },
           },
         ],
       })
@@ -132,7 +132,7 @@ class DiskHandleProvider implements StorageProvider {
           {
             description: 'Sceneplay',
             accept: {
-              'application/json': [`.${SCENEPLAY_EXTENSION}`, '.odraft'],
+              'application/zip': [`.${SCENEPLAY_EXTENSION}`, '.odraft'],
             },
           },
         ],
@@ -150,8 +150,8 @@ class DiskHandleProvider implements StorageProvider {
   async load(): Promise<StorageDoc | null> {
     if (!this.handle) return null
     const file = await this.handle.getFile()
-    const text = await file.text()
-    const parsed = parseOdraftLoose(text)
+    const buf = await file.arrayBuffer()
+    const parsed = await parseSceneplayAny(buf)
     return {
       id: this.handle.name,
       meta: parsed.meta,
@@ -183,7 +183,7 @@ class DiskHandleProvider implements StorageProvider {
       preview: '',
     } as ScriptMeta
     const { assets, truncated } = await this.assetsFor(doc)
-    const text = serializeOdraft(meta, doc.content, {
+    const blob = await serializeSceneplayZip(meta, doc.content, {
       assets,
       assetsOmitted: truncated,
       exportedAt: doc.updatedAt,
@@ -191,7 +191,7 @@ class DiskHandleProvider implements StorageProvider {
     const handle = this.handle
     this.writeChain = this.writeChain.then(async () => {
       const writable = await handle.createWritable()
-      await writable.write(text)
+      await writable.write(blob)
       await writable.close()
     })
     await this.writeChain

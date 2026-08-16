@@ -4,8 +4,8 @@
  * mode is File → Export, same as always.
  */
 import type { StorageDoc, StorageDocSummary, StorageProvider } from '../types'
-import { openTextFile } from '../fileOps'
-import { parseOdraftLoose } from '../formats/sceneplayFormat'
+import { openBinaryFile } from '../fileOps'
+import { parseSceneplayAny } from '../formats/sceneplayFormat'
 
 const DOC_ID = 'memory-doc'
 
@@ -26,11 +26,11 @@ class MemoryProvider implements StorageProvider {
   }
 
   async connect(): Promise<boolean> {
-    const result = await openTextFile([
+    const result = await openBinaryFile([
       { name: 'Sceneplay', extensions: ['sceneplay', 'odraft'] },
     ])
     if (!result) return false
-    const parsed = parseOdraftLoose(result.content)
+    const parsed = await parseSceneplayAny(result.content)
     this.doc = {
       id: DOC_ID,
       meta: parsed.meta,

@@ -245,6 +245,15 @@ export function collectAssetRefs(
     }
   }
 
+  // Embedded PDFs (see components/screens/pdf-viewer).
+  const pdfEmbeds = content._pdfEmbeds
+  if (Array.isArray(pdfEmbeds)) {
+    for (const embed of pdfEmbeds) {
+      const rec = embed as Record<string, unknown>
+      addRef(out, rec.assetRef, rec.fileName)
+    }
+  }
+
   // The project map's background image and any per-cell images.
   const map = content._map
   if (map && typeof map === 'object') {
@@ -288,6 +297,7 @@ function mimeFor(filename: string): string {
   if (ext === 'gif') return 'image/gif'
   if (ext === 'webp') return 'image/webp'
   if (ext === 'svg') return 'image/svg+xml'
+  if (ext === 'pdf') return 'application/pdf'
   return 'application/octet-stream'
 }
 

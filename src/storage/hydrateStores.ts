@@ -28,6 +28,12 @@ import { useOracleStore } from '@/stores/oracleStore'
 import type { OracleSource, OracleCollection, OracleCombo } from '@/oracles/types'
 import { useRollNoteStore } from '@/stores/rollNoteStore'
 import type { RollNote } from '@/oracles/rollTypes'
+import { usePdfViewerStore } from '@/components/screens/pdf-viewer/store/usePdfViewerStore'
+import type {
+  PdfEmbed,
+  PdfAnnotation,
+  PdfFormFieldValue,
+} from '@/components/screens/pdf-viewer/types'
 import { hasSaveMetadata } from './saveContent'
 
 /**
@@ -110,6 +116,11 @@ export function hydrateEditorStoresFromContent(
   useRollNoteStore
     .getState()
     .setRollNotes(parseAttr<RollNote[]>(c._rollNotes, []))
+
+  const pdfStore = usePdfViewerStore.getState()
+  pdfStore.setEmbeds(parseAttr<PdfEmbed[]>(c._pdfEmbeds, []))
+  pdfStore.setAnnotations(parseAttr<PdfAnnotation[]>(c._pdfAnnotations, []))
+  pdfStore.setFormValues(parseAttr<PdfFormFieldValue[]>(c._pdfFormValues, []))
 
   return true
 }
