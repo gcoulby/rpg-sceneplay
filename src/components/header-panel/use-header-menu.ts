@@ -33,6 +33,7 @@ import {
   FaAlignLeft,
   FaAlignRight,
   FaBold,
+  FaBook,
   FaCog,
   FaColumns,
   FaCommentDots,
@@ -85,7 +86,7 @@ import {
   setAlignment,
   toggleDualDialogue,
 } from '@/actions/format-actions'
-import { showToast } from '@/actions/show-toast'
+import type { HelpTab } from '../help/HelpDialog'
 
 interface UseHeaderMenusArgs {
   onOpenStorageDialog: () => void
@@ -99,6 +100,7 @@ interface UseHeaderMenusArgs {
   onAboutOpen: () => void
   onDiagnosticsOpen: () => void
   onOpenMapSettings: () => void
+  onHelpOpen: (tab: HelpTab) => void
 }
 
 export function useHeaderMenus({
@@ -113,6 +115,7 @@ export function useHeaderMenus({
   onAboutOpen,
   onDiagnosticsOpen,
   onOpenMapSettings,
+  onHelpOpen,
 }: UseHeaderMenusArgs): HeaderMenuBarModel[] {
   const editor = useEditorStore((s) => s.editor)
   const activeStorageMode = useBrowserStorageStatusStore((s) => s.mode)
@@ -656,13 +659,14 @@ export function useHeaderMenus({
             action: onAboutOpen,
           },
           {
+            icon: FaBook,
+            label: 'Help Guide',
+            action: () => onHelpOpen('overview'),
+          },
+          {
             icon: FaKeyboard,
             label: 'Keyboard Shortcuts',
-            action: () =>
-              showToast({
-                description: `${mod}1-8: Elements | Tab: Next | ${mod}B/I/U: Format | ${mod}Z: Undo | ${mod}F: Find | ${mod}G: Go to Page`,
-                type: 'success',
-              }),
+            action: () => onHelpOpen('shortcuts'),
           },
           {
             icon: FaStethoscope,
@@ -706,6 +710,7 @@ export function useHeaderMenus({
       onAboutOpen,
       onDiagnosticsOpen,
       onOpenMapSettings,
+      onHelpOpen,
       setSearchOpen,
       setSpellCheckOpen,
       setWritingSuggestionsOpen,

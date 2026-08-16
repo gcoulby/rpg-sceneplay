@@ -14,6 +14,7 @@ import TitlePageEditor from '../plugins/title-page-setup-dialog/title-page-edito
 import TemplateSelectDialog from '../plugins/template-editor/template-editor'
 import AboutDialog from '../plugins/about/about-dialog'
 import DiagnosticsDialog from '../plugins/diagnostics/diagnostics-dialog'
+import HelpDialog, { type HelpTab } from '../help/HelpDialog'
 import { HeaderPanelMenuBar } from './header-panel-menubar'
 import { HeaderPanelToolbar } from './toolbar/header-panel-toolbar'
 import MapSettingsDialog from '@/components/screens/map/MapSettingsDialog'
@@ -31,6 +32,8 @@ export default function AppShell() {
   const [templateSelectOpen, setTemplateSelectOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [mapSettingsOpen, setMapSettingsOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [helpTab, setHelpTab] = useState<HelpTab>('overview')
 
   const goToPage = useEditorStore((s) => s.goToPage)
 
@@ -57,6 +60,10 @@ export default function AppShell() {
     onAboutOpen: () => setAboutOpen(true),
     onDiagnosticsOpen: () => setDiagnosticsOpen(true),
     onOpenMapSettings: () => setMapSettingsOpen(true),
+    onHelpOpen: (tab) => {
+      setHelpTab(tab)
+      setHelpOpen(true)
+    },
   })
 
   return (
@@ -115,6 +122,7 @@ export default function AppShell() {
         open={mapSettingsOpen}
         onOpenChange={setMapSettingsOpen}
       />
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} initialTab={helpTab} />
     </header>
   )
 }
