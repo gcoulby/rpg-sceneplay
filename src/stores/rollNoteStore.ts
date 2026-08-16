@@ -8,6 +8,11 @@ interface RollNoteState {
   // Rolls sidebar can scroll to / highlight the matching card. Cleared by
   // the panel once it's done reacting to it.
   focusedRollId: string | null
+  // Set by the Mod-0 / Numpad0 keyboard shortcut to ask
+  // ScriptContextMenuController to open the Roll dialog at a doc position.
+  // `token` is bumped on every request so the same `pos` can be requested
+  // twice in a row and still be picked up by the controller's effect.
+  rollDialogRequest: { pos: number; token: number } | null
   // `note.anchorId` doubles as the RollNote's `id` — it's a 1:1 link to the
   // RollAnchorNode inserted into the doc, so callers (context menu delete,
   // sidebar jump/delete) only ever need to know the anchorId.
@@ -15,12 +20,14 @@ interface RollNoteState {
   deleteRollNote: (anchorId: string) => void
   toggleRolls: () => void
   setFocusedRollId: (id: string | null) => void
+  requestRollDialog: (pos: number) => void
 }
 
 export const useRollNoteStore = create<RollNoteState>((set) => ({
   rollNotes: [],
   rollsOpen: false,
   focusedRollId: null,
+  rollDialogRequest: null,
 
   addRollNote: (note) => {
     set((s) => ({
@@ -39,4 +46,9 @@ export const useRollNoteStore = create<RollNoteState>((set) => ({
   toggleRolls: () => set((s) => ({ rollsOpen: !s.rollsOpen })),
 
   setFocusedRollId: (id) => set({ focusedRollId: id }),
+
+  requestRollDialog: (pos) =>
+    set((s) => ({
+      rollDialogRequest: { pos, token: (s.rollDialogRequest?.token ?? 0) + 1 },
+    })),
 }))

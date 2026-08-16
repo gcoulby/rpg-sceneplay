@@ -114,7 +114,7 @@ export default function RollDialog({
       editor
         .chain()
         .focus()
-        .insertContentAt(insertPos + 1, ` ${resultText}`)
+        .insertContentAt(insertPos + 1, `${resultText}`)
         .run()
     }
 

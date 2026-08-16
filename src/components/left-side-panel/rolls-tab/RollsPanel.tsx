@@ -86,7 +86,10 @@ export default function RollsPanel({ editor }: RollsPanelProps) {
             .focus()
             .command(({ tr }) => {
               doc.descendants((node, pos) => {
-                if (node.type === nodeType && node.attrs.anchorId === anchorId) {
+                if (
+                  node.type === nodeType &&
+                  node.attrs.anchorId === anchorId
+                ) {
                   tr.delete(pos, pos + node.nodeSize)
                   return false
                 }
@@ -148,6 +151,9 @@ export default function RollsPanel({ editor }: RollsPanelProps) {
                 </span>
               </div>
 
+              <span className="font-medium text-xs uppercase tracking-wide">
+                {formatRawRoll(note.value)}
+              </span>
               <p className="text-sm truncate">{formatRollResult(note.value)}</p>
 
               <div className="flex justify-between items-center gap-2">
@@ -157,7 +163,9 @@ export default function RollsPanel({ editor }: RollsPanelProps) {
                     variant="ghost"
                     className="h-6 text-xs"
                     onClick={() =>
-                      navigator.clipboard.writeText(formatRollResult(note.value))
+                      navigator.clipboard.writeText(
+                        formatRollResult(note.value),
+                      )
                     }
                   >
                     Copy result

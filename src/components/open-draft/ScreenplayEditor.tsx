@@ -18,6 +18,7 @@ import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import FontFamily from '@tiptap/extension-font-family'
 import { Extension } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 import {
   SceneHeading,
@@ -1033,38 +1034,80 @@ const ScreenplayEditor: React.FC = () => {
     'general',
     'shot',
   ]
-  const [ElementShortcutExtension] = React.useState(() =>
-    Extension.create({
+  const [ElementShortcutExtension] = React.useState(() => {
+    const setElementByIndex = (editor: any, i: number) => {
+      const activeTemplate = useFormattingTemplateStore
+        .getState()
+        .getActiveTemplate()
+      const types = activeTemplate.elementMenuOrder || DEFAULT_SHORTCUT_TYPES
+      const type = types[i]
+      if (!type) return false
+      if (editor.schema.nodes[type]) {
+        editor.chain().focus().setNode(type).run()
+        return true
+      }
+      const rule = activeTemplate.rules[type]
+      if (!rule) return false
+      editor
+        .chain()
+        .focus()
+        .setNode('customElement', {
+          customTypeId: type,
+          customLabel: rule.label,
+        })
+        .run()
+      return true
+    }
+
+    const openRollDialog = (editor: any) => {
+      useRollNoteStore.getState().requestRollDialog(editor.state.selection.from)
+      return true
+    }
+
+    return Extension.create({
       name: 'elementShortcuts',
       priority: 999,
       addKeyboardShortcuts() {
         const shortcuts: Record<string, any> = {}
         for (let i = 0; i < 9; i++) {
-          shortcuts[`Mod-${i + 1}`] = ({ editor }: { editor: any }) => {
-            const activeTemplate = useFormattingTemplateStore
-              .getState()
-              .getActiveTemplate()
-            const types = activeTemplate.elementMenuOrder || DEFAULT_SHORTCUT_TYPES
-            const type = types[i]
-            if (!type) return false
-            if (editor.schema.nodes[type]) {
-              editor.chain().focus().setNode(type).run()
-              return true
-            }
-            const rule = activeTemplate.rules[type]
-            if (!rule) return false
-            editor
-              .chain()
-              .focus()
-              .setNode('customElement', { customTypeId: type, customLabel: rule.label })
-              .run()
-            return true
-          }
+          shortcuts[`Mod-${i + 1}`] = ({ editor }: { editor: any }) =>
+            setElementByIndex(editor, i)
         }
+        // Roll dialog: Mod-0 (can't use Mod-R/O/D — reload/open are
+        // browser-reserved and D is Dual Dialogue's shortcut).
+        shortcuts['Mod-0'] = ({ editor }: { editor: any }) =>
+          openRollDialog(editor)
         return shortcuts
       },
-    }),
-  )
+      addProseMirrorPlugins() {
+        // Secondary bindings on the numpad digits (Numpad0-Numpad9), no Mod
+        // required — numpad keys report the same `event.key` as the top-row
+        // digits, so they can't be targeted via addKeyboardShortcuts (which
+        // matches on `.key`); this reads `event.code` directly instead.
+        // F-keys were tried first but Mod-F1..F12 are reserved system-wide
+        // on macOS (Mission Control, VoiceOver, etc.) and can't be
+        // overridden.
+        return [
+          new Plugin({
+            key: new PluginKey('elementShortcutsNumpad'),
+            props: {
+              handleKeyDown: (_view, event) => {
+                const match = /^Numpad([0-9])$/.exec(event.code)
+                if (!match) return false
+                const digit = Number(match[1])
+                const handled =
+                  digit === 0
+                    ? openRollDialog(this.editor)
+                    : setElementByIndex(this.editor, digit - 1)
+                if (handled) event.preventDefault()
+                return handled
+              },
+            },
+          }),
+        ]
+      },
+    })
+  })
 
   // Centralized Tab handler — reads nextOnTab from active template
   const [TabHandlerExtension] = React.useState(() =>
@@ -1997,9 +2040,11 @@ const ScreenplayEditor: React.FC = () => {
               : {},
           )
           // Restore character sheets
-          useSheetStore.getState().setSheets(
-            Array.isArray(c._sheets) ? (c._sheets as CharacterSheet[]) : [],
-          )
+          useSheetStore
+            .getState()
+            .setSheets(
+              Array.isArray(c._sheets) ? (c._sheets as CharacterSheet[]) : [],
+            )
         }
 
         setCurrentDocId(doc.id)

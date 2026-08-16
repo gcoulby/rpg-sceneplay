@@ -83,11 +83,18 @@ export function HeaderPanelToolbar({
             }
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="w-auto min-w-56">
           <SelectGroup>
             {toolbar.element.options.map((opt) => (
               <SelectItem key={opt.id} value={opt.id}>
-                {opt.label}
+                <span className="flex w-full items-center justify-between gap-3">
+                  <span>{opt.label}</span>
+                  {opt.shortcut && (
+                    <span className="text-muted-foreground text-xs tracking-widest">
+                      {opt.shortcut}
+                    </span>
+                  )}
+                </span>
               </SelectItem>
             ))}
           </SelectGroup>
