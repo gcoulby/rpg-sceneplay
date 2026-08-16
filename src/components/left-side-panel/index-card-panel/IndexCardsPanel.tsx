@@ -23,7 +23,8 @@ import IndexCardsToolbar from './IndexCardsToolbar'
 import IndexCard from './IndexCard'
 import DragGhost from './DragGhost'
 import SynopsisDialog from '@/components/plugins/synopsis-dialog/synopsis-dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import * as ActivityPanel from '@/components/ui/activity-panel'
+import { Button } from '@/components/ui/button'
 
 interface IndexCardsPanelProps {
   editor: Editor | null
@@ -34,15 +35,15 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
     useEditorStore()
 
   const [fullscreen, setFullscreen] = useState(false)
-  const [dragMode, setDragMode] = useState(false)
+  const [reorderMode, setDragMode] = useState(false)
   const [pendingScenes, setPendingScenes] = useState<SceneInfo[] | null>(null)
   const [originalScenes, setOriginalScenes] = useState<SceneInfo[] | null>(null)
 
   const { canUndo, canRedo, reset, clear, push, undo, redo } =
-    useReorderHistory(dragMode, setPendingScenes)
+    useReorderHistory(reorderMode, setPendingScenes)
 
   useEffect(() => {
-    if (!dragMode) return
+    if (!reorderMode) return
     const handleKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey
       if (mod && e.key === 'z' && !e.shiftKey) {
@@ -62,7 +63,7 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
 
     window.addEventListener('keydown', handleKey, true)
     return () => window.removeEventListener('keydown', handleKey, true)
-  }, [dragMode, undo, redo])
+  }, [reorderMode, undo, redo])
 
   const [dragIdx, setDragIdx] = useState<number | null>(null)
 
@@ -469,112 +470,144 @@ const IndexCardsPanel: React.FC<IndexCardsPanelProps> = ({ editor }) => {
 
   return (
     <div className={containerClass} ref={containerRef}>
-      <IndexCardsToolbar
-        sceneCount={scenes.length}
-        dragMode={dragMode}
-        fullscreen={fullscreen}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        hasChanges={hasChanges}
-        onUndo={undo}
-        onRedo={redo}
-        onCancelReorder={cancelReorder}
-        onApplyReorder={applyReorder}
-        onEnterReorderMode={enterReorderMode}
-        onToggleFullscreen={() => setFullscreen((v) => !v)}
-      />
-
-      <div
-        className={`${gridClass} flex-1 overflow-y-auto relative`}
-        ref={gridRef}
-      >
-        <ScrollArea className="px-4 w-full h-[calc(var(--app-h)-6dvh)]">
-          {displayScenes.length === 0 ? (
-            <div className="col-span-full  text-(--fd-text-muted) text-xs italic text-center">
-              No scenes yet. Write a scene heading to see index cards here.
-            </div>
-          ) : (
-            <div className="p-0">
-              {displayScenes.map((scene, index) => (
-                <IndexCard
-                  key={scene.id}
-                  scene={scene}
-                  index={index}
-                  dragMode={dragMode}
-                  isDragging={dragIdx === index}
-                  origNum={originalIndexMap.get(scene.id)}
-                  pageLength={sceneLengths[index]}
-                  finalSeconds={sceneTimings[index]?.finalSeconds}
-                  onNavigate={() => goToScene(index)}
-                  onSynopsisChange={(value) => {
-                    updateSceneSynopsis(scene.id, value)
-                    updateSynopsisAttr(scene.id, value)
-                  }}
-                  onExpandSynopsis={() =>
-                    setSynopsisModal({
-                      sceneIdx: index,
-                      id: scene.id,
-                      heading: scene.heading,
-                      synopsis: scene.synopsis,
-                      color: scene.color,
-                    })
-                  }
-                  onDragHandleDown={(e) => handleDragHandleDown(e, index)}
-                />
-              ))}
-              {indicatorStyle && (
-                <div
-                  className="bg-(--fd-accent) rounded-sm"
-                  style={indicatorStyle}
-                >
-                  <div
-                    className={
-                      fullscreen
-                        ? 'absolute -top-1 -left-0.75 w-2.25 h-2.25 rounded-full bg-(--fd-accent)'
-                        : 'absolute top-1/2 -left-1 -translate-y-1/2 w-2.25 h-2.25 rounded-full bg-(--fd-accent)'
+      <ActivityPanel.Shell>
+        <ActivityPanel.Header>
+          <ActivityPanel.Title>Index Cards</ActivityPanel.Title>
+          <ActivityPanel.Meta>{scenes.length} scenes</ActivityPanel.Meta>
+          <ActivityPanel.Interactions>
+            {reorderMode ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-[11px]"
+                onClick={cancelReorder}
+                title="Cancel reorder mode"
+              >
+                Cancel
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-[11px]"
+                onClick={enterReorderMode}
+                title="Enter reorder mode"
+              >
+                Reorder
+              </Button>
+            )}
+          </ActivityPanel.Interactions>
+        </ActivityPanel.Header>
+        {reorderMode && (
+          <ActivityPanel.SubHeader>
+            <IndexCardsToolbar
+              sceneCount={scenes.length}
+              dragMode={reorderMode}
+              fullscreen={fullscreen}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              hasChanges={hasChanges}
+              onUndo={undo}
+              onRedo={redo}
+              onCancelReorder={cancelReorder}
+              onApplyReorder={applyReorder}
+              onEnterReorderMode={enterReorderMode}
+              onToggleFullscreen={() => setFullscreen((v) => !v)}
+            />
+          </ActivityPanel.SubHeader>
+        )}
+        <ActivityPanel.Content headerOffset={reorderMode ? '10dvh' : '2dvh'}>
+          <div
+            className={`${gridClass} flex-1 overflow-y-auto relative px-4`}
+            ref={gridRef}
+          >
+            {displayScenes.length === 0 ? (
+              <div className="col-span-full  text-(--fd-text-muted) text-xs italic text-center">
+                No scenes yet. Write a scene heading to see index cards here.
+              </div>
+            ) : (
+              <div className="p-0">
+                {displayScenes.map((scene, index) => (
+                  <IndexCard
+                    key={scene.id}
+                    scene={scene}
+                    index={index}
+                    dragMode={reorderMode}
+                    isDragging={dragIdx === index}
+                    origNum={originalIndexMap.get(scene.id)}
+                    pageLength={sceneLengths[index]}
+                    finalSeconds={sceneTimings[index]?.finalSeconds}
+                    onNavigate={() => goToScene(index)}
+                    onSynopsisChange={(value) => {
+                      updateSceneSynopsis(scene.id, value)
+                      updateSynopsisAttr(scene.id, value)
+                    }}
+                    onExpandSynopsis={() =>
+                      setSynopsisModal({
+                        sceneIdx: index,
+                        id: scene.id,
+                        heading: scene.heading,
+                        synopsis: scene.synopsis,
+                        color: scene.color,
+                      })
                     }
+                    onDragHandleDown={(e) => handleDragHandleDown(e, index)}
                   />
-                </div>
-              )}
-            </div>
-          )}
-        </ScrollArea>
-      </div>
+                ))}
+                {indicatorStyle && (
+                  <div
+                    className="bg-(--fd-accent) rounded-sm"
+                    style={indicatorStyle}
+                  >
+                    <div
+                      className={
+                        fullscreen
+                          ? 'absolute -top-1 -left-0.75 w-2.25 h-2.25 rounded-full bg-(--fd-accent)'
+                          : 'absolute top-1/2 -left-1 -translate-y-1/2 w-2.25 h-2.25 rounded-full bg-(--fd-accent)'
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </ActivityPanel.Content>
 
-      <SynopsisDialog
-        key={synopsisModal?.id ?? 'none'}
-        open={synopsisModal !== null}
-        onOpenChange={(o) => {
-          if (!o) setSynopsisModal(null)
-        }}
-        sceneHeading={synopsisModal?.heading ?? ''}
-        synopsis={synopsisModal?.synopsis ?? ''}
-        sceneColor={synopsisModal?.color}
-        pageLength={
-          synopsisModal ? sceneLengths[synopsisModal.sceneIdx] : undefined
-        }
-        autoTimingSeconds={
-          synopsisModal
-            ? sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
-            : undefined
-        }
-        timingOverride={
-          synopsisModal
-            ? sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds
-            : undefined
-        }
-        onSave={handleSaveSynopsis}
-      />
-
-      {dragIdx !== null && dragPos && dragCardHtml && (
-        <DragGhost
-          html={dragCardHtml}
-          x={dragPos.x - dragOffset.x}
-          y={dragPos.y - dragOffset.y}
-          width={dragCardSize.w}
-          height={dragCardSize.h}
+        <SynopsisDialog
+          key={synopsisModal?.id ?? 'none'}
+          open={synopsisModal !== null}
+          onOpenChange={(o) => {
+            if (!o) setSynopsisModal(null)
+          }}
+          sceneHeading={synopsisModal?.heading ?? ''}
+          synopsis={synopsisModal?.synopsis ?? ''}
+          sceneColor={synopsisModal?.color}
+          pageLength={
+            synopsisModal ? sceneLengths[synopsisModal.sceneIdx] : undefined
+          }
+          autoTimingSeconds={
+            synopsisModal
+              ? sceneTimings[synopsisModal.sceneIdx]?.autoEstimateSeconds
+              : undefined
+          }
+          timingOverride={
+            synopsisModal
+              ? sceneTimings[synopsisModal.sceneIdx]?.overrideSeconds
+              : undefined
+          }
+          onSave={handleSaveSynopsis}
         />
-      )}
+
+        {dragIdx !== null && dragPos && dragCardHtml && (
+          <DragGhost
+            html={dragCardHtml}
+            x={dragPos.x - dragOffset.x}
+            y={dragPos.y - dragOffset.y}
+            width={dragCardSize.w}
+            height={dragCardSize.h}
+          />
+        )}
+      </ActivityPanel.Shell>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useEditorStore } from '@/stores/editorStore'
 import { useFormattingTemplateStore } from '@/stores/formattingTemplateStore'
 import { BUILT_IN_ELEMENT_IDS } from '@/stores/formattingTypes'
+import { getElementMenuItems } from '@/components/context-menu/constants'
 import { handleUndo, handleRedo } from '@/actions/edit-actions'
 import {
   toggleBold,
@@ -45,6 +46,9 @@ export function useToolbar({ onOpenGoToPage }: UseToolbarArgs) {
   const theme = useEditorStore((s) => s.theme)
   const setTheme = useEditorStore((s) => s.setTheme)
 
+  const viewMode = useEditorStore((s) => s.viewMode)
+  const setViewMode = useEditorStore((s) => s.setViewMode)
+
   const mod = getShortcutModifier()
   const locked = getLockedFormattingOption(editor)
   const activeTemplate = useFormattingTemplateStore((s) =>
@@ -87,18 +91,31 @@ export function useToolbar({ onOpenGoToPage }: UseToolbarArgs) {
     return false
   }, [editor, activeElement])
 
-  const elementOptions = useMemo(
-    () =>
-      Object.values(activeTemplate.rules)
-        .filter((r) => r.enabled)
-        .filter((r) =>
-          isInsideAvCell
-            ? AV_CELL_ELEMENT_IDS.includes(r.id)
-            : !AV_CELL_ELEMENT_IDS.includes(r.id),
-        )
-        .map((r) => ({ id: r.id, label: r.label })),
-    [activeTemplate, isInsideAvCell],
-  )
+  const elementOptions = useMemo(() => {
+    // Same source of truth as the right-click Element submenu, so the
+    // toolbar's order and shortcut hints stay in sync with it.
+    const canonical = getElementMenuItems(activeTemplate)
+    const orderIndex = new Map(canonical.map((c, i) => [c.type, i]))
+    const shortcutByType = new Map(canonical.map((c) => [c.type, c.shortcut]))
+
+    return Object.values(activeTemplate.rules)
+      .filter((r) => r.enabled)
+      .filter((r) =>
+        isInsideAvCell
+          ? AV_CELL_ELEMENT_IDS.includes(r.id)
+          : !AV_CELL_ELEMENT_IDS.includes(r.id),
+      )
+      .map((r) => ({
+        id: r.id,
+        label: r.label,
+        shortcut: shortcutByType.get(r.id) || '',
+      }))
+      .sort((a, b) => {
+        const ai = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER
+        const bi = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER
+        return ai - bi
+      })
+  }, [activeTemplate, isInsideAvCell])
 
   const handleElementChange = useCallback(
     (type: string) => {
@@ -277,6 +294,11 @@ export function useToolbar({ onOpenGoToPage }: UseToolbarArgs) {
     theme: {
       active: theme,
       toggle: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+    },
+    viewMode: {
+      active: viewMode,
+      toggle: () =>
+        setViewMode(viewMode === 'continuous' ? 'paginated' : 'continuous'),
     },
   }
 }

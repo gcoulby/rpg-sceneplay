@@ -23,6 +23,7 @@ export const CHARACTER_COLOR_SWATCHES = [
 
 export const CHARACTER_ROLES = [
   '',
+  'Player',
   'Lead',
   'Supporting',
   'Featured',
@@ -52,6 +53,7 @@ export const REL_DYNAMICS = [
 ]
 
 export const ROLE_IMPORTANCE: Record<string, number> = {
+  Player: 8,
   Lead: 5,
   Supporting: 3,
   Featured: 2,

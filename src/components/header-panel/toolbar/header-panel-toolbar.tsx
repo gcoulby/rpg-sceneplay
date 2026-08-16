@@ -16,6 +16,8 @@ import {
   FaMoon,
   FaSun,
   FaHighlighter,
+  FaFileAlt,
+  FaScroll,
 } from 'react-icons/fa'
 import { RiFontSize } from 'react-icons/ri'
 import { Toggle } from '@/components/ui/toggle'
@@ -32,19 +34,27 @@ import FontPicker from './font-picker' // adjust path
 import ToolbarZoomControl from './toolbar-zoom-control'
 import { useToolbar } from './use-toolbar'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface HeaderPanelToolbarProps {
   onOpenGoToPage: () => void
+  wrap?: boolean
 }
 
 export function HeaderPanelToolbar({
   onOpenGoToPage,
+  wrap = false,
 }: HeaderPanelToolbarProps) {
   const toolbar = useToolbar({ onOpenGoToPage })
 
   return (
     <div
-      className="flex flex-wrap items-center gap-1 px-3 py-1.5 border-b h-10! toolbar"
+      className={cn(
+        'flex items-center gap-1 px-3 py-1.5 border-b toolbar *:shrink-0',
+        wrap
+          ? 'flex-wrap h-auto'
+          : 'flex-nowrap h-10! overflow-x-auto overflow-y-hidden no-scrollbar',
+      )}
       role="toolbar"
     >
       <Button
@@ -83,11 +93,18 @@ export function HeaderPanelToolbar({
             }
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="w-auto min-w-56">
           <SelectGroup>
             {toolbar.element.options.map((opt) => (
               <SelectItem key={opt.id} value={opt.id}>
-                {opt.label}
+                <span className="flex w-full items-center justify-between gap-3">
+                  <span>{opt.label}</span>
+                  {opt.shortcut && (
+                    <span className="text-muted-foreground text-xs tracking-widest">
+                      {opt.shortcut}
+                    </span>
+                  )}
+                </span>
               </SelectItem>
             ))}
           </SelectGroup>
@@ -274,6 +291,25 @@ export function HeaderPanelToolbar({
 
       <Toggle
         size="sm"
+        pressed={toolbar.viewMode.active === 'continuous'}
+        onPressedChange={toolbar.viewMode.toggle}
+        aria-label="Continuous Layout"
+        title={
+          toolbar.viewMode.active === 'continuous'
+            ? 'Switch to paginated layout'
+            : 'Switch to continuous layout'
+        }
+        className="cursor-pointer"
+      >
+        {toolbar.viewMode.active === 'continuous' ? (
+          <FaScroll className="size-3" />
+        ) : (
+          <FaFileAlt className="size-3" />
+        )}
+      </Toggle>
+
+      <Toggle
+        size="sm"
         pressed={toolbar.theme.active === 'light'}
         onPressedChange={toolbar.theme.toggle}
         aria-label="Production Tags"
@@ -282,7 +318,7 @@ export function HeaderPanelToolbar({
         {toolbar.theme.active === 'light' ? <FaSun /> : <FaMoon />}
       </Toggle>
 
-      <ToolbarZoomControl />
+      {toolbar.viewMode.active !== 'continuous' && <ToolbarZoomControl />}
     </div>
   )
 }

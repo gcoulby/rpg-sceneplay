@@ -7,7 +7,9 @@ import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts'
 import AppNavigator from './components/left-side-panel/AppNavigator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
 import {
+  BookHeart,
   ChartAreaIcon,
+  Dices,
   IdCard,
   MapIcon,
   PencilLine,
@@ -19,6 +21,8 @@ import { ScriptContextMenuController } from '@/components/context-menu/ScriptCon
 import { MapScreen } from './components/screens/map/map-screen'
 import { useMainTabStore, type MainTab } from '@/stores/mainTabStore'
 import { CharacterSheet } from './components/screens/character-sheets/character-sheet'
+import Acknowledgements from './components/screens/acknowledgements'
+import OracleScreen from './components/screens/oracles'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   const activeTab = useMainTabStore((s) => s.activeTab)
@@ -34,32 +38,40 @@ function App() {
             onValueChange={(v) => setActiveTab(v as MainTab)}
             className="gap-0 bg-background"
           >
-            <TabsList className="h-(--tabbar-h)! p-0 gap-2 bg-background">
+            <TabsList className="order-last h-(--tabbar-h)! w-full justify-around gap-2 border-t bg-background p-0 md:order-first md:w-auto md:justify-start md:border-t-0">
               <TabsTrigger
                 value="editor"
                 className="data-active:bg-primary data-active:text-primary-foreground"
               >
                 <PencilLine />
-                Editor
+                <span className="hidden md:inline">Editor</span>
               </TabsTrigger>
               <TabsTrigger
                 value="character-sheet"
                 className="data-active:bg-primary data-active:text-primary-foreground"
               >
                 <IdCard />
-                Character Sheet
+                <span className="hidden md:inline">Character Sheet</span>
               </TabsTrigger>
               <TabsTrigger value="map">
                 <MapIcon />
-                Map
+                <span className="hidden md:inline">Map</span>
               </TabsTrigger>
               <TabsTrigger value="beat-board">
                 <SquareKanban />
-                Beat Board
+                <span className="hidden md:inline">Beats</span>
               </TabsTrigger>
               <TabsTrigger value="statistics">
                 <ChartAreaIcon />
-                Script Statistics
+                <span className="hidden md:inline">Stats</span>
+              </TabsTrigger>
+              <TabsTrigger value="oracles">
+                <Dices />
+                <span className="hidden md:inline">Oracles</span>
+              </TabsTrigger>
+              <TabsTrigger value="acknowledgements">
+                <BookHeart />
+                <span className="hidden md:inline">Acknowledgements</span>
               </TabsTrigger>
             </TabsList>
             <TabsContent value="editor" keepMounted>
@@ -85,6 +97,16 @@ function App() {
             <TabsContent value="statistics">
               <div className="h-(--app-h)! w-full overflow-hidden">
                 {editor && <ScriptStatistics editor={editor} />}
+              </div>
+            </TabsContent>
+            <TabsContent value="oracles">
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                <OracleScreen />
+              </div>
+            </TabsContent>
+            <TabsContent value="acknowledgements">
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                <Acknowledgements />
               </div>
             </TabsContent>
           </Tabs>

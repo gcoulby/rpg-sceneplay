@@ -1,7 +1,7 @@
 import type { Editor } from '@tiptap/react'
 import { useEditorStore, DEFAULT_PAGE_LAYOUT } from '@/stores/editorStore'
 import { useProjectStore } from '@/stores/projectStore'
-import { useSettingsStore } from '@/stores/settingsStore'
+import { DEFAULT_TEMPLATE_ID } from '@/stores/formattingTemplateStore'
 import { clearEditorHistory } from '@/editor/clearHistory'
 import { clearSessionDoc } from '@/utils/open-draft/sessionDoc'
 import { applyScriptFormat } from '@/utils/open-draft/applyScriptFormat'
@@ -25,6 +25,7 @@ function resetForNewScreenplay(editor: Editor) {
   store.setTags([])
   store.setTagCategories([])
   store.setCharacterProfiles([])
+  store.setCharacterRelationships([])
   store.setScenes([])
   store.setPageLayout({ ...DEFAULT_PAGE_LAYOUT })
 
@@ -35,8 +36,6 @@ function resetForNewScreenplay(editor: Editor) {
 
 /** The menu-bound action. */
 export function newScreenplay(editor: Editor | null) {
-  const settings = useSettingsStore.getState()
-  const enabled = settings.enabledScriptFormats
   if (editor) resetForNewScreenplay(editor)
-  applyScriptFormat(editor, enabled[0])
+  applyScriptFormat(editor, DEFAULT_TEMPLATE_ID, { seedStarter: false })
 }

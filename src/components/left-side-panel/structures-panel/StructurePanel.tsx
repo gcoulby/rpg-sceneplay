@@ -9,7 +9,7 @@ import {
 import { useGoToScene } from '../utils/useGoToScene'
 import { useDocVersion } from '../utils/useDocVersion'
 import ActGroupItem from './ActGroupItem'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import * as ActivityPanel from '@/components/ui/activity-panel'
 
 interface StructurePanelProps {
   editor: Editor | null
@@ -37,6 +37,7 @@ const StructurePanel: React.FC<StructurePanelProps> = ({
   // newly inserted Act Break.
   const structure: ScriptStructure = useMemo(() => {
     void docVersion
+    void scenes
     if (!editor) return { acts: [], sceneActMap: new Map(), totalScenes: 0 }
     try {
       return computeScriptStructure(editor.getJSON())
@@ -51,39 +52,32 @@ const StructurePanel: React.FC<StructurePanelProps> = ({
   )
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center px-3.5 py-2 border-b border-(--fd-border) shrink-0 gap-2">
-        <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">
-          Structure
-        </span>
-        <span className="text-xs text-(--fd-text) opacity-70">
-          {actCount || '—'} acts
-        </span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
-        <ScrollArea className="w-full h-[calc(var(--app-h)-3dvh)]">
-          {structure.acts.length === 0 ? (
-            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
-              No structure yet. Insert an Act Break from the element selector,
-              or start writing scenes.
-            </div>
-          ) : (
-            <Accordion value={openActs} onValueChange={setOpenActs}>
-              {structure.acts.map((act) => (
-                <ActGroupItem
-                  key={`act-${act.actNumber}-${act.docPos}`}
-                  act={act}
-                  openSequences={openSequences}
-                  onOpenSequencesChange={setOpenSequences}
-                  onSelectScene={goToScene}
-                />
-              ))}
-            </Accordion>
-          )}
-        </ScrollArea>
-      </div>
-    </div>
+    <ActivityPanel.Shell>
+      <ActivityPanel.Header>
+        <ActivityPanel.Title>Structure</ActivityPanel.Title>
+        <ActivityPanel.Meta>{actCount || '—'} acts</ActivityPanel.Meta>
+      </ActivityPanel.Header>
+      <ActivityPanel.Content>
+        {structure.acts.length === 0 ? (
+          <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
+            No structure yet. Insert an Act Break from the element selector, or
+            start writing scenes.
+          </div>
+        ) : (
+          <Accordion value={openActs} onValueChange={setOpenActs}>
+            {structure.acts.map((act) => (
+              <ActGroupItem
+                key={`act-${act.actNumber}-${act.docPos}`}
+                act={act}
+                openSequences={openSequences}
+                onOpenSequencesChange={setOpenSequences}
+                onSelectScene={goToScene}
+              />
+            ))}
+          </Accordion>
+        )}
+      </ActivityPanel.Content>
+    </ActivityPanel.Shell>
   )
 }
 

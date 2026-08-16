@@ -32,6 +32,7 @@ export interface ScriptContextMenuProps {
   grammarInfo: GrammarInfo | null
   onClose: () => void
   overrideSelection?: SelectionRange
+  onOpenRollDialog: (insertPos: number) => void
 }
 
 export interface LockedFormatting {

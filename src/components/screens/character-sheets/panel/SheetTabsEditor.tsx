@@ -106,14 +106,14 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
   return (
     <Tabs value={currentActive} onValueChange={setActiveTab} className="w-full">
       <div className="flex items-center gap-2 mb-4">
-        <TabsList>
+        <TabsList className="max-w-full overflow-x-auto">
           {tabs.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id}>
+            <TabsTrigger key={tab.id} value={tab.id} className="shrink-0">
               {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
-        <Button variant="ghost" size="icon" className="size-7" onClick={addTab} title="Add tab">
+        <Button variant="ghost" size="icon" className="size-7 shrink-0" onClick={addTab} title="Add tab">
           <Plus className="size-4" />
         </Button>
       </div>
@@ -150,9 +150,8 @@ const SheetTabsEditor: React.FC<SheetTabsEditorProps> = ({ sheet, onChangeLayout
           ) : null}
 
           <div
-            className="items-start gap-3 grid"
+            className="items-start gap-3 grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6"
             style={{
-              gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
               gridAutoFlow: 'dense',
               gridAutoRows: 'minmax(48px, auto)',
             }}

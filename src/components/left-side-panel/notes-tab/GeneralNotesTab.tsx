@@ -5,7 +5,6 @@ import DeleteNoteDialog from './DeleteNoteDialog'
 import type { Asset } from '@/stores/assetStore'
 import type { NoteColor } from '@/stores/editorStore'
 import type { GeneralNote } from './noteTypes'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface GeneralNotesTabProps {
   generalNotes: GeneralNote[]
@@ -44,32 +43,29 @@ const GeneralNotesTab: React.FC<GeneralNotesTabProps> = ({
         </Button>
       </div>
       <div className="flex-1 p-2 overflow-y-auto">
-        <ScrollArea className="w-full h-[calc(var(--app-h)-14dvh)]">
-          {generalNotes.length === 0 ? (
-            <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-normal">
-              No general notes yet. Click &ldquo;+ Add Note&rdquo; to create
-              one.
-            </div>
-          ) : (
-            generalNotes.map((gn) => (
-              <GeneralNoteCard
-                key={gn.id}
-                note={gn}
-                isEditing={editingId === gn.id}
-                assets={assets}
-                onStartEdit={() => setEditingId(gn.id)}
-                onStopEdit={() =>
-                  setEditingId((cur) => (cur === gn.id ? null : cur))
-                }
-                onTitleChange={(title) => onUpdateTitle(gn.id, title)}
-                onContentChange={(content) => onUpdateContent(gn.id, content)}
-                onColorChange={(color) => onUpdateColor(gn.id, color)}
-                onDeleteRequest={() => setPendingDeleteId(gn.id)}
-                formatDate={formatDate}
-              />
-            ))
-          )}
-        </ScrollArea>
+        {generalNotes.length === 0 ? (
+          <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-normal">
+            No general notes yet. Click &ldquo;+ Add Note&rdquo; to create one.
+          </div>
+        ) : (
+          generalNotes.map((gn) => (
+            <GeneralNoteCard
+              key={gn.id}
+              note={gn}
+              isEditing={editingId === gn.id}
+              assets={assets}
+              onStartEdit={() => setEditingId(gn.id)}
+              onStopEdit={() =>
+                setEditingId((cur) => (cur === gn.id ? null : cur))
+              }
+              onTitleChange={(title) => onUpdateTitle(gn.id, title)}
+              onContentChange={(content) => onUpdateContent(gn.id, content)}
+              onColorChange={(color) => onUpdateColor(gn.id, color)}
+              onDeleteRequest={() => setPendingDeleteId(gn.id)}
+              formatDate={formatDate}
+            />
+          ))
+        )}
       </div>
       <DeleteNoteDialog
         open={pendingDeleteId !== null}

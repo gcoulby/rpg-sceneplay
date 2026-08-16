@@ -24,6 +24,10 @@ import { useMapStore } from '@/components/screens/map/useMapStore'
 import type { ProjectMap, MapRef } from '@/components/screens/map/types'
 import { useSheetStore } from '@/components/screens/character-sheets/store/useSheetStore'
 import type { CharacterSheet } from '@/components/screens/character-sheets/types'
+import { useOracleStore } from '@/stores/oracleStore'
+import type { OracleSource, OracleCollection, OracleCombo } from '@/oracles/types'
+import { useRollNoteStore } from '@/stores/rollNoteStore'
+import type { RollNote } from '@/oracles/rollTypes'
 import { hasSaveMetadata } from './saveContent'
 
 /**
@@ -95,6 +99,17 @@ export function hydrateEditorStoresFromContent(
   )
 
   useSheetStore.getState().setSheets(parseAttr<CharacterSheet[]>(c._sheets, []))
+
+  const oracleStore = useOracleStore.getState()
+  oracleStore.setUserSources(parseAttr<OracleSource[]>(c._oracleSources, []))
+  oracleStore.setUserCollections(
+    parseAttr<OracleCollection[]>(c._oracleCollections, []),
+  )
+  oracleStore.setUserCombos(parseAttr<OracleCombo[]>(c._oracleCombos, []))
+
+  useRollNoteStore
+    .getState()
+    .setRollNotes(parseAttr<RollNote[]>(c._rollNotes, []))
 
   return true
 }

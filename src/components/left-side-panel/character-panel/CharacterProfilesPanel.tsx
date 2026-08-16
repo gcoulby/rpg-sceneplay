@@ -22,14 +22,14 @@ import CharacterListToolbar, {
 import CharacterCard from './CharacterCard'
 import ReferredInScriptPanel from './ReferredInScriptPanel'
 import RemoveCharacterDialog from './RemoveCharacterDialog'
+import NewCharacterDialog from './NewCharacterDialog'
 import ImagePickerDialog from './ImagePickerDialog'
 import ImageLightboxDialog from './ImageLightboxDialog'
 import CharacterDetailDialog from './CharacterDetailDialog'
 import { RelationshipMap } from './RelationshipMap'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { deleteCharacterCascade } from '@/components/screens/character-sheets/store/sheetLinking'
 import { openCharacterSheet } from '@/components/screens/character-sheets/store/openCharacterSheet'
-
+import * as ActivityPanel from '@/components/ui/activity-panel'
 interface CharacterProfilesPanelProps {
   editor: Editor | null
   projectId: string | null
@@ -62,6 +62,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
   const [pendingRemoveChar, setPendingRemoveChar] = useState<string | null>(
     null,
   )
+  const [newCharacterOpen, setNewCharacterOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [modalChar, setModalChar] = useState<string | null>(null)
 
@@ -466,7 +467,14 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
       list = list.filter((n) => n.includes(q))
     }
 
+    const isPlayer = (name: string) =>
+      characterProfiles.find((p) => p.name === name)?.role === 'Player'
+
     list.sort((a, b) => {
+      const aPlayer = isPlayer(a)
+      const bPlayer = isPlayer(b)
+      if (aPlayer !== bPlayer) return aPlayer ? -1 : 1
+
       const sa = charStats.get(a)
       const sb = charStats.get(b)
       switch (sortBy) {
@@ -634,146 +642,150 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
         onChange={handleFileSelect}
       />
 
-      <div className="flex items-center px-3 py-2.5 border-b border-(--fd-border) shrink-0 gap-2">
-        <span className="font-semibold text-xs uppercase tracking-[0.5px] text-(--fd-text-muted)">
-          Characters
-        </span>
-        <span className="text-[10px] text-(--fd-text-muted) ml-auto">
-          {allCharacters.length}
-        </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-6 text-(--fd-text-muted)"
-          onClick={() => setIsFullscreen((v) => !v)}
-          title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-        >
-          {isFullscreen ? (
-            <Minimize2 className="size-3.5" />
-          ) : (
-            <Maximize2 className="size-3.5" />
-          )}
-        </Button>
-      </div>
-
-      <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as 'profiles' | 'map')}
-        className="flex flex-col flex-1 min-h-0"
-      >
-        <TabsList className="w-full shrink-0 rounded-none border-b border-(--fd-border) bg-transparent h-auto p-0">
-          <TabsTrigger
-            value="profiles"
-            className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
-          >
-            Profiles
-          </TabsTrigger>
-          <TabsTrigger
-            value="map"
-            className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
-          >
-            Relationship Map
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="map" className="flex flex-col flex-1 mt-0 min-h-0">
-          <RelationshipMap
-            key={currentScriptId || 'no-script'}
-            scriptId={currentScriptId || undefined}
-            onSelectCharacter={(name) => {
-              setActiveTab('profiles')
-              setSelectedCharacter(name)
-              setExpandedChar(name)
-              setModalChar(name)
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent
-          value="profiles"
-          className="relative flex flex-col flex-1 mt-0 min-h-0"
-        >
-          <ScrollArea className="w-full h-[calc(var(--app-h)-10dvh)]">
-            <CharacterListToolbar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onBuildFromScript={handleBuildFromScript}
-              sortBy={sortBy as CharacterSortBy}
-              onSortByChange={setSortBy}
-            />
-
-            <div className="flex-1 p-1.5 overflow-y-auto">
-              {allCharacters.length === 0 ? (
-                <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-normal">
-                  {searchQuery
-                    ? 'No characters match your search.'
-                    : 'No characters detected. Add character elements to your screenplay.'}
-                </div>
+      <ActivityPanel.Shell>
+        <ActivityPanel.Header>
+          <ActivityPanel.Title>Characters</ActivityPanel.Title>
+          <ActivityPanel.Meta>{allCharacters.length}</ActivityPanel.Meta>
+          <ActivityPanel.Interactions>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-6 text-(--fd-text-muted)"
+              onClick={() => setIsFullscreen((v) => !v)}
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="size-3.5" />
               ) : (
-                allCharacters.map((name) => {
-                  const profile = getProfile(name)
-                  const stats = charStats.get(name)
-                  const isExpanded = isFullscreen || expandedChar === name
-                  return (
-                    <CharacterCard
-                      key={name}
-                      name={name}
-                      profile={profile}
-                      stats={stats}
-                      isExpanded={isExpanded}
-                      isOrphaned={orphanedNames.has(name)}
-                      allCharacters={allCharacters}
-                      relationships={relationshipsFor(name.toUpperCase())}
-                      projectId={projectId}
-                      uploading={uploading}
-                      getAssetUrl={getAssetUrl}
-                      onToggleExpand={() =>
-                        setExpandedChar(isExpanded ? null : name)
-                      }
-                      onNavigateToCharacter={() =>
-                        handleNavigateToCharacter(name)
-                      }
-                      onNavigateToScene={handleNavigateToScene}
-                      onEnlarge={() => setModalChar(name)}
-                      onRemoveRequest={() => setPendingRemoveChar(name)}
-                      onUpdateProfile={makeUpdateProfile(name)}
-                      onSaveRelationship={handleSaveRelationship}
-                      onDeleteRelationship={deleteCharacterRelationship}
-                      onOpenLightbox={(url, imgName) =>
-                        setLightboxImage({ url, name: imgName })
-                      }
-                      onTriggerUpload={handleTriggerUpload}
-                      onPickFromAssets={() => {
-                        setImagePickerFor(name)
-                        setImagePickerFilter('')
-                      }}
-                      onOpenSheet={() => openCharacterSheet(name)}
-                    />
-                  )
-                })
+                <Maximize2 className="size-3.5" />
               )}
-            </div>
-
-            {unmatchedNames.length > 0 && (
-              <Button
-                variant="outline"
-                className="m-2 mb-3 mt-2 h-auto p-2 border-dashed text-(--fd-text-muted) text-xs shrink-0"
-                onClick={() => setShowReferred(true)}
+            </Button>
+          </ActivityPanel.Interactions>
+        </ActivityPanel.Header>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as 'profiles' | 'map')}
+          className="flex flex-col flex-1 min-h-0"
+        >
+          <ActivityPanel.SubHeader>
+            <TabsList className="w-full shrink-0 rounded-none border-b border-(--fd-border) bg-transparent h-auto p-0">
+              <TabsTrigger
+                value="profiles"
+                className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
               >
-                Referred in Script ({unmatchedNames.length})
-              </Button>
-            )}
-
-            {showReferred && (
-              <ReferredInScriptPanel
-                names={unmatchedNames}
-                onAdd={handleAddUnmatched}
-                onClose={() => setShowReferred(false)}
+                Profiles
+              </TabsTrigger>
+              <TabsTrigger
+                value="map"
+                className="flex-1 rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-(--fd-accent)"
+              >
+                Relationship Map
+              </TabsTrigger>
+            </TabsList>
+          </ActivityPanel.SubHeader>
+          <ActivityPanel.Content headerOffset="5dvh">
+            <TabsContent
+              value="map"
+              className="flex flex-col flex-1 mt-0 h-full min-h-0"
+            >
+              <RelationshipMap
+                key={currentScriptId || 'no-script'}
+                scriptId={currentScriptId || undefined}
+                onSelectCharacter={(name) => {
+                  setActiveTab('profiles')
+                  setSelectedCharacter(name)
+                  setExpandedChar(name)
+                  setModalChar(name)
+                }}
               />
-            )}
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+
+            <TabsContent
+              value="profiles"
+              className="relative flex flex-col flex-1 mt-0 min-h-0"
+            >
+              <CharacterListToolbar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onBuildFromScript={handleBuildFromScript}
+                onNewCharacter={() => setNewCharacterOpen(true)}
+                sortBy={sortBy as CharacterSortBy}
+                onSortByChange={setSortBy}
+              />
+
+              <div className="flex-1 p-1.5 overflow-y-auto">
+                {allCharacters.length === 0 ? (
+                  <div className="py-5 px-3 text-(--fd-text-muted) text-xs italic text-center leading-normal">
+                    {searchQuery
+                      ? 'No characters match your search.'
+                      : 'No characters detected. Add character elements to your screenplay.'}
+                  </div>
+                ) : (
+                  allCharacters.map((name) => {
+                    const profile = getProfile(name)
+                    const stats = charStats.get(name)
+                    const isExpanded = isFullscreen || expandedChar === name
+                    return (
+                      <CharacterCard
+                        key={name}
+                        name={name}
+                        profile={profile}
+                        stats={stats}
+                        isExpanded={isExpanded}
+                        isOrphaned={orphanedNames.has(name)}
+                        allCharacters={allCharacters}
+                        relationships={relationshipsFor(name.toUpperCase())}
+                        projectId={projectId}
+                        uploading={uploading}
+                        getAssetUrl={getAssetUrl}
+                        onToggleExpand={() =>
+                          setExpandedChar(isExpanded ? null : name)
+                        }
+                        onNavigateToCharacter={() =>
+                          handleNavigateToCharacter(name)
+                        }
+                        onNavigateToScene={handleNavigateToScene}
+                        onEnlarge={() => setModalChar(name)}
+                        onRemoveRequest={() => setPendingRemoveChar(name)}
+                        onUpdateProfile={makeUpdateProfile(name)}
+                        onSaveRelationship={handleSaveRelationship}
+                        onDeleteRelationship={deleteCharacterRelationship}
+                        onOpenLightbox={(url, imgName) =>
+                          setLightboxImage({ url, name: imgName })
+                        }
+                        onTriggerUpload={handleTriggerUpload}
+                        onPickFromAssets={() => {
+                          setImagePickerFor(name)
+                          setImagePickerFilter('')
+                        }}
+                        onOpenSheet={() => openCharacterSheet(name)}
+                      />
+                    )
+                  })
+                )}
+              </div>
+
+              {unmatchedNames.length > 0 && (
+                <Button
+                  variant="outline"
+                  className="m-2 mb-3 mt-2 h-auto p-2 border-dashed text-(--fd-text-muted) text-xs shrink-0"
+                  onClick={() => setShowReferred(true)}
+                >
+                  Referred in Script ({unmatchedNames.length})
+                </Button>
+              )}
+
+              {showReferred && (
+                <ReferredInScriptPanel
+                  names={unmatchedNames}
+                  onAdd={handleAddUnmatched}
+                  onClose={() => setShowReferred(false)}
+                />
+              )}
+            </TabsContent>
+          </ActivityPanel.Content>
+        </Tabs>
+      </ActivityPanel.Shell>
 
       <ImagePickerDialog
         characterName={imagePickerFor}
@@ -847,6 +859,19 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
           if (!pendingRemoveChar) return
           deleteCharacterCascade(pendingRemoveChar)
           setPendingRemoveChar(null)
+        }}
+      />
+
+      <NewCharacterDialog
+        open={newCharacterOpen}
+        onOpenChange={setNewCharacterOpen}
+        existingNames={allCharacters}
+        onCreate={(name) => {
+          const colorIdx = characterProfiles.length % DEFAULT_HIGHLIGHT_COLORS.length
+          upsertCharacterProfile(name, {
+            color: DEFAULT_HIGHLIGHT_COLORS[colorIdx],
+          })
+          setExpandedChar(name)
         }}
       />
     </div>

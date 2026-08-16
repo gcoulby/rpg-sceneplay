@@ -21,8 +21,9 @@ const DEFAULT_DOC = {
 export function applyScriptFormat(
   editor: Editor | null,
   templateId: string,
+  options: { seedStarter?: boolean } = {},
 ): void {
-  console.log('call applyScriptFormat()')
+  const { seedStarter = true } = options
   if (!editor || editor.isDestroyed) return
 
   const tpl = SYSTEM_TEMPLATES[templateId]
@@ -34,7 +35,7 @@ export function applyScriptFormat(
   // Tiptap's setContent has a tightly-typed signature; the prior inline call site
   // in MenuBar uses the same shape, but extracted into a helper TS narrows it. Cast
   // to `any` at the boundary — Tiptap accepts JSONContent shapes at runtime.
-  if (tpl?.starterDocument && tpl.starterDocument.length > 0) {
+  if (seedStarter && tpl?.starterDocument && tpl.starterDocument.length > 0) {
     try {
       editor.commands.setContent(
         { type: 'doc', content: tpl.starterDocument } as unknown as Parameters<

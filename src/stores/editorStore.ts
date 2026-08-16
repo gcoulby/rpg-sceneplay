@@ -19,6 +19,7 @@ interface ViewState {
   tagsVisible?: boolean
   notesActiveTab?: 'script' | 'general'
   zoomLevel?: number
+  viewMode?: 'paginated' | 'continuous'
   toolbarMode?: 'compact' | 'comfortable' | 'hidden'
   characterSortBy?:
     | 'name'
@@ -693,6 +694,12 @@ interface EditorState {
   zoomPanelOpen: boolean
   setZoomPanelOpen: (open: boolean) => void
 
+  // View mode — paginated shows fixed-size A4/Letter pages (scaled to fit);
+  // continuous flows text full-width without page breaks or zoom scaling,
+  // used on narrow screens where a scaled-down page renders unreadably small.
+  viewMode: 'paginated' | 'continuous'
+  setViewMode: (mode: 'paginated' | 'continuous') => void
+
   // Font
   fontFamily: string
   setFontFamily: (font: string) => void
@@ -1331,6 +1338,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   zoomPanelOpen: false,
   setZoomPanelOpen: (open) => set({ zoomPanelOpen: open }),
+
+  viewMode:
+    _vs.viewMode ??
+    (typeof window !== 'undefined' && window.innerWidth < 768
+      ? 'continuous'
+      : 'paginated'),
+  setViewMode: (mode) => {
+    set({ viewMode: mode })
+    saveViewState({ viewMode: mode })
+  },
 
   fontFamily: 'Courier Prime',
   setFontFamily: (font) => set({ fontFamily: font }),

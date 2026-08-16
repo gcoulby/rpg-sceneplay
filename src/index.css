@@ -215,6 +215,14 @@
   );
 }
 
+@media (max-width: 767px) {
+  :root {
+    --menubar-h: 0px;
+    --toolbar-h: calc(var(--spacing) * 9);
+    --tabbar-h: calc(var(--spacing) * 12);
+  }
+}
+
 .dark {
   --background: oklch(0.2178 0 0);
   --foreground: oklch(0.8853 0 0);

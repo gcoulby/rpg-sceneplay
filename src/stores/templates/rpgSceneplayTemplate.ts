@@ -17,10 +17,10 @@
  * appear in this template's chooser/context menu/shortcuts.
  */
 
-import type { FormattingTemplate, StarterNode } from '../formattingTypes';
-import { rule, disabled } from './_helpers';
+import type { FormattingTemplate, StarterNode } from '../formattingTypes'
+import { rule, disabled } from './_helpers'
 
-export const RPG_SCENEPLAY_ID = '__rpg_sceneplay__';
+export const RPG_SCENEPLAY_ID = '__rpg_sceneplay__'
 
 /** Restricted, ordered set of element ids this template exposes in the
  *  chooser, context menu, and number-key shortcuts (1-8, positionally). */
@@ -29,24 +29,84 @@ export const RPG_ELEMENT_ORDER = [
   'task',
   'action',
   'resolve',
+  'resolveDescription',
   'transition',
   'character',
   'dialogue',
   'parenthetical',
-];
+]
 
 const STARTER: StarterNode[] = [
-  { type: 'sceneHeading', content: [{ type: 'text', text: 'INT. THE RUSTED TANKARD - NIGHT' }] },
-  { type: 'customElement', attrs: { customTypeId: 'task', customLabel: 'Task' }, content: [{ type: 'text', text: 'The party must get the barkeep to talk without drawing a crowd.' }] },
-  { type: 'action', content: [{ type: 'text', text: 'THE TAVERN IS HALF EMPTY. A HOODED FIGURE WATCHES FROM THE CORNER.' }] },
-  { type: 'customElement', attrs: { customTypeId: 'resolve', customLabel: 'Resolve' }, content: [{ type: 'text', text: 'COMPLICATION' }] },
-  { type: 'transition', content: [{ type: 'text', text: 'CUT TO:' }] },
-];
+  {
+    type: 'sceneHeading',
+    content: [{ type: 'text', text: 'INT. The Rusted Tankard - NIGHT' }],
+  },
+  {
+    type: 'customElement',
+    attrs: { customTypeId: 'task', customLabel: 'Task' },
+    content: [
+      {
+        type: 'text',
+        text: 'Get information from the barkeep without drawing a crowd.',
+      },
+    ],
+  },
+  {
+    type: 'action',
+    content: [
+      {
+        type: 'text',
+        text: 'The Tavern is half empty. A bard is playing a lute in the corner. You notice a hooded figure watching you from the corner table.',
+      },
+    ],
+  },
+  {
+    type: 'customElement',
+    attrs: { customTypeId: 'resolve', customLabel: 'Resolution' },
+    content: [{ type: 'text', text: 'COMPLICATION' }],
+  },
+  {
+    type: 'customElement',
+    attrs: {
+      customTypeId: 'resolveDescription',
+      customLabel: 'Resolution Description',
+    },
+    content: [
+      {
+        type: 'text',
+        text: 'The hooded figure throws his table to one side and shouts at you.',
+      },
+    ],
+  },
+  {
+    type: 'character',
+    content: [{ type: 'text', text: 'Hooded Figure' }],
+  },
+  {
+    type: 'dialogue',
+    content: [
+      {
+        type: 'text',
+        text: 'How dare you enter this place! You have no business here.',
+      },
+    ],
+  },
+  {
+    type: 'transition',
+    content: [
+      {
+        type: 'text',
+        text: 'You feel the figure conjuring dark energy and you begin to brace yourself.',
+      },
+    ],
+  },
+]
 
 export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
   id: RPG_SCENEPLAY_ID,
   name: 'RPG Sceneplay (S.T.A.R.T.)',
-  description: 'Tabletop RPG session format: Scene Heading, Task, Action, Resolve, Transition, plus Character/Dialogue/Parenthetical.',
+  description:
+    "Tabletop RPG session format: Scene Heading, Task, Action, Resolve, Transition, plus Character/Dialogue/Parenthetical. Based on TheGrouchCouch's Solo RPG Game Loop",
   mode: 'enforce',
   category: 'system',
   createdAt: '',
@@ -77,24 +137,25 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
       nextOnTab: 'character',
       placeholder: 'Describe the action...',
     }),
+
     character: rule('character', 'Character', true, {
       textTransform: 'uppercase',
       marginTop: 12,
-      leftIndent: 3.50,
+      leftIndent: 3.5,
       nextOnEnter: 'dialogue',
       nextOnTab: 'parenthetical',
       placeholder: 'CHARACTER NAME',
     }),
     dialogue: rule('dialogue', 'Dialogue', true, {
-      leftIndent: 2.50,
-      rightIndent: 6.00,
+      leftIndent: 2.5,
+      rightIndent: 6.0,
       nextOnEnter: 'dialogue',
       nextOnTab: 'parenthetical',
       placeholder: 'Dialogue...',
     }),
     parenthetical: rule('parenthetical', 'Parenthetical', true, {
-      leftIndent: 3.00,
-      rightIndent: 5.50,
+      leftIndent: 3.0,
+      rightIndent: 5.5,
       nextOnEnter: 'dialogue',
       nextOnTab: 'dialogue',
       placeholder: '(direction)',
@@ -103,9 +164,9 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
       textTransform: 'uppercase',
       textAlign: 'right',
       marginTop: 12,
-      leftIndent: 5.50,
+      leftIndent: 4.5,
       nextOnEnter: 'sceneHeading',
-      placeholder: 'CUT TO:',
+      placeholder: 'Transition:',
     }),
     // Disabled but present so Film Screenplay's shared schema stays intact —
     // these still exist as valid node types, just hidden from this template's UI.
@@ -126,14 +187,25 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
       placeholder: 'What stands in the way?',
     }),
     // New element: the beat's outcome — reached manually, not auto-chained.
-    resolve: rule('resolve', 'Resolve', false, {
+    resolve: rule('resolve', 'Resolution', false, {
       bold: true,
       textTransform: 'uppercase',
       textAlign: 'center',
       marginTop: 24,
-      nextOnEnter: 'transition',
+      nextOnEnter: 'resolveDescription',
       placeholder: 'SUCCESS / FAIL / COMPLICATION',
     }),
+    resolveDescription: rule(
+      'resolveDescription',
+      'Resolution Description',
+      false,
+      {
+        marginTop: 12,
+        italic: true,
+        nextOnEnter: 'transition',
+        placeholder: 'Describe the resolution...',
+      },
+    ),
     // Landing spot for imported content with no mapping into this template's
     // 8 types. Never offered as a selectable type (excluded from
     // elementMenuOrder); only produced by the .fdx/.fountain/.odraft importers.
@@ -143,4 +215,4 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
       placeholder: '',
     }),
   },
-};
+}

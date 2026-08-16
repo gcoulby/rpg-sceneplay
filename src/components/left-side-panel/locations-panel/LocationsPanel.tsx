@@ -7,7 +7,7 @@ import { blockContentRange, singleLine } from '@/utils/open-draft/nodeText'
 import { useGoToScene } from '../utils/useGoToScene'
 import LocationGroupItem from './LocationGroupItem'
 import { showToast } from '@/actions/show-toast'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import * as ActivityPanel from '@/components/ui/activity-panel'
 
 interface LocationsPanelProps {
   editor: Editor | null
@@ -95,54 +95,47 @@ const LocationsPanel: React.FC<LocationsPanelProps> = ({
   }, [editor, renamingLocation, renameValue])
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center px-3.5 py-2 border-b border-(--fd-border) shrink-0 gap-2">
-        <span className="font-bold text-[13px] uppercase tracking-[0.5px] text-(--fd-text)">
-          Locations
-        </span>
-        <span className="text-xs text-(--fd-text) opacity-70">
-          {locations.length}
-        </span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
-        <ScrollArea className="w-full h-[calc(var(--app-h)-3dvh)]">
-          {locations.length === 0 ? (
-            <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
-              No locations yet. Scene headings like &ldquo;INT. COFFEE SHOP -
-              DAY&rdquo; will appear here.
-            </div>
-          ) : (
-            <Accordion
-              multiple
-              value={expandedLocation}
-              onValueChange={setExpandedLocation}
-            >
-              {locations.map((group) => {
-                const key = group.name.toUpperCase()
-                return (
-                  <LocationGroupItem
-                    key={key}
-                    group={group}
-                    isRenaming={renamingLocation === key}
-                    renameValue={renameValue}
-                    onStartRename={() => {
-                      setRenamingLocation(key)
-                      setRenameValue(group.name)
-                    }}
-                    onRenameValueChange={setRenameValue}
-                    onRenameSubmit={handleRenameSubmit}
-                    onRenameCancel={() => setRenamingLocation(null)}
-                    renameInputRef={renameInputRef}
-                    onSelectScene={goToScene}
-                  />
-                )
-              })}
-            </Accordion>
-          )}
-        </ScrollArea>
-      </div>
-    </div>
+    <ActivityPanel.Shell>
+      <ActivityPanel.Header>
+        <ActivityPanel.Title>Locations</ActivityPanel.Title>
+        <ActivityPanel.Meta>{locations.length}</ActivityPanel.Meta>
+      </ActivityPanel.Header>
+      <ActivityPanel.Content>
+        {locations.length === 0 ? (
+          <div className="p-6 px-4 text-(--fd-text) opacity-70 text-[13px] italic text-center">
+            No locations yet. Scene headings like &ldquo;INT. COFFEE SHOP -
+            DAY&rdquo; will appear here.
+          </div>
+        ) : (
+          <Accordion
+            multiple
+            value={expandedLocation}
+            onValueChange={setExpandedLocation}
+          >
+            {locations.map((group) => {
+              const key = group.name.toUpperCase()
+              return (
+                <LocationGroupItem
+                  key={key}
+                  group={group}
+                  isRenaming={renamingLocation === key}
+                  renameValue={renameValue}
+                  onStartRename={() => {
+                    setRenamingLocation(key)
+                    setRenameValue(group.name)
+                  }}
+                  onRenameValueChange={setRenameValue}
+                  onRenameSubmit={handleRenameSubmit}
+                  onRenameCancel={() => setRenamingLocation(null)}
+                  renameInputRef={renameInputRef}
+                  onSelectScene={goToScene}
+                />
+              )
+            })}
+          </Accordion>
+        )}
+      </ActivityPanel.Content>
+    </ActivityPanel.Shell>
   )
 }
 
