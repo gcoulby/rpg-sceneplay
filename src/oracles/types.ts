@@ -38,3 +38,9 @@ export interface OracleCombo {
   parts: string[]
   template: string
 }
+
+export interface BundledPackage {
+  source: OracleSource
+  collections: OracleCollection[]
+  combos: OracleCombo[]
+}
