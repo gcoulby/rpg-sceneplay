@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { newScreenplay } from '@/actions/new-screenplay'
+import { insertStarterText } from '@/actions/insert-starter-text'
 import { useEditorStore } from '@/stores/editorStore'
 import { useBrowserStorageStatusStore } from '@/stores/browserStorageStatusStore'
 import { type HeaderMenuBarModel } from '@/types'
@@ -196,6 +197,13 @@ export function useHeaderMenus({
             confirmation: {},
             action: () => {
               newScreenplay(editor)
+            },
+          },
+          {
+            label: 'Add Starter Text',
+            icon: FaFileAlt,
+            action: () => {
+              insertStarterText(editor)
             },
           },
           {

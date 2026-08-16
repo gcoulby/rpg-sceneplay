@@ -13,11 +13,11 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FateChartRoller from '@/oracles/components/FateChartRoller'
 import FormulaRoller from '@/oracles/components/FormulaRoller'
-import OracleBrowserFull from '@/oracles/components/OracleBrowserFull'
+import OracleTableBrowser from '@/oracles/components/OracleTableBrowser'
 import { uuid } from '@/utils/open-draft/uuid'
 import { useRollNoteStore } from '@/stores/rollNoteStore'
 import type { RollCategory, RollValue } from '@/oracles/rollTypes'
-import { formatRollResult } from '@/oracles/rollFormat'
+import { formatRollResult, formatRawRoll } from '@/oracles/rollFormat'
 
 interface RollDialogProps {
   open: boolean
@@ -124,8 +124,8 @@ export default function RollDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex flex-col sm:max-w-2xl max-h-[85dvh]">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Roll</DialogTitle>
         </DialogHeader>
 
@@ -136,16 +136,17 @@ export default function RollDialog({
             setTab(v as DialogTab)
             setResult(null)
           }}
+          className="flex flex-col flex-1 min-h-0"
         >
-          <TabsList>
+          <TabsList className="shrink-0">
             <TabsTrigger value="oracle">Oracle</TabsTrigger>
             <TabsTrigger value="fate">Fate</TabsTrigger>
             <TabsTrigger value="dice">Dice</TabsTrigger>
             <TabsTrigger value="manual">Manual</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="oracle">
-            <OracleBrowserFull layout="dialog" onResult={setResult} />
+          <TabsContent value="oracle" className="flex-1 min-h-0">
+            <OracleTableBrowser onResult={setResult} />
           </TabsContent>
           <TabsContent value="fate">
             <FateChartRoller compact onResult={setResult} />
@@ -159,13 +160,13 @@ export default function RollDialog({
         </Tabs>
 
         {result && (
-          <p className="text-muted-foreground text-sm">
-            Result:{' '}
+          <p className="shrink-0 text-muted-foreground text-sm truncate">
             <span className="font-medium">{formatRollResult(result)}</span>
+            <span className="text-xs"> — {formatRawRoll(result)}</span>
           </p>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>

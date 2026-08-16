@@ -15,6 +15,7 @@ interface CharacterListToolbarProps {
   searchQuery: string
   onSearchChange: (v: string) => void
   onBuildFromScript: () => void
+  onNewCharacter: () => void
   sortBy: CharacterSortBy
   onSortByChange: (v: CharacterSortBy) => void
 }
@@ -31,6 +32,7 @@ const CharacterListToolbar: React.FC<CharacterListToolbarProps> = ({
   searchQuery,
   onSearchChange,
   onBuildFromScript,
+  onNewCharacter,
   sortBy,
   onSortByChange,
 }) => (
@@ -43,6 +45,15 @@ const CharacterListToolbar: React.FC<CharacterListToolbarProps> = ({
         onChange={(e) => onSearchChange(e.target.value)}
         className="flex-1 h-7 text-xs"
       />
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 px-2.5 text-[11px] whitespace-nowrap shrink-0"
+        onClick={onNewCharacter}
+        title="Create a character ahead of the script, so you can build their sheet first"
+      >
+        New Character
+      </Button>
       <Button
         variant="outline"
         size="sm"

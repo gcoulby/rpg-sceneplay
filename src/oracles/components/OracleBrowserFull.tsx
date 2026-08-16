@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Accordion,
   AccordionContent,
@@ -166,7 +167,7 @@ export default function OracleBrowserFull({
         {sources.map((source) => (
           <TabsContent key={source.id} value={source.id}>
             <div className="gap-3 grid grid-cols-1 lg:grid-cols-5">
-              <div className="lg:col-span-2 border rounded-lg lg:max-h-[60vh] overflow-y-auto">
+              <ScrollArea className="lg:col-span-2 border rounded-lg max-h-[50dvh]">
                 <Accordion>
                   {collections
                     .filter((c) => c.sourceId === source.id && !c.parentId)
@@ -187,9 +188,9 @@ export default function OracleBrowserFull({
                       />
                     ))}
                 </Accordion>
-              </div>
+              </ScrollArea>
 
-              <div className="lg:col-span-3 p-3 border rounded-lg lg:max-h-[60vh] lg:overflow-y-auto">
+              <div className="lg:col-span-3 p-3 border rounded-lg">
                 {!selection && (
                   <p className="text-muted-foreground text-sm">
                     Select a table on the left to browse it, or hit Roll.
@@ -239,28 +240,30 @@ export default function OracleBrowserFull({
                         )
                       )
                     })()}
-                    <ul className="flex flex-col gap-0.5 text-sm">
-                      {selection.table.rows.map((row, i) => (
-                        <li
-                          key={i}
-                          className={cn(
-                            'flex gap-2 px-1 py-0.5 rounded',
-                            results[selection.table.id] &&
-                              'lookupValue' in results[selection.table.id] &&
-                              (results[selection.table.id] as TableRollResult)
-                                .row === row &&
-                              'bg-primary/10 font-medium',
-                          )}
-                        >
-                          <span className="w-14 text-muted-foreground shrink-0">
-                            {row.min === row.max
-                              ? row.min
-                              : `${row.min}–${row.max}`}
-                          </span>
-                          <span>{row.text}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <ScrollArea className="max-h-[50dvh]">
+                      <ul className="flex flex-col gap-0.5 text-sm">
+                        {selection.table.rows.map((row, i) => (
+                          <li
+                            key={i}
+                            className={cn(
+                              'flex gap-2 px-1 py-0.5 rounded',
+                              results[selection.table.id] &&
+                                'lookupValue' in results[selection.table.id] &&
+                                (results[selection.table.id] as TableRollResult)
+                                  .row === row &&
+                                'bg-primary/10 font-medium',
+                            )}
+                          >
+                            <span className="w-14 text-muted-foreground shrink-0">
+                              {row.min === row.max
+                                ? row.min
+                                : `${row.min}–${row.max}`}
+                            </span>
+                            <span>{row.text}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </ScrollArea>
                   </div>
                 )}
                 {selection?.kind === 'combo' && (

@@ -26,7 +26,7 @@ export function formatRawRoll(value: RollValue): string {
       return `${value.roll} vs ${value.target}${value.exceptional ? ' (exceptional)' : ''}`
     case 'oracle-table': {
       const dice = formatDiceSpec(value.dice)
-      const base = `${dice}: ${value.rawRoll}`
+      const base = `${value.tableName} — ${dice}: ${value.rawRoll}`
       const withModifier =
         value.modifier !== 0
           ? `${base} + ${value.modifier} → ${value.lookupValue}`
@@ -34,7 +34,7 @@ export function formatRawRoll(value: RollValue): string {
       return value.isMatch ? `${withModifier} (match)` : withModifier
     }
     case 'oracle-combo':
-      return value.parts.map((p) => `${p.tableName}: ${p.rawRoll}`).join(', ')
+      return `${value.comboName} — ${value.parts.map((p) => `${p.tableName}: ${p.rawRoll}`).join(', ')}`
     case 'dice':
       return `${value.expression} → ${value.rolls.join(', ')} = ${value.total}`
     case 'storycubes':

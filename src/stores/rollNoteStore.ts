@@ -18,6 +18,7 @@ interface RollNoteState {
   // sidebar jump/delete) only ever need to know the anchorId.
   addRollNote: (note: Omit<RollNote, 'id' | 'timestamp'>) => void
   deleteRollNote: (anchorId: string) => void
+  setRollNotes: (notes: RollNote[]) => void
   toggleRolls: () => void
   setFocusedRollId: (id: string | null) => void
   requestRollDialog: (pos: number) => void
@@ -42,6 +43,8 @@ export const useRollNoteStore = create<RollNoteState>((set) => ({
     set((s) => ({
       rollNotes: s.rollNotes.filter((n) => n.anchorId !== anchorId),
     })),
+
+  setRollNotes: (rollNotes) => set({ rollNotes }),
 
   toggleRolls: () => set((s) => ({ rollsOpen: !s.rollsOpen })),
 

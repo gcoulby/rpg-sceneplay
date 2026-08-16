@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
 import { Button } from '@/components/ui/button'
 import * as ActivityPanel from '@/components/ui/activity-panel'
@@ -9,6 +9,7 @@ import {
   ROLL_CATEGORY_COLORS,
   ROLL_CATEGORY_LABELS,
 } from '@/oracles/rollCategoryColors'
+import { useDocVersion } from '../utils/useDocVersion'
 
 interface RollsPanelProps {
   editor: Editor | null
@@ -20,6 +21,22 @@ export default function RollsPanel({ editor }: RollsPanelProps) {
   const focusedRollId = useRollNoteStore((s) => s.focusedRollId)
   const setFocusedRollId = useRollNoteStore((s) => s.setFocusedRollId)
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const docVersion = useDocVersion(editor)
+
+  // A roll is orphaned once its anchor glyph has been deleted from the
+  // script — the RollNote record survives (so the roll isn't lost/copy
+  // buttons still work) but there's nowhere left to jump to.
+  const presentAnchorIds = useMemo(() => {
+    const ids = new Set<string>()
+    if (!editor) return ids
+    const nodeType = editor.state.schema.nodes.rollAnchor
+    if (!nodeType) return ids
+    editor.state.doc.descendants((node) => {
+      if (node.type === nodeType) ids.add(node.attrs.anchorId as string)
+    })
+    return ids
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, docVersion])
 
   // Clicking a roll anchor glyph in the editor sets focusedRollId — scroll
   // to and briefly highlight the matching card, then clear it so a repeat
@@ -119,79 +136,106 @@ export default function RollsPanel({ editor }: RollsPanelProps) {
           </p>
         )}
         <div className="flex flex-col gap-2 p-2">
-          {rollNotes.map((note) => (
-            <div
-              key={note.id}
-              ref={(el) => {
-                cardRefs.current[note.id] = el
-              }}
-              className={cn(
-                'flex flex-col gap-1.5 p-2.5 border rounded-md transition-colors',
-                focusedRollId === note.id && 'ring-2 ring-primary bg-primary/5',
-              )}
-            >
-              <div className="flex justify-between items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleNavigate(note.anchorId)}
-                  className="flex items-center gap-1.5 min-w-0 text-left"
-                >
-                  <span
-                    className="rounded-full w-2.5 h-2.5 shrink-0"
-                    style={{
-                      backgroundColor: ROLL_CATEGORY_COLORS[note.category],
-                    }}
-                  />
+          {rollNotes.map((note) => {
+            const isOrphaned = !presentAnchorIds.has(note.anchorId)
+            return (
+              <div
+                key={note.id}
+                ref={(el) => {
+                  cardRefs.current[note.id] = el
+                }}
+                className={cn(
+                  'flex flex-col gap-1.5 border rounded-md transition-colors overflow-hidden',
+                  focusedRollId === note.id &&
+                    'ring-2 ring-primary bg-primary/5',
+                  isOrphaned && 'opacity-70 border-destructive/40',
+                )}
+              >
+                {isOrphaned && (
+                  <div className="flex justify-between items-center bg-destructive/10 px-2.5 py-1 border-destructive/20 border-b text-destructive text-[10px]">
+                    <span>Not in script</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="px-2 py-0.5 border-destructive h-auto text-destructive text-[10px]"
+                      onClick={() => handleDelete(note.anchorId)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+                <div className="flex flex-col gap-1.5 p-2.5">
+                  <div className="flex justify-between items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={isOrphaned}
+                      onClick={() => handleNavigate(note.anchorId)}
+                      className="flex items-center gap-1.5 min-w-0 text-left disabled:cursor-default"
+                    >
+                      <span
+                        className="rounded-full w-2.5 h-2.5 shrink-0"
+                        style={{
+                          backgroundColor: ROLL_CATEGORY_COLORS[note.category],
+                        }}
+                      />
+                      <span className="font-medium text-xs uppercase tracking-wide">
+                        {ROLL_CATEGORY_LABELS[note.category]}
+                      </span>
+                    </button>
+                    <span className="text-muted-foreground text-xs shrink-0">
+                      {formatDate(note.timestamp)}
+                    </span>
+                  </div>
+
                   <span className="font-medium text-xs uppercase tracking-wide">
-                    {ROLL_CATEGORY_LABELS[note.category]}
+                    {formatRawRoll(note.value)}
                   </span>
-                </button>
-                <span className="text-muted-foreground text-xs shrink-0">
-                  {formatDate(note.timestamp)}
-                </span>
-              </div>
+                  <p className="text-sm truncate">
+                    {formatRollResult(note.value)}
+                  </p>
 
-              <span className="font-medium text-xs uppercase tracking-wide">
-                {formatRawRoll(note.value)}
-              </span>
-              <p className="text-sm truncate">{formatRollResult(note.value)}</p>
-
-              <div className="flex justify-between items-center gap-2">
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 text-xs"
-                    onClick={() =>
-                      navigator.clipboard.writeText(
-                        formatRollResult(note.value),
-                      )
-                    }
-                  >
-                    Copy result
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 text-xs"
-                    onClick={() =>
-                      navigator.clipboard.writeText(formatRawRoll(note.value))
-                    }
-                  >
-                    Copy raw roll
-                  </Button>
+                  <div className="flex justify-between items-center gap-2">
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 text-xs"
+                        onClick={() =>
+                          navigator.clipboard.writeText(
+                            formatRollResult(note.value),
+                          )
+                        }
+                      >
+                        Copy result
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 text-xs"
+                        onClick={() =>
+                          navigator.clipboard.writeText(
+                            formatRawRoll(note.value),
+                          )
+                        }
+                      >
+                        Copy raw roll
+                      </Button>
+                    </div>
+                    {!isOrphaned && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 text-destructive text-xs"
+                        onClick={() => handleDelete(note.anchorId)}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 text-destructive text-xs"
-                  onClick={() => handleDelete(note.anchorId)}
-                >
-                  Delete
-                </Button>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </ActivityPanel.Content>
     </ActivityPanel.Shell>

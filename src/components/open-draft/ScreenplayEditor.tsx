@@ -88,6 +88,13 @@ import {
 } from '@/stores/editorStore'
 import type { ElementType } from '@/stores/editorStore'
 import { useRollNoteStore } from '@/stores/rollNoteStore'
+import type { RollNote } from '@/oracles/rollTypes'
+import { useOracleStore } from '@/stores/oracleStore'
+import type {
+  OracleSource,
+  OracleCollection,
+  OracleCombo,
+} from '@/oracles/types'
 import { useActivityBarStore } from '@/stores/activity-bar-store'
 import FormatPanel from './FormatPanel'
 import ElementPicker from './ElementPicker'
@@ -1885,6 +1892,10 @@ const ScreenplayEditor: React.FC = () => {
         useMapStore.getState().setMap(null)
         useMapStore.getState().setLocationMapRefs({})
         useSheetStore.getState().setSheets([])
+        useOracleStore.getState().setUserSources([])
+        useOracleStore.getState().setUserCollections([])
+        useOracleStore.getState().setUserCombos([])
+        useRollNoteStore.getState().setRollNotes([])
 
         const parseAttr = (val: unknown): unknown[] => {
           if (typeof val === 'string') {
@@ -2044,6 +2055,29 @@ const ScreenplayEditor: React.FC = () => {
             .getState()
             .setSheets(
               Array.isArray(c._sheets) ? (c._sheets as CharacterSheet[]) : [],
+            )
+          // Restore custom oracle sources/collections/combos
+          const oracleStore = useOracleStore.getState()
+          oracleStore.setUserSources(
+            Array.isArray(c._oracleSources)
+              ? (c._oracleSources as OracleSource[])
+              : [],
+          )
+          oracleStore.setUserCollections(
+            Array.isArray(c._oracleCollections)
+              ? (c._oracleCollections as OracleCollection[])
+              : [],
+          )
+          oracleStore.setUserCombos(
+            Array.isArray(c._oracleCombos)
+              ? (c._oracleCombos as OracleCombo[])
+              : [],
+          )
+          // Restore roll notes (the Rolls sidebar's persisted anchors)
+          useRollNoteStore
+            .getState()
+            .setRollNotes(
+              Array.isArray(c._rollNotes) ? (c._rollNotes as RollNote[]) : [],
             )
         }
 

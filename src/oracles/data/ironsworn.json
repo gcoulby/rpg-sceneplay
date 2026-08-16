@@ -5992,6 +5992,16 @@
         "classic/oracles/action_and_theme/theme"
       ],
       "template": "{0} {1}"
+    },
+    {
+      "id": "classic/collections/oracles/settlement/quick_name#prefix-suffix",
+      "name": "Quick Settlement Name Generator",
+      "sourceId": "ironsworn-core",
+      "parts": [
+        "classic/oracles/settlement/quick_name/prefix",
+        "classic/oracles/settlement/quick_name/suffix"
+      ],
+      "template": "{0}{1}"
     }
   ]
 }

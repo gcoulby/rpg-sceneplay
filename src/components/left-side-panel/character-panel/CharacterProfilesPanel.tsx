@@ -22,6 +22,7 @@ import CharacterListToolbar, {
 import CharacterCard from './CharacterCard'
 import ReferredInScriptPanel from './ReferredInScriptPanel'
 import RemoveCharacterDialog from './RemoveCharacterDialog'
+import NewCharacterDialog from './NewCharacterDialog'
 import ImagePickerDialog from './ImagePickerDialog'
 import ImageLightboxDialog from './ImageLightboxDialog'
 import CharacterDetailDialog from './CharacterDetailDialog'
@@ -61,6 +62,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
   const [pendingRemoveChar, setPendingRemoveChar] = useState<string | null>(
     null,
   )
+  const [newCharacterOpen, setNewCharacterOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [modalChar, setModalChar] = useState<string | null>(null)
 
@@ -465,7 +467,14 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
       list = list.filter((n) => n.includes(q))
     }
 
+    const isPlayer = (name: string) =>
+      characterProfiles.find((p) => p.name === name)?.role === 'Player'
+
     list.sort((a, b) => {
+      const aPlayer = isPlayer(a)
+      const bPlayer = isPlayer(b)
+      if (aPlayer !== bPlayer) return aPlayer ? -1 : 1
+
       const sa = charStats.get(a)
       const sb = charStats.get(b)
       switch (sortBy) {
@@ -699,6 +708,7 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 onBuildFromScript={handleBuildFromScript}
+                onNewCharacter={() => setNewCharacterOpen(true)}
                 sortBy={sortBy as CharacterSortBy}
                 onSortByChange={setSortBy}
               />
@@ -849,6 +859,19 @@ const CharacterProfilesPanel: React.FC<CharacterProfilesPanelProps> = ({
           if (!pendingRemoveChar) return
           deleteCharacterCascade(pendingRemoveChar)
           setPendingRemoveChar(null)
+        }}
+      />
+
+      <NewCharacterDialog
+        open={newCharacterOpen}
+        onOpenChange={setNewCharacterOpen}
+        existingNames={allCharacters}
+        onCreate={(name) => {
+          const colorIdx = characterProfiles.length % DEFAULT_HIGHLIGHT_COLORS.length
+          upsertCharacterProfile(name, {
+            color: DEFAULT_HIGHLIGHT_COLORS[colorIdx],
+          })
+          setExpandedChar(name)
         }}
       />
     </div>

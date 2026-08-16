@@ -67,6 +67,12 @@ const KNOWN_COMBOS = [
     parts: ['prefix', 'suffix'],
     template: '{0}{1}',
   },
+  {
+    collectionId: 'classic/collections/oracles/settlement/quick_name',
+    name: 'Quick Settlement Name Generator',
+    parts: ['prefix', 'suffix'],
+    template: '{0}{1}',
+  },
 ]
 
 /** Maps a Datasworn dice string ("1d100", "1d66", "2d6", ...) onto a DiceSpec. */
