@@ -12,7 +12,11 @@ interface RollNoteState {
   // ScriptContextMenuController to open the Roll dialog at a doc position.
   // `token` is bumped on every request so the same `pos` can be requested
   // twice in a row and still be picked up by the controller's effect.
-  rollDialogRequest: { pos: number; token: number } | null
+  // `formula` is set instead of `pos` when the request comes from somewhere
+  // with no doc position to insert at (e.g. a PDF link hijack) — the dialog
+  // opens on the Dice tab pre-rolled, and its Insert buttons become no-ops
+  // since `insertPos` stays null.
+  rollDialogRequest: { pos: number | null; formula?: string; token: number } | null
   // `note.anchorId` doubles as the RollNote's `id` — it's a 1:1 link to the
   // RollAnchorNode inserted into the doc, so callers (context menu delete,
   // sidebar jump/delete) only ever need to know the anchorId.
@@ -22,6 +26,7 @@ interface RollNoteState {
   toggleRolls: () => void
   setFocusedRollId: (id: string | null) => void
   requestRollDialog: (pos: number) => void
+  requestDiceRoll: (formula: string) => void
 }
 
 export const useRollNoteStore = create<RollNoteState>((set) => ({
@@ -53,5 +58,14 @@ export const useRollNoteStore = create<RollNoteState>((set) => ({
   requestRollDialog: (pos) =>
     set((s) => ({
       rollDialogRequest: { pos, token: (s.rollDialogRequest?.token ?? 0) + 1 },
+    })),
+
+  requestDiceRoll: (formula) =>
+    set((s) => ({
+      rollDialogRequest: {
+        pos: null,
+        formula,
+        token: (s.rollDialogRequest?.token ?? 0) + 1,
+      },
     })),
 }))

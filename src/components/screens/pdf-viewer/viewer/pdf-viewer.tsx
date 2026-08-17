@@ -10,6 +10,8 @@ import './pdf-viewer-overrides.css'
 import { usePdfDocument } from './use-pdf-document'
 import { useAnnotationSync } from './use-annotation-sync'
 import PdfToolbar, { type PdfMode } from './pdf-toolbar'
+import { extractGoogleRollFormula } from './google-roll-link'
+import { useRollNoteStore } from '@/stores/rollNoteStore'
 import type { PdfEmbed } from '../types'
 
 interface PdfViewerProps {
@@ -93,6 +95,22 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     eventBus.on('pagechanging', onPageChanging)
     eventBus.on('scalechanging', onScaleChanging)
 
+    // Hijack "roll this on Google" links (a common pattern in TTRPG PDFs)
+    // to open the app's own dice roller instead of navigating away. Runs in
+    // the capture phase so it intercepts before the annotation layer's own
+    // `<a>` follows its href.
+    const handleLinkClick = (event: MouseEvent) => {
+      const anchor = (event.target as HTMLElement).closest?.('a[href]')
+      const href = anchor?.getAttribute('href')
+      if (!href) return
+      const formula = extractGoogleRollFormula(href)
+      if (!formula) return
+      event.preventDefault()
+      event.stopPropagation()
+      useRollNoteStore.getState().requestDiceRoll(formula)
+    }
+    container.addEventListener('click', handleLinkClick, true)
+
     setPageInfo({ current: 1, total: pdfDoc.numPages })
     autoFitRef.current = true
     viewer.setDocument(pdfDoc)
@@ -119,6 +137,7 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
 
     return () => {
       resizeObserver.disconnect()
+      container.removeEventListener('click', handleLinkClick, true)
       eventBus.off('pagesinit', onPagesInit)
       eventBus.off('pagechanging', onPageChanging)
       eventBus.off('scalechanging', onScaleChanging)

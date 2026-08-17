@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import DieChip from './DieChip'
@@ -14,10 +14,18 @@ const QUICK_DICE = [4, 6, 8, 10, 12, 20, 100]
 interface FormulaRollerProps {
   compact?: boolean
   onResult?: (value: RollValue) => void
+  /** Pre-fills the formula input and rolls it once, immediately, when this
+   *  instance mounts — e.g. opened via a PDF link dice-roll hijack rather
+   *  than the user typing a formula themselves. */
+  initialFormula?: string | null
 }
 
-export default function FormulaRoller({ compact, onResult }: FormulaRollerProps) {
-  const [formula, setFormula] = useState('2d6+2d4,1d8')
+export default function FormulaRoller({
+  compact,
+  onResult,
+  initialFormula,
+}: FormulaRollerProps) {
+  const [formula, setFormula] = useState(initialFormula ?? '2d6+2d4,1d8')
   const [result, setResult] = useState<RollResult | null>(null)
 
   const roll = (f: string) => {
@@ -31,6 +39,19 @@ export default function FormulaRoller({ compact, onResult }: FormulaRollerProps)
       total: rolled.total,
     })
   }
+
+  useEffect(() => {
+    // Mount-only: rolling is genuinely random, not a pure derivation from
+    // props, so it belongs in an effect rather than the "adjust state
+    // during render" pattern used elsewhere in this codebase — that pattern
+    // assumes a render can be safely re-invoked (Strict Mode) with an
+    // identical result, which doesn't hold for `Math.random()`-backed
+    // rolls. Fires once per genuine mount (this component remounts fresh
+    // each time the Dice tab becomes active).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (initialFormula?.trim()) roll(initialFormula)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex flex-col gap-3">

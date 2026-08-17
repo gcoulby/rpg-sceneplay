@@ -19,14 +19,20 @@ export function ScriptContextMenuController() {
   const [rollDialogState, setRollDialogState] = useState<{
     open: boolean
     insertPos: number | null
-  }>({ open: false, insertPos: null })
+    formula: string | null
+  }>({ open: false, insertPos: null, formula: null })
 
   // Opened by the Mod-0 / Numpad0 shortcut (see ElementShortcutExtension in
-  // ScreenplayEditor.tsx), which can't reach this component's state
-  // directly — it goes through rollNoteStore instead.
+  // ScreenplayEditor.tsx) or a PDF-link dice-roll hijack, neither of which
+  // can reach this component's state directly — both go through
+  // rollNoteStore instead.
   useEffect(() => {
     if (!rollDialogRequest) return
-    setRollDialogState({ open: true, insertPos: rollDialogRequest.pos })
+    setRollDialogState({
+      open: true,
+      insertPos: rollDialogRequest.pos,
+      formula: rollDialogRequest.formula ?? null,
+    })
   }, [rollDialogRequest])
 
   useEffect(() => {
@@ -169,7 +175,7 @@ export function ScriptContextMenuController() {
           onClose={handleClose}
           overrideSelection={menuState.savedSelection}
           onOpenRollDialog={(insertPos) =>
-            setRollDialogState({ open: true, insertPos })
+            setRollDialogState({ open: true, insertPos, formula: null })
           }
         />
       )}
@@ -180,6 +186,7 @@ export function ScriptContextMenuController() {
           setRollDialogState((s) => ({ ...s, open }))
         }
         insertPos={rollDialogState.insertPos}
+        initialFormula={rollDialogState.formula}
       />
     </>
   )

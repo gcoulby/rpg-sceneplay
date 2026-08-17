@@ -26,6 +26,9 @@ interface RollDialogProps {
   /** Cursor position to insert the anchor at, captured when the dialog was
    *  triggered (before focus moves into the dialog). */
   insertPos: number | null
+  /** Pre-fills and auto-rolls the Dice tab, e.g. when triggered by a PDF
+   *  link hijack rather than the keyboard shortcut / context menu. */
+  initialFormula?: string | null
 }
 
 type DialogTab = 'oracle' | 'fate' | 'dice' | 'manual'
@@ -80,16 +83,28 @@ export default function RollDialog({
   onOpenChange,
   editor,
   insertPos,
+  initialFormula = null,
 }: RollDialogProps) {
   const [tab, setTab] = useState<DialogTab>('oracle')
   const [result, setResult] = useState<RollValue | null>(null)
   const addRollNote = useRollNoteStore((s) => s.addRollNote)
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) {
-      setTab('oracle')
+  // Reset dialog state on every closed->open transition, adjusted during
+  // render rather than in `handleOpenChange` below: that handler only fires
+  // for closes the Dialog primitive itself initiates (Escape, backdrop
+  // click) — not for `open` being flipped true from outside, which is how
+  // every open actually happens here (keyboard shortcut, context menu, or a
+  // PDF-link dice-roll hijack, all routed through rollNoteStore).
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
+    if (open) {
+      setTab(initialFormula ? 'dice' : 'oracle')
       setResult(null)
     }
+  }
+
+  const handleOpenChange = (next: boolean) => {
     onOpenChange(next)
   }
 
@@ -152,7 +167,11 @@ export default function RollDialog({
             <FateChartRoller compact onResult={setResult} />
           </TabsContent>
           <TabsContent value="dice">
-            <FormulaRoller compact onResult={setResult} />
+            <FormulaRoller
+              compact
+              onResult={setResult}
+              initialFormula={tab === 'dice' ? initialFormula : null}
+            />
           </TabsContent>
           <TabsContent value="manual">
             <ManualTab onResult={setResult} />
