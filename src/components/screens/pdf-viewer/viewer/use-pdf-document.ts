@@ -49,12 +49,24 @@ export function usePdfDocument(assetRef: string): UsePdfDocumentResult {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // `assetRef` is stable for the lifetime of `pdf-viewer.tsx`'s own usage
+  // (keyed by embed id, so switching embeds remounts rather than passing a
+  // new assetRef into the same instance) — but the PDF Tools sidebar keeps
+  // one long-lived instance and re-resolves `assetRef` as the user switches
+  // PDFs in the main tab, including down to `''` when nothing's active. So
+  // this genuinely needs a reset-on-change, adjusted during render (React's
+  // sanctioned pattern for that) rather than a synchronous setState at the
+  // top of the effect below, which would commit a stale doc for one render
+  // first.
+  const [trackedAssetRef, setTrackedAssetRef] = useState(assetRef)
+  if (assetRef !== trackedAssetRef) {
+    setTrackedAssetRef(assetRef)
+    setPdfDoc(null)
+    setError(null)
+  }
+
   useEffect(() => {
-    // `assetRef` is stable for the lifetime of a given viewer instance (the
-    // consumer keys it by embed id), so there's no meaningful "switch to a
-    // new PDF mid-flight" case to reset for here — the fetch's own
-    // then/catch is enough. Skips an initial synchronous setState, which
-    // resetting-before-fetching would otherwise need.
+    if (!assetRef) return
     let cancelled = false
     acquire(assetRef)
       .then((doc) => {

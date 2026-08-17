@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useProjectStore } from '@/stores/projectStore'
+import { usePdfViewerStore } from '../store/usePdfViewerStore'
 import type { PdfEmbed } from '../types'
 
 /**
@@ -44,6 +45,14 @@ export function useLastSelectedTab(
   const activeId = sorted.some((e) => e.id === storedId)
     ? storedId
     : (sorted[0]?.id ?? '')
+
+  // Mirror into the reactive store — see `activeEmbedId`'s doc comment in
+  // usePdfViewerStore.ts. A genuine side effect (writing to another store),
+  // not a derivation of this component's own render, so it belongs in an
+  // effect rather than adjusted during render.
+  useEffect(() => {
+    usePdfViewerStore.getState().setActiveEmbedId(activeId || null)
+  }, [activeId])
 
   return [activeId, setActiveId]
 }

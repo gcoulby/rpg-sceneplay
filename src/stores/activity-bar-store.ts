@@ -12,6 +12,7 @@ import {
   Dice5,
   Lightbulb,
   Eye,
+  FileStack,
 } from 'lucide-react'
 import { create } from 'zustand'
 
@@ -29,6 +30,7 @@ export type NavView =
   | 'inspiration'
   | 'dice-roller'
   | 'rolls'
+  | 'pdf-tools'
 
 export interface NavViewConfig {
   id: NavView
@@ -49,6 +51,7 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'inspiration', label: 'Inspiration', icon: Lightbulb },
   { id: 'dice-roller', label: 'Dice Roller', icon: Dices },
   { id: 'rolls', label: 'Rolls', icon: Dice5 },
+  { id: 'pdf-tools', label: 'PDF Tools', icon: FileStack },
 ]
 
 interface ActivityBarState {

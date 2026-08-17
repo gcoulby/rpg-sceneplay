@@ -15,6 +15,7 @@ import PdfToolbar, { type PdfMode } from './pdf-toolbar'
 import PdfSearchBar from './pdf-search-bar'
 import { extractGoogleRollFormula } from './google-roll-link'
 import { useRollNoteStore } from '@/stores/rollNoteStore'
+import { usePdfViewerStore } from '../store/usePdfViewerStore'
 import type { PdfEmbed } from '../types'
 
 interface PdfViewerProps {
@@ -55,6 +56,7 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
   const [findController, setFindController] = useState<PDFFindController | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const search = usePdfSearch(eventBus, findController)
+  const pageJumpRequest = usePdfViewerStore((s) => s.pageJumpRequest)
 
   // Recreate the viewer whenever the resolved document changes — switching
   // tabs means switching documents, and the library isn't designed for
@@ -106,6 +108,12 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     }
     const onPageChanging = (evt: { pageNumber: number }) => {
       setPageInfo((s) => ({ ...s, current: evt.pageNumber }))
+      // Only mirror while this embed is the one the sidebar cares about —
+      // switching away leaves the last-shown page's number stale otherwise,
+      // which would misreport what the (now hidden) tab is showing.
+      if (usePdfViewerStore.getState().activeEmbedId === embed.id) {
+        usePdfViewerStore.getState().setActivePage(evt.pageNumber)
+      }
     }
     const onScaleChanging = (evt: { scale: number }) => {
       setScale(evt.scale)
@@ -131,6 +139,9 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     container.addEventListener('click', handleLinkClick, true)
 
     setPageInfo({ current: 1, total: pdfDoc.numPages })
+    if (usePdfViewerStore.getState().activeEmbedId === embed.id) {
+      usePdfViewerStore.getState().setActivePage(1)
+    }
     autoFitRef.current = true
     viewer.setDocument(pdfDoc)
 
@@ -165,7 +176,7 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
       setEventBus(null)
       setFindController(null)
     }
-  }, [pdfDoc])
+  }, [pdfDoc, embed.id])
 
   useEffect(() => {
     const viewer = viewerRef.current
@@ -174,6 +185,36 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
       mode: mode === 'markup' ? markupTool : AnnotationEditorType.NONE,
     }
   }, [mode, markupTool, viewerReady])
+
+  // Lets the PDF Tools sidebar (outside this component's tree) jump this
+  // embed's viewer to a page, via `usePdfViewerStore.requestPageJump`. When
+  // the request also carries `highlightText` (the Search tab's exact
+  // matched substring), briefly flash just that one occurrence — dispatching
+  // `find` with `highlightAll: false` highlights only the current match
+  // (not every occurrence on the page), then `findbarclose` 5s later clears
+  // it back out, since this is a "look, right here" pointer rather than an
+  // open-ended search session.
+  useEffect(() => {
+    if (!pageJumpRequest || pageJumpRequest.embedId !== embed.id) return
+    const viewer = viewerRef.current
+    if (viewer) viewer.currentPageNumber = pageJumpRequest.page
+    if (!pageJumpRequest.highlightText || !eventBus) return
+
+    eventBus.dispatch('find', {
+      source: findController,
+      type: '',
+      query: pageJumpRequest.highlightText,
+      caseSensitive: false,
+      entireWord: false,
+      highlightAll: false,
+      findPrevious: false,
+      matchDiacritics: true,
+    })
+    const clearTimer = setTimeout(() => {
+      eventBus.dispatch('findbarclose', { source: findController })
+    }, 5000)
+    return () => clearTimeout(clearTimer)
+  }, [pageJumpRequest, embed.id, eventBus, findController])
 
   if (error) {
     return (
@@ -212,7 +253,6 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
           const viewer = viewerRef.current
           if (viewer) viewer.currentScaleValue = String(percent / 100)
         }}
-        pdfDoc={pdfDoc}
         searchOpen={searchOpen}
         onToggleSearch={() => {
           if (searchOpen) search.close()

@@ -7,6 +7,37 @@ interface PdfViewerState {
   annotations: PdfAnnotation[]
   formValues: PdfFormFieldValue[]
 
+  // Mirrors the tab bar's own `useLastSelectedTab` (localStorage-backed)
+  // selection into reactive store state, so components outside the PDF
+  // screen's tree — the PDF Tools sidebar panel — can know which embed is
+  // currently showing without re-implementing that localStorage lookup.
+  activeEmbedId: string | null
+  setActiveEmbedId: (id: string | null) => void
+
+  // The active embed's current page, mirrored from its `PDFViewer`'s own
+  // `pagechanging` event — lets the PDF Tools sidebar's Pages tab highlight
+  // the page currently on screen, same reasoning as `activeEmbedId` above.
+  activePage: number | null
+  setActivePage: (page: number | null) => void
+
+  // Lets the PDF Tools sidebar's Pages/Search tabs ask the active embed's
+  // live `PDFViewer` instance to jump to a page — there's no other channel
+  // between that sidebar (outside the PDF screen's component tree) and the
+  // viewer instance, which is local state inside pdf-viewer.tsx. `token` is
+  // bumped on every request so the same page can be requested twice in a
+  // row and still be picked up. `highlightText`, when set (the Search tab's
+  // exact matched substring), also briefly flashes that one occurrence via
+  // the find controller — `highlightAll: false`, unlike the toolbar's own
+  // Find bar, since this is "show me where this specific hit was", not an
+  // open-ended search session.
+  pageJumpRequest: {
+    embedId: string
+    page: number
+    highlightText?: string
+    token: number
+  } | null
+  requestPageJump: (embedId: string, page: number, highlightText?: string) => void
+
   // Bulk setters, for hydration from a loaded/imported document.
   setEmbeds: (embeds: PdfEmbed[]) => void
   setAnnotations: (annotations: PdfAnnotation[]) => void
@@ -37,8 +68,22 @@ export const usePdfViewerStore = create<PdfViewerState>((set, get) => ({
   embeds: [],
   annotations: [],
   formValues: [],
+  activeEmbedId: null,
+  activePage: null,
+  pageJumpRequest: null,
 
   setEmbeds: (embeds) => set({ embeds }),
+  setActiveEmbedId: (id) => set({ activeEmbedId: id }),
+  setActivePage: (page) => set({ activePage: page }),
+  requestPageJump: (embedId, page, highlightText) =>
+    set((s) => ({
+      pageJumpRequest: {
+        embedId,
+        page,
+        highlightText,
+        token: (s.pageJumpRequest?.token ?? 0) + 1,
+      },
+    })),
   setAnnotations: (annotations) => set({ annotations }),
   setFormValues: (formValues) => set({ formValues }),
 

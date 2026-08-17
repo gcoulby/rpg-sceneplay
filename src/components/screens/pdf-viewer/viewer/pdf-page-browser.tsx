@@ -8,10 +8,10 @@ interface PdfPageBrowserProps {
   onSelect: (page: number) => void
 }
 
-/** Thumbnail grid for jumping to a page, reusing the same low-scale
- *  `page.render()` approach as the import flow's page picker — but against
- *  the already-loaded `pdfDoc` instead of re-parsing a `File`, since the
- *  viewer has one loaded anyway. */
+/** Thumbnail grid for jumping to a page (used by the PDF Tools sidebar's
+ *  Pages tab), reusing the same low-scale `page.render()` approach as the
+ *  import flow's page picker — but against the already-loaded `pdfDoc`
+ *  instead of re-parsing a `File`, since the viewer has one loaded anyway. */
 export default function PdfPageBrowser({
   pdfDoc,
   currentPage,
@@ -57,10 +57,7 @@ export default function PdfPageBrowser({
   }, [rendered, currentPage])
 
   return (
-    <div
-      ref={containerRef}
-      className="gap-2 grid grid-cols-3 p-1 max-h-96 overflow-y-auto"
-    >
+    <div ref={containerRef} className="gap-2 grid grid-cols-2 p-1">
       {Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1).map((n) => (
         <button
           key={n}

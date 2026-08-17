@@ -32,3 +32,11 @@
 .pdfViewer * {
   box-sizing: content-box;
 }
+
+/* pdfjs's default "current match" find highlight is a dim, muddy dark green
+ * (`rgb(0 100 0 / 0.25)`) — barely visible, and easy to miss during the PDF
+ * Tools Search tab's brief flash-on-click highlight. Brighter and more
+ * opaque so it actually reads as "look, right here". */
+.pdfViewer .textLayer .highlight.selected {
+  --highlight-selected-bg-color: rgb(255 230 0 / 0.7);
+}
