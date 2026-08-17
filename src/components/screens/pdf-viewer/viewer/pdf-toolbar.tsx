@@ -8,9 +8,16 @@ import {
   Type,
   Highlighter,
   Stamp,
+  LayoutGrid,
+  Search,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { AnnotationEditorType } from 'pdfjs-dist'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
+import EditableStat from './editable-stat'
+import PdfPageBrowser from './pdf-page-browser'
 
 export type PdfMode = 'fill' | 'markup'
 
@@ -32,6 +39,10 @@ interface PdfToolbarProps {
   scale: number
   onZoomIn: () => void
   onZoomOut: () => void
+  onZoomChange: (percent: number) => void
+  pdfDoc: PDFDocumentProxy | null
+  searchOpen: boolean
+  onToggleSearch: () => void
 }
 
 /** Page nav, zoom, and the Fill/Markup mode toggle — mutually exclusive
@@ -48,7 +59,14 @@ export default function PdfToolbar({
   scale,
   onZoomIn,
   onZoomOut,
+  onZoomChange,
+  pdfDoc,
+  searchOpen,
+  onToggleSearch,
 }: PdfToolbarProps) {
+  const clampPage = (n: number) => onPageChange(Math.min(pageCount, Math.max(1, Math.round(n))))
+  const [pageBrowserOpen, setPageBrowserOpen] = useState(false)
+
   return (
     <div className="flex items-center gap-1 bg-(--fd-navigator-bg) px-2 py-1.5 border-(--fd-border) border-b shrink-0">
       <Button
@@ -61,9 +79,12 @@ export default function PdfToolbar({
       >
         <ChevronLeft className="size-3.5" />
       </Button>
-      <span className="text-(--fd-text-muted) text-xs tabular-nums">
-        {page} / {pageCount}
-      </span>
+      <EditableStat
+        display={`${page} / ${pageCount}`}
+        value={page}
+        onCommit={clampPage}
+        title="Go to page"
+      />
       <Button
         variant="ghost"
         size="icon"
@@ -75,16 +96,51 @@ export default function PdfToolbar({
         <ChevronRight className="size-3.5" />
       </Button>
 
+      {pdfDoc && (
+        <Popover open={pageBrowserOpen} onOpenChange={setPageBrowserOpen}>
+          <PopoverTrigger
+            render={<Button variant="ghost" size="icon" className="size-7" title="Browse pages" />}
+          >
+            <LayoutGrid className="size-3.5" />
+          </PopoverTrigger>
+          <PopoverContent className="w-auto">
+            <PdfPageBrowser
+              pdfDoc={pdfDoc}
+              currentPage={page}
+              onSelect={(n) => {
+                onPageChange(n)
+                setPageBrowserOpen(false)
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+      )}
+
       <div className="bg-(--fd-border) mx-1 w-px h-4" />
 
       <Button variant="ghost" size="icon" className="size-7" onClick={onZoomOut} title="Zoom out">
         <ZoomOut className="size-3.5" />
       </Button>
-      <span className="text-(--fd-text-muted) text-xs tabular-nums">
-        {Math.round(scale * 100)}%
-      </span>
+      <EditableStat
+        display={`${Math.round(scale * 100)}%`}
+        value={Math.round(scale * 100)}
+        onCommit={onZoomChange}
+        title="Set zoom"
+      />
       <Button variant="ghost" size="icon" className="size-7" onClick={onZoomIn} title="Zoom in">
         <ZoomIn className="size-3.5" />
+      </Button>
+
+      <div className="bg-(--fd-border) mx-1 w-px h-4" />
+
+      <Button
+        variant={searchOpen ? 'secondary' : 'ghost'}
+        size="icon"
+        className="size-7"
+        onClick={onToggleSearch}
+        title="Find in document"
+      >
+        <Search className="size-3.5" />
       </Button>
 
       <div className="bg-(--fd-border) mx-1 w-px h-4" />

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   EventBus,
+  PDFFindController,
   PDFLinkService,
   PDFViewer as PdfjsViewer,
 } from 'pdfjs-dist/web/pdf_viewer.mjs'
@@ -9,7 +10,9 @@ import 'pdfjs-dist/web/pdf_viewer.css'
 import './pdf-viewer-overrides.css'
 import { usePdfDocument } from './use-pdf-document'
 import { useAnnotationSync } from './use-annotation-sync'
+import { usePdfSearch } from './use-pdf-search'
 import PdfToolbar, { type PdfMode } from './pdf-toolbar'
+import PdfSearchBar from './pdf-search-bar'
 import { extractGoogleRollFormula } from './google-roll-link'
 import { useRollNoteStore } from '@/stores/rollNoteStore'
 import type { PdfEmbed } from '../types'
@@ -46,6 +49,12 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
   // "The AnnotationEditor is not enabled.", so the mode-toggle effect below
   // must wait for it rather than firing as soon as the viewer exists.
   const [viewerReady, setViewerReady] = useState(false)
+  // Bridged to React state (rather than kept only in a ref) so `usePdfSearch`
+  // can re-subscribe its eventBus listeners whenever the viewer is recreated.
+  const [eventBus, setEventBus] = useState<EventBus | null>(null)
+  const [findController, setFindController] = useState<PDFFindController | null>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const search = usePdfSearch(eventBus, findController)
 
   // Recreate the viewer whenever the resolved document changes — switching
   // tabs means switching documents, and the library isn't designed for
@@ -61,25 +70,35 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     viewerDiv.className = 'pdfViewer'
     container.appendChild(viewerDiv)
 
-    const eventBus = new EventBus()
-    const linkService = new PDFLinkService({ eventBus })
+    const newEventBus = new EventBus()
+    const linkService = new PDFLinkService({ eventBus: newEventBus })
+    const newFindController = new PDFFindController({
+      eventBus: newEventBus,
+      linkService,
+    })
     const viewer = new PdfjsViewer({
       container,
       viewer: viewerDiv,
-      eventBus,
+      eventBus: newEventBus,
       linkService,
+      findController: newFindController,
       annotationMode: AnnotationMode.ENABLE_FORMS,
       annotationEditorMode: AnnotationEditorType.NONE,
     })
     linkService.setViewer(viewer)
     // `PDFViewer.setDocument()` below does NOT propagate to the link
-    // service — that's a separate call the app owns. Without it,
+    // service — that's a separate call the app owns (unlike the find
+    // controller, which `PDFViewer.setDocument()` does forward to since it
+    // was passed in as `findController` above). Without it,
     // `linkService.goToDestination()` silently no-ops (`if
     // (!this.pdfDocument) return`) on every in-document link click: the
     // click reaches pdfjs's own handler fine, it just has no document to
     // resolve the destination against.
     linkService.setDocument(pdfDoc)
     viewerRef.current = viewer
+    const eventBus = newEventBus
+    setEventBus(newEventBus)
+    setFindController(newFindController)
 
     const onPagesInit = () => {
       viewer.currentScaleValue = 'page-width'
@@ -143,6 +162,8 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
       eventBus.off('scalechanging', onScaleChanging)
       viewer.cleanup()
       viewerRef.current = null
+      setEventBus(null)
+      setFindController(null)
     }
   }, [pdfDoc])
 
@@ -186,7 +207,27 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
           const viewer = viewerRef.current
           if (viewer) viewer.currentScaleValue = String(viewer.currentScale / 1.1)
         }}
+        onZoomChange={(percent) => {
+          autoFitRef.current = false
+          const viewer = viewerRef.current
+          if (viewer) viewer.currentScaleValue = String(percent / 100)
+        }}
+        pdfDoc={pdfDoc}
+        searchOpen={searchOpen}
+        onToggleSearch={() => {
+          if (searchOpen) search.close()
+          setSearchOpen((s) => !s)
+        }}
       />
+      {searchOpen && (
+        <PdfSearchBar
+          search={search}
+          onClose={() => {
+            search.close()
+            setSearchOpen(false)
+          }}
+        />
+      )}
       <div className="relative flex-1 min-h-0">
         <div
           ref={containerRef}
