@@ -6,6 +6,7 @@ import {
 } from 'pdfjs-dist/web/pdf_viewer.mjs'
 import { AnnotationEditorType, AnnotationMode } from 'pdfjs-dist'
 import 'pdfjs-dist/web/pdf_viewer.css'
+import './pdf-viewer-overrides.css'
 import { usePdfDocument } from './use-pdf-document'
 import { useAnnotationSync } from './use-annotation-sync'
 import PdfToolbar, { type PdfMode } from './pdf-toolbar'
@@ -69,6 +70,13 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
       annotationEditorMode: AnnotationEditorType.NONE,
     })
     linkService.setViewer(viewer)
+    // `PDFViewer.setDocument()` below does NOT propagate to the link
+    // service — that's a separate call the app owns. Without it,
+    // `linkService.goToDestination()` silently no-ops (`if
+    // (!this.pdfDocument) return`) on every in-document link click: the
+    // click reaches pdfjs's own handler fine, it just has no document to
+    // resolve the destination against.
+    linkService.setDocument(pdfDoc)
     viewerRef.current = viewer
 
     const onPagesInit = () => {
@@ -89,13 +97,23 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     autoFitRef.current = true
     viewer.setDocument(pdfDoc)
 
-    // Re-fit whenever the container's size actually changes — including the
-    // 0 → real-size transition when this tab becomes visible after mounting
-    // hidden, which `pagesinit` alone can't account for.
+    // Fit once, the first time the container has a real (non-zero) size —
+    // covers the tab-mounts-hidden case, where `pagesinit`'s own page-width
+    // computation ran against a zero-size container and locked in a nonsense
+    // scale. Deliberately fires only once: `currentScaleValue = 'page-width'`
+    // is recomputed relative to whichever page is currently scrolled into
+    // view, and this document's pages aren't all the same aspect ratio (a
+    // portrait cover vs. landscape two-page spreads) — re-fitting on every
+    // subsequent resize (scrollbar toggling, page virtualization) would keep
+    // snapping the scale to whatever page happens to be in view at that
+    // moment, making the zoom jump around and look "distorted" as the user
+    // scrolls.
     const resizeObserver = new ResizeObserver((entries) => {
       const { width, height } = entries[0]?.contentRect ?? {}
       if (!width || !height || !autoFitRef.current) return
       viewer.currentScaleValue = 'page-width'
+      autoFitRef.current = false
+      resizeObserver.disconnect()
     })
     resizeObserver.observe(container)
 

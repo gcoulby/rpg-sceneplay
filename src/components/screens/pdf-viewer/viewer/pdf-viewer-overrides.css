@@ -1,0 +1,34 @@
+/* The screenplay editor's global `.page` class (theme.css/screenplay.css)
+ * sets `min-height: 11in` and `padding: 1.25in ...` for its own page layout.
+ * pdfjs's own page wrapper divs are also named `.page`, so those unscoped
+ * rules leak straight into the PDF viewer: pages get force-padded and
+ * floor-heighted to Letter dimensions regardless of the PDF's real page size
+ * or zoom, which stretches the canvas (width/height:100% of its wrapper) out
+ * of aspect and throws off the annotation/link layer's alignment against it.
+ * `.pdfViewer .page` is more specific than the bare `.page` rule, so this
+ * resets the two leaking properties back to what pdfjs itself expects.
+ */
+.pdfViewer .page {
+  min-height: 0;
+  padding: 0;
+}
+
+/* pdfjs's own layout (page border, canvas/annotation/text layer sizing, the
+ * many `calc(Npx * var(--total-scale-factor))` rules used for editor UI,
+ * font sizing, etc.) is authored assuming the browser's default box model
+ * (content-box) throughout. Tailwind's Preflight forces
+ * `box-sizing: border-box` on every element in the app via a universal
+ * selector, which pdfjs's own CSS never opts out of. The most visible
+ * breakage: pdfjs sets `.annotationLayer`/`.textLayer` to the page's content
+ * pixel size, expecting the page's border to sit *outside* that box — under
+ * a forced border-box, that same number becomes the box's *outer* size
+ * instead, so the annotation/link layer ends up `2 * border-width` too wide
+ * and too tall relative to the actual rendered canvas, and every link/
+ * highlight position (a `%` of that layer) lands off by an amount that
+ * depends on that page's own size — which is what made it look like a
+ * different, "random" offset per page rather than a constant one.
+ */
+.pdfViewer,
+.pdfViewer * {
+  box-sizing: content-box;
+}
