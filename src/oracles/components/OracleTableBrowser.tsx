@@ -36,6 +36,12 @@ export default function OracleTableBrowser({
   const getAllSources = useOracleStore((s) => s.getAllSources)
   const getTableById = useOracleStore((s) => s.getTableById)
   const getComboForTable = useOracleStore((s) => s.getComboForTable)
+  // `getAllSources`/`getAllCollections` are stable function references, so
+  // selecting only them wouldn't re-render this component when the user
+  // adds/edits/deletes a table elsewhere — subscribe to the raw state too.
+  useOracleStore((s) => s.userSources)
+  useOracleStore((s) => s.userCollections)
+  useOracleStore((s) => s.userCombos)
   const activeCollectionId = useOracleActivityStore((s) => s.activeCollectionId)
   const setActiveCollectionId = useOracleActivityStore(
     (s) => s.setActiveCollectionId,

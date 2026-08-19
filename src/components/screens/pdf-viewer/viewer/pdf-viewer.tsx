@@ -30,7 +30,7 @@ interface PdfViewerProps {
  *  component's job is bridging that to React state, not re-implementing it. */
 export default function PdfViewer({ embed }: PdfViewerProps) {
   const { pdfDoc, error } = usePdfDocument(embed.assetRef)
-  useAnnotationSync(pdfDoc, embed.id)
+  useAnnotationSync(pdfDoc, embed.id, embed.assetRef)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const viewerRef = useRef<PdfjsViewer | null>(null)
