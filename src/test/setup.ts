@@ -38,16 +38,58 @@ class MemoryStorage implements Storage {
   }
 }
 
-if (typeof globalThis.localStorage === 'undefined') {
+// Node 22+ ships its own `localStorage` global, gated behind a
+// `--localstorage-file` flag this test run doesn't pass — so the property
+// exists but every method throws. Check for a working `getItem`, not just
+// presence, or that broken native object shadows the shim below.
+function isUsableStorage(value: unknown): value is Storage {
+  return typeof (value as Storage | undefined)?.getItem === 'function';
+}
+
+if (!isUsableStorage(globalThis.localStorage)) {
   Object.defineProperty(globalThis, 'localStorage', {
     value: new MemoryStorage(),
     configurable: true,
   });
 }
 
-if (typeof globalThis.sessionStorage === 'undefined') {
+if (!isUsableStorage(globalThis.sessionStorage)) {
   Object.defineProperty(globalThis, 'sessionStorage', {
     value: new MemoryStorage(),
+    configurable: true,
+  });
+}
+
+/**
+ * A minimal `document` for the node test environment. `editorStore` reads
+ * `document.documentElement` at module scope to apply the saved theme.
+ */
+if (typeof globalThis.document === 'undefined') {
+  const classList = {
+    toggle: () => {},
+    add: () => {},
+    remove: () => {},
+    contains: () => false,
+  };
+  Object.defineProperty(globalThis, 'document', {
+    value: {
+      documentElement: {
+        classList,
+        setAttribute: () => {},
+        getAttribute: () => null,
+        style: {},
+      },
+      createElement: () => ({
+        classList,
+        style: {},
+        setAttribute: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      querySelector: () => null,
+    },
     configurable: true,
   });
 }

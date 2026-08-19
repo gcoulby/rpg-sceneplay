@@ -22,6 +22,7 @@ import { useBrowserStorageStatusStore } from '@/stores/browserStorageStatusStore
 import { useEditorStore } from '@/stores/editorStore'
 import { getActiveMode, saveActiveDoc } from './storageManager'
 import { docHasAnyText } from '@/utils/open-draft/docText'
+import { hasSaveableCollections } from './saveContent'
 import type { StorageDoc } from './types'
 
 const DEBOUNCE_MS = 1_500
@@ -62,7 +63,13 @@ export function useStorageAutoSave(
     if (isWritingRef.current) return
 
     const doc = optsRef.current.buildDoc()
-    if (!doc || !docHasAnyText(doc.content)) return
+    if (!doc) return
+    // A document is worth writing if it has prose OR real collection content
+    // (e.g. an imported PDF, a character sheet) — not prose alone. See
+    // `hasSaveableCollections`'s doc comment for why `docHasAnyText` on its
+    // own isn't the right check here.
+    if (!docHasAnyText(doc.content) && !hasSaveableCollections(doc.content))
+      return
 
     const key = JSON.stringify(doc.content)
     if (key === lastSavedKeyRef.current) return

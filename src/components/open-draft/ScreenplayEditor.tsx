@@ -95,6 +95,12 @@ import {
 import type { ElementType } from "@/stores/editorStore";
 import { useRollNoteStore } from "@/stores/rollNoteStore";
 import type { RollNote } from "@/oracles/rollTypes";
+import { usePdfViewerStore } from "@/components/screens/pdf-viewer/store/usePdfViewerStore";
+import type {
+  PdfEmbed,
+  PdfAnnotation,
+  PdfFormFieldValue,
+} from "@/components/screens/pdf-viewer/types";
 import { useOracleStore } from "@/stores/oracleStore";
 import type {
   OracleSource,
@@ -140,7 +146,7 @@ import { buildStorageDoc as buildStorageDocFromEditor } from "@/storage/buildSto
 import { diskHandleProvider } from "@/storage/providers/diskHandleProvider";
 import { useStorageAutoSave } from "@/storage/useStorageAutoSave";
 import StorageModeDialog from "@/storage/StorageModeDialog";
-import { openTextFile } from "@/storage/fileOps";
+import { openBinaryFile } from "@/storage/fileOps";
 import { unpackAssets } from "@/storage/assetStore";
 import { useBrowserStorageStatusStore } from "@/stores/browserStorageStatusStore";
 import { showToast } from "@/actions/show-toast";
@@ -151,7 +157,7 @@ import { parseFDXFull } from "@/utils/open-draft/fdxParser";
 import {
   parseOdraft,
   downloadOdraft,
-  parseOdraftLoose,
+  parseSceneplayAny,
   isSceneplayFile,
 } from "@/storage/formats/sceneplayFormat";
 import { hydrateEditorStoresFromContent } from "@/storage/hydrateStores";
@@ -1952,6 +1958,9 @@ const ScreenplayEditor: React.FC = () => {
         useOracleStore.getState().setUserCollections([]);
         useOracleStore.getState().setUserCombos([]);
         useRollNoteStore.getState().setRollNotes([]);
+        usePdfViewerStore.getState().setEmbeds([]);
+        usePdfViewerStore.getState().setAnnotations([]);
+        usePdfViewerStore.getState().setFormValues([]);
 
         const parseAttr = (val: unknown): unknown[] => {
           if (typeof val === "string") {
@@ -2135,6 +2144,21 @@ const ScreenplayEditor: React.FC = () => {
             .setRollNotes(
               Array.isArray(c._rollNotes) ? (c._rollNotes as RollNote[]) : [],
             );
+          // Restore embedded PDFs, their markup, and their form field values
+          const pdfStore = usePdfViewerStore.getState();
+          pdfStore.setEmbeds(
+            Array.isArray(c._pdfEmbeds) ? (c._pdfEmbeds as PdfEmbed[]) : [],
+          );
+          pdfStore.setAnnotations(
+            Array.isArray(c._pdfAnnotations)
+              ? (c._pdfAnnotations as PdfAnnotation[])
+              : [],
+          );
+          pdfStore.setFormValues(
+            Array.isArray(c._pdfFormValues)
+              ? (c._pdfFormValues as PdfFormFieldValue[])
+              : [],
+          );
         }
 
         setCurrentDocId(doc.id);
@@ -2542,7 +2566,7 @@ const ScreenplayEditor: React.FC = () => {
         if (editor) clearEditorHistory(editor);
       } else if (choice === "import") {
         if (!editor) return;
-        const result = await openTextFile([
+        const result = await openBinaryFile([
           {
             name: "Screenplay",
             extensions: ["fountain", "fdx", "txt", "sceneplay", "odraft"],
@@ -2550,13 +2574,18 @@ const ScreenplayEditor: React.FC = () => {
         ]);
         if (!result) return;
 
-        const { name, content: text } = result;
+        const { name, content: buf } = result;
+        const isNative = isSceneplayFile(name);
+        // fdx/fountain/txt are always text; a native file may be a v3 zip or
+        // legacy flat JSON — parseSceneplayAny sniffs which, reading `buf`
+        // directly, so this decode is only needed for the other formats.
+        const text = isNative ? "" : new TextDecoder().decode(buf);
 
-        if (isSceneplayFile(name)) {
+        if (isNative) {
           // Full document, not a plain-content import — restore everything
           // (notes, tags, characters, layout, embedded assets) the same way
           // opening a stored document does.
-          const parsed = parseOdraftLoose(text);
+          const parsed = await parseSceneplayAny(buf);
           applyStoredDoc({
             id: "",
             meta: parsed.meta,

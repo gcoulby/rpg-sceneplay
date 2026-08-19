@@ -29,14 +29,16 @@ function acceptFromFilters(filters?: FileFilter[]): string | null {
  * parameter stays so exporters can keep passing their filter list unchanged.
  */
 export async function saveFile(
-  data: Uint8Array | string,
+  data: Uint8Array | string | Blob,
   defaultFilename: string,
   _filters?: FileFilter[],
 ): Promise<boolean> {
   const blob =
-    typeof data === 'string'
-      ? new Blob([data], { type: 'text/plain' })
-      : new Blob([data] as BlobPart[])
+    data instanceof Blob
+      ? data
+      : typeof data === 'string'
+        ? new Blob([data], { type: 'text/plain' })
+        : new Blob([data] as BlobPart[])
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

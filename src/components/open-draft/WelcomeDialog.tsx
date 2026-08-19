@@ -1,5 +1,5 @@
 import React from 'react'
-
+import icon from '@/assets/icon.png'
 export type WelcomeChoice = 'blank' | 'sample' | 'import'
 
 interface WelcomeDialogProps {
@@ -14,8 +14,8 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onChoice }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-[linear-gradient(135deg,#1a2a3a_0%,#2b2b2b_100%)] px-6 pt-8 pb-5 welcome-hero">
-          <div className="w-12 h-12 mx-auto mb-3 bg-(--fd-accent) rounded-[10px] flex items-center justify-center font-bold text-[18px] text-white tracking-[1px]">
-            OD
+          <div className="flex justify-center items-center mx-auto mb-3 rounded-[10px] w-12 h-12 font-bold text-[18px] text-white tracking-[1px]">
+            <img src={icon} alt="logo" className="rounded-[10px] w-full" />
           </div>
           <h1 className="m-0 mb-1 font-semibold text-[22px] text-white">
             RPG Sceneplay

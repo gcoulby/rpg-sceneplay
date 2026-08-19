@@ -21,7 +21,9 @@ import { InspirationPanel } from './oracles/inspiration-panel'
 import { RollerPanel } from './oracles/roller-panel'
 import { OraclePanel } from './oracles/oracle-panel'
 import RollsPanel from './rolls-tab/RollsPanel'
+import PdfToolsPanel from './pdf-tools-panel/PdfToolsPanel'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useMainTabStore } from '@/stores/mainTabStore'
 
 interface AppNavigatorProps {
   editor: Editor | null
@@ -48,6 +50,16 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
     }
   }, [activeView, isMobile])
 
+  // PDF Tools is a side panel like any other, but its content (page browser,
+  // full-text search) only makes sense once the PDF main tab is actually
+  // showing — so selecting it also switches the main content area, unlike
+  // every other activity here which only ever opens a side panel.
+  useEffect(() => {
+    if (activeView === 'pdf-tools') {
+      useMainTabStore.getState().setActiveTab('pdf-viewer')
+    }
+  }, [activeView])
+
   const panelContent = (
     <>
       {activeView === 'scenes' && (
@@ -70,6 +82,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
       {activeView === 'inspiration' && <InspirationPanel />}
       {activeView === 'dice-roller' && <RollerPanel />}
       {activeView === 'rolls' && <RollsPanel editor={editor} />}
+      {activeView === 'pdf-tools' && <PdfToolsPanel />}
     </>
   )
 

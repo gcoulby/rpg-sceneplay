@@ -10,6 +10,7 @@ import {
   BookHeart,
   ChartAreaIcon,
   Dices,
+  FileText,
   IdCard,
   MapIcon,
   PencilLine,
@@ -23,6 +24,7 @@ import { useMainTabStore, type MainTab } from '@/stores/mainTabStore'
 import { CharacterSheet } from './components/screens/character-sheets/character-sheet'
 import Acknowledgements from './components/screens/acknowledgements'
 import OracleScreen from './components/screens/oracles'
+import PdfViewerScreen from './components/screens/pdf-viewer/pdf-viewer-screen'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   const activeTab = useMainTabStore((s) => s.activeTab)
@@ -69,6 +71,10 @@ function App() {
                 <Dices />
                 <span className="hidden md:inline">Oracles</span>
               </TabsTrigger>
+              <TabsTrigger value="pdf-viewer">
+                <FileText />
+                <span className="hidden md:inline">PDFs</span>
+              </TabsTrigger>
               <TabsTrigger value="acknowledgements">
                 <BookHeart />
                 <span className="hidden md:inline">Acknowledgements</span>
@@ -102,6 +108,11 @@ function App() {
             <TabsContent value="oracles">
               <div className="h-(--app-h)! w-full overflow-hidden">
                 <OracleScreen />
+              </div>
+            </TabsContent>
+            <TabsContent value="pdf-viewer" keepMounted>
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                <PdfViewerScreen />
               </div>
             </TabsContent>
             <TabsContent value="acknowledgements">

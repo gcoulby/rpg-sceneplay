@@ -7,6 +7,7 @@ import { parseFountain } from '@/utils/open-draft/fountainParser'
 import { parseDocx } from '@/utils/open-draft/docxImporter'
 import {
   parseOdraftLoose,
+  parseSceneplayAny,
   isSceneplayFile,
   type ParsedOdraft,
 } from './sceneplayFormat'
@@ -33,6 +34,12 @@ function titleFromFilename(filename: string): string {
   return filename.replace(/\.\w+$/, '') || 'Untitled'
 }
 
+/**
+ * Text-based read path. `.sceneplay`/`.odraft` here means the legacy flat-JSON
+ * shape (v1/v2) — a v3 zip archive isn't valid text and belongs in
+ * `importBinaryDocument` instead; callers with raw file bytes should prefer
+ * that regardless of format.
+ */
 export function importTextDocument(
   filename: string,
   text: string,
@@ -62,6 +69,15 @@ export async function importBinaryDocument(
   filename: string,
   bytes: ArrayBuffer,
 ): Promise<ImportedDocument> {
+  if (isSceneplayFile(filename)) {
+    const parsed = await parseSceneplayAny(bytes)
+    return {
+      format: 'sceneplay',
+      doc: parsed.content,
+      parsedOdraft: parsed,
+      title: parsed.meta.title || titleFromFilename(filename),
+    }
+  }
   const result = await parseDocx(bytes)
   return {
     format: 'docx',

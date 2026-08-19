@@ -23,6 +23,7 @@ import { useMapStore } from '@/components/screens/map/useMapStore'
 import { useSheetStore } from '@/components/screens/character-sheets/store/useSheetStore'
 import { useOracleStore } from '@/stores/oracleStore'
 import { useRollNoteStore } from '@/stores/rollNoteStore'
+import { usePdfViewerStore } from '@/components/screens/pdf-viewer/store/usePdfViewerStore'
 
 /**
  * Every `_`-prefixed key `buildSaveContent` writes. Used to separate app
@@ -60,6 +61,9 @@ export const SAVE_METADATA_KEYS = [
   '_oracleCollections',
   '_oracleCombos',
   '_rollNotes',
+  '_pdfEmbeds',
+  '_pdfAnnotations',
+  '_pdfFormValues',
 ] as const
 
 export type SaveMetadataKey = (typeof SAVE_METADATA_KEYS)[number]
@@ -79,6 +83,7 @@ export function buildSaveContent(
   const sheetStore = useSheetStore.getState()
   const oracleStore = useOracleStore.getState()
   const rollNoteStore = useRollNoteStore.getState()
+  const pdfStore = usePdfViewerStore.getState()
   const doc = editor.getJSON()
   return {
     ...doc,
@@ -114,6 +119,9 @@ export function buildSaveContent(
     _oracleCollections: oracleStore.userCollections,
     _oracleCombos: oracleStore.userCombos,
     _rollNotes: rollNoteStore.rollNotes,
+    _pdfEmbeds: pdfStore.embeds,
+    _pdfAnnotations: pdfStore.annotations,
+    _pdfFormValues: pdfStore.formValues,
   }
 }
 
@@ -149,4 +157,52 @@ export function hasSaveMetadata(content: unknown): boolean {
   return SAVE_METADATA_KEYS.some(
     (key) => key in (content as Record<string, unknown>),
   )
+}
+
+/**
+ * Keys whose non-emptiness signals the user has added real content, distinct
+ * from settings/config keys that carry a non-empty default regardless of
+ * whether the user has touched anything (e.g. `_tagCategories`, `_pageLayout`
+ * are always populated). Used by `hasSaveableCollections` below.
+ */
+const SAVEABLE_COLLECTION_KEYS = [
+  '_notes',
+  '_generalNotes',
+  '_tags',
+  '_characterProfiles',
+  '_characterRelationships',
+  '_beats',
+  '_map',
+  '_sheets',
+  '_oracleSources',
+  '_oracleCollections',
+  '_oracleCombos',
+  '_rollNotes',
+  '_pdfEmbeds',
+  '_pdfAnnotations',
+  '_pdfFormValues',
+] as const satisfies readonly SaveMetadataKey[]
+
+/**
+ * True when the payload has real user-added content in any collection-shaped
+ * metadata key (PDFs, character sheets, notes, tags, beats, the map, oracle
+ * data, roll notes) — even when there's no prose text yet.
+ *
+ * `docHasAnyText` deliberately ignores all `_`-prefixed metadata (its own doc
+ * comment says so) — it exists purely to guard against blanking an existing
+ * document, not to answer "does this document have anything worth persisting
+ * at all". Using it alone for that second question meant a document whose
+ * only content was e.g. an imported PDF, with no prose ever typed, silently
+ * never autosaved — the whole write was skipped, metadata included.
+ */
+export function hasSaveableCollections(
+  content: Record<string, unknown> | null | undefined,
+): boolean {
+  if (!content) return false
+  return SAVEABLE_COLLECTION_KEYS.some((key) => {
+    const value = content[key]
+    if (Array.isArray(value)) return value.length > 0
+    if (value && typeof value === 'object') return Object.keys(value).length > 0
+    return false
+  })
 }
