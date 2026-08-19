@@ -8,6 +8,9 @@ export interface TableRollResult {
   row: OracleRow | undefined
   isMatch: boolean
   cascaded?: TableRollResult
+  /** True when `row` came from `table.matchTable` rather than the table's
+   *  own rows (see the matchTable handling in `rollTable()`). */
+  matchApplied?: boolean
 }
 
 const MAX_CASCADE_DEPTH = 5
@@ -83,7 +86,14 @@ export function rollTable(
       )
     : rawRoll
 
-  const row = table.rows.find((r) => lookupValue >= r.min && lookupValue <= r.max)
+  const matched = isMatch(table.dice, rawRoll, rolls)
+  // A match reuses the same roll against a different row list rather than
+  // rolling again — matchTable.rows covers the same value range as the
+  // parent table's own dice, so `lookupValue` is looked up there as-is.
+  const matchApplied = matched && !!table.matchTable
+  const row = matchApplied
+    ? table.matchTable!.rows.find((r) => lookupValue >= r.min && lookupValue <= r.max)
+    : table.rows.find((r) => lookupValue >= r.min && lookupValue <= r.max)
 
   const result: TableRollResult = {
     table,
@@ -91,7 +101,8 @@ export function rollTable(
     modifier,
     lookupValue,
     row,
-    isMatch: isMatch(table.dice, rawRoll, rolls),
+    isMatch: matched,
+    ...(matchApplied ? { matchApplied } : {}),
   }
 
   if (row?.tableRef && depth < MAX_CASCADE_DEPTH) {

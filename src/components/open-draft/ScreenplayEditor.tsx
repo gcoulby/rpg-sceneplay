@@ -140,6 +140,7 @@ import {
   saveActiveDoc,
   loadActiveDoc,
   switchModeKeepingDoc,
+  getLastActiveDocId,
 } from "@/storage/storageManager";
 import type { StorageMode } from "@/storage/types";
 import { buildStorageDoc as buildStorageDocFromEditor } from "@/storage/buildStorageDoc";
@@ -2200,14 +2201,30 @@ const ScreenplayEditor: React.FC = () => {
           setShowStorageModes(true);
           return;
         }
-        // Returning user: pull whatever the active provider is holding. In
-        // `browser` mode nothing is loaded until a document is chosen, so the
-        // welcome dialog still decides blank/sample/import.
+        // Returning user: pull whatever the active provider is holding.
         if (boot.mode === "disk" && !boot.needsDiskReconnect) {
           const doc = await diskHandleProvider.load();
           if (doc) {
             applyStoredDoc(doc);
             setShowWelcome(false);
+          }
+        } else if (boot.mode === "browser") {
+          // Browser mode has no file handle to reconnect to — the last
+          // document id (persisted whenever `setCurrentDocId` runs) is the
+          // only pointer back to what was open. Falls through to the
+          // welcome dialog's blank/sample/import choice if there's no
+          // recorded id, or that id no longer resolves to a document.
+          const lastId = await getLastActiveDocId();
+          if (lastId) {
+            try {
+              const doc = await loadActiveDoc(lastId);
+              if (doc) {
+                applyStoredDoc(doc);
+                setShowWelcome(false);
+              }
+            } catch {
+              /* fall through to the blank/sample/import choice */
+            }
           }
         }
       } catch (err) {

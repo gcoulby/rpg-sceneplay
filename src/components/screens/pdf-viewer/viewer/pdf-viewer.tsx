@@ -3,6 +3,7 @@ import {
   EventBus,
   PDFFindController,
   PDFLinkService,
+  PDFScriptingManager,
   PDFViewer as PdfjsViewer,
 } from 'pdfjs-dist/web/pdf_viewer.mjs'
 import { AnnotationEditorType, AnnotationMode } from 'pdfjs-dist'
@@ -16,6 +17,7 @@ import PdfSearchBar from './pdf-search-bar'
 import { extractGoogleRollFormula } from './google-roll-link'
 import { useRollNoteStore } from '@/stores/rollNoteStore'
 import { usePdfViewerStore } from '../store/usePdfViewerStore'
+import { pdfSandboxBundleSrc, pdfSandboxWasmUrl } from '../pdfjsSetup'
 import type { PdfEmbed } from '../types'
 
 interface PdfViewerProps {
@@ -30,7 +32,7 @@ interface PdfViewerProps {
  *  component's job is bridging that to React state, not re-implementing it. */
 export default function PdfViewer({ embed }: PdfViewerProps) {
   const { pdfDoc, error } = usePdfDocument(embed.assetRef)
-  useAnnotationSync(pdfDoc, embed.id)
+  useAnnotationSync(pdfDoc, embed.id, embed.assetRef)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const viewerRef = useRef<PdfjsViewer | null>(null)
@@ -78,6 +80,11 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
       eventBus: newEventBus,
       linkService,
     })
+    const newScriptingManager = new PDFScriptingManager({
+      eventBus: newEventBus,
+      sandboxBundleSrc: pdfSandboxBundleSrc,
+      wasmUrl: pdfSandboxWasmUrl,
+    })
     const viewer = new PdfjsViewer({
       container,
       viewer: viewerDiv,
@@ -86,8 +93,20 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
       findController: newFindController,
       annotationMode: AnnotationMode.ENABLE_FORMS,
       annotationEditorMode: AnnotationEditorType.NONE,
+      // Without this, checkboxes/text fields still work (they're native
+      // <input> elements pdf.js renders directly), but push buttons and
+      // calculated fields driven by an AcroForm JS action — common in
+      // pre-made fillable character sheets — silently do nothing on click.
+      scriptingManager: newScriptingManager,
     })
     linkService.setViewer(viewer)
+    // Unlike `linkService`, `PDFViewer` doesn't call this on the scripting
+    // manager itself even though it was passed the instance — skipping it
+    // leaves the manager's internal `#pdfViewer` null, so its own page-open/
+    // page-close dispatches (driven by `pagechanging`) throw reading
+    // `currentPageNumber` off `null` the moment a document with any
+    // JS-scripted field loads.
+    newScriptingManager.setViewer(viewer)
     // `PDFViewer.setDocument()` below does NOT propagate to the link
     // service — that's a separate call the app owns (unlike the find
     // controller, which `PDFViewer.setDocument()` does forward to since it
@@ -103,7 +122,7 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     setFindController(newFindController)
 
     const onPagesInit = () => {
-      viewer.currentScaleValue = 'page-width'
+      viewer.currentScaleValue = embed.zoom ? String(embed.zoom) : 'page-width'
       setViewerReady(true)
     }
     const onPageChanging = (evt: { pageNumber: number }) => {
@@ -117,6 +136,14 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     }
     const onScaleChanging = (evt: { scale: number }) => {
       setScale(evt.scale)
+      // Only persist once the user has taken over from auto-fit (the same
+      // flag the zoom handlers below flip) — otherwise every auto-fit
+      // recompute (initial load, container resize) would get saved as if
+      // the user had chosen it, permanently pinning a stale page-width
+      // scale instead of leaving future loads to auto-fit.
+      if (!autoFitRef.current) {
+        usePdfViewerStore.getState().setEmbedZoom(embed.id, evt.scale)
+      }
     }
     eventBus.on('pagesinit', onPagesInit)
     eventBus.on('pagechanging', onPageChanging)
@@ -142,7 +169,7 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     if (usePdfViewerStore.getState().activeEmbedId === embed.id) {
       usePdfViewerStore.getState().setActivePage(1)
     }
-    autoFitRef.current = true
+    autoFitRef.current = embed.zoom == null
     viewer.setDocument(pdfDoc)
 
     // Fit once, the first time the container has a real (non-zero) size —

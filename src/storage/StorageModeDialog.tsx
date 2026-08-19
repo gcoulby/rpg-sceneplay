@@ -69,6 +69,19 @@ const StorageModeDialog: React.FC<StorageModeDialogProps> = ({
     async (mode: StorageMode) => {
       if (busy) return
       if (mode === 'browser') {
+        // Persist the choice now, same as disk/memory below — previously
+        // this branch only switched views and never called `chooseMode`,
+        // so `active-storage-mode` was never written to IndexedDB and
+        // every reload came back as `isFirstRun`, re-showing this whole
+        // picker instead of dropping straight back into the saved
+        // document. `connect()` is idempotent (just requests persistent
+        // storage once), so this is safe to call again on a later reload.
+        setBusy(true)
+        try {
+          await chooseMode('browser')
+        } finally {
+          setBusy(false)
+        }
         setView('browser')
         return
       }

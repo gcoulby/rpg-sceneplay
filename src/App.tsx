@@ -48,6 +48,14 @@ function App() {
                 <PencilLine />
                 <span className="hidden md:inline">Editor</span>
               </TabsTrigger>
+              <TabsTrigger value="pdf-viewer">
+                <FileText />
+                <span className="hidden md:inline">PDFs</span>
+              </TabsTrigger>
+              <TabsTrigger value="oracles">
+                <Dices />
+                <span className="hidden md:inline">Oracles</span>
+              </TabsTrigger>
               <TabsTrigger
                 value="character-sheet"
                 className="data-active:bg-primary data-active:text-primary-foreground"
@@ -67,14 +75,7 @@ function App() {
                 <ChartAreaIcon />
                 <span className="hidden md:inline">Stats</span>
               </TabsTrigger>
-              <TabsTrigger value="oracles">
-                <Dices />
-                <span className="hidden md:inline">Oracles</span>
-              </TabsTrigger>
-              <TabsTrigger value="pdf-viewer">
-                <FileText />
-                <span className="hidden md:inline">PDFs</span>
-              </TabsTrigger>
+
               <TabsTrigger value="acknowledgements">
                 <BookHeart />
                 <span className="hidden md:inline">Acknowledgements</span>

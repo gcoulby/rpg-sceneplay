@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/accordion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
-import { useOracleStore } from '@/stores/oracleStore'
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa'
+import { useOracleStore, USER_ORACLE_SOURCE_ID } from '@/stores/oracleStore'
 import type { OracleCollection, OracleCombo, OracleTable } from '../types'
 import { buildBrowserRows, type BrowserRow } from '../oracleRows'
 import {
@@ -21,6 +22,7 @@ import {
 } from '../rollTable'
 import { tableResultToRollValue, comboResultToRollValue } from '../toRollValue'
 import type { RollValue } from '../rollTypes'
+import OracleBuilderDialog from './OracleBuilderDialog'
 
 type Selection =
   | { kind: 'table'; table: OracleTable }
@@ -113,6 +115,16 @@ export default function OracleBrowserFull({
   const getAllCollections = useOracleStore((s) => s.getAllCollections)
   const getTableById = useOracleStore((s) => s.getTableById)
   const getComboForTable = useOracleStore((s) => s.getComboForTable)
+  const addUserTable = useOracleStore((s) => s.addUserTable)
+  const updateUserTable = useOracleStore((s) => s.updateUserTable)
+  const removeUserTable = useOracleStore((s) => s.removeUserTable)
+  // `getAllSources`/`getAllCollections` are stable function references, so
+  // selecting only them wouldn't re-render this component when the user
+  // adds/edits/deletes a table — subscribe to the raw state too, purely so
+  // Zustand knows to re-render (the getters above still do the actual read).
+  useOracleStore((s) => s.userSources)
+  useOracleStore((s) => s.userCollections)
+  useOracleStore((s) => s.userCombos)
 
   const sources = getAllSources()
   const collections = getAllCollections()
@@ -122,6 +134,42 @@ export default function OracleBrowserFull({
   const [results, setResults] = useState<
     Record<string, TableRollResult | { text: string; rolls: TableRollResult[] }>
   >({})
+  const [builderOpen, setBuilderOpen] = useState(false)
+  const [editingTable, setEditingTable] = useState<OracleTable | null>(null)
+
+  const openCreateTable = () => {
+    setEditingTable(null)
+    setBuilderOpen(true)
+  }
+  const openEditTable = (table: OracleTable) => {
+    setEditingTable(table)
+    setBuilderOpen(true)
+  }
+  const handleSaveTable = (table: OracleTable) => {
+    if (editingTable) updateUserTable(table)
+    else addUserTable(table)
+    setBuilderOpen(false)
+    // `selection` holds a snapshot object, not a live store lookup, so an
+    // edit to the currently-selected table wouldn't otherwise be reflected
+    // in the detail panel (stale name, and a since-cleared roll result
+    // still referencing the pre-edit row list).
+    setSelection((s) =>
+      s?.kind === 'table' && s.table.id === table.id
+        ? { kind: 'table', table }
+        : s,
+    )
+    if (editingTable?.id === table.id) {
+      setResults((prev) => {
+        const next = { ...prev }
+        delete next[table.id]
+        return next
+      })
+    }
+  }
+  const handleDeleteTable = (id: string) => {
+    removeUserTable(id)
+    setSelection((s) => (s?.kind === 'table' && s.table.id === id ? null : s))
+  }
 
   const rollRow = (row: BrowserRow) => {
     if (row.kind === 'table') {
@@ -152,6 +200,13 @@ export default function OracleBrowserFull({
         layout === 'page' && 'h-[70vh] min-h-100',
       )}
     >
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={openCreateTable}>
+          <FaPlus size={10} className="mr-1.5" />
+          New Table
+        </Button>
+      </div>
+
       <Tabs
         value={activeSourceId}
         onValueChange={(v) => v && setActiveSourceId(v)}
@@ -214,6 +269,28 @@ export default function OracleBrowserFull({
                               aria-label="Modifier"
                             />
                           )}
+                        {selection.table.sourceId === USER_ORACLE_SOURCE_ID && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              onClick={() => openEditTable(selection.table)}
+                              aria-label="Edit table"
+                            >
+                              <FaPencilAlt size={11} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              onClick={() => handleDeleteTable(selection.table.id)}
+                              aria-label="Delete table"
+                            >
+                              <FaTrash size={11} />
+                            </Button>
+                          </>
+                        )}
                         <Button
                           size="sm"
                           onClick={() =>
@@ -307,6 +384,13 @@ export default function OracleBrowserFull({
           </TabsContent>
         ))}
       </Tabs>
+
+      <OracleBuilderDialog
+        open={builderOpen}
+        table={editingTable}
+        onSave={handleSaveTable}
+        onCancel={() => setBuilderOpen(false)}
+      />
     </div>
   )
 }

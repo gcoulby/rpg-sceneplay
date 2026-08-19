@@ -46,7 +46,10 @@ export default function PdfImportDialog({
   }
 
   const handleFileChosen = (picked: File) => {
-    if (picked.type !== 'application/pdf' && !picked.name.toLowerCase().endsWith('.pdf')) {
+    if (
+      picked.type !== 'application/pdf' &&
+      !picked.name.toLowerCase().endsWith('.pdf')
+    ) {
       showToast({ description: 'Please choose a PDF file.', type: 'error' })
       return
     }
@@ -92,7 +95,7 @@ export default function PdfImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl!">
         <DialogHeader>
           <DialogTitle>Import PDF</DialogTitle>
           <DialogDescription>
@@ -148,6 +151,12 @@ export default function PdfImportDialog({
                 <p className="text-[11px] text-(--fd-text-muted) leading-relaxed">
                   Pull one page out (e.g. a character sheet from a rulebook) —
                   the rest of the source isn't kept.
+                </p>
+                <p className="mt-1.5 text-[11px] text-(--fd-text-muted)/80 leading-relaxed italic">
+                  Not recommended for interactive PDFs — a fillable sheet's
+                  buttons/calculations can reference other pages, which won't
+                  come along. If a button does nothing after importing this way,
+                  try Full document instead.
                 </p>
               </CardContent>
             </Card>

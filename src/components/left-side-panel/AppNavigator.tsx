@@ -50,13 +50,20 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
     }
   }, [activeView, isMobile])
 
-  // PDF Tools is a side panel like any other, but its content (page browser,
-  // full-text search) only makes sense once the PDF main tab is actually
-  // showing — so selecting it also switches the main content area, unlike
-  // every other activity here which only ever opens a side panel.
+  // Every side panel is a companion to a specific main tab — PDF Tools goes
+  // with the PDF viewer, everything else goes with the editor — so selecting
+  // one also switches the main content area to match. An empty activeView
+  // just means the sidebar was closed, not a new panel selected, so that
+  // shouldn't force a tab switch.
   useEffect(() => {
     if (activeView === 'pdf-tools') {
       useMainTabStore.getState().setActiveTab('pdf-viewer')
+    } else if (
+      ['oracles', 'inspiration', 'dice-roller', 'rolls'].includes(activeView)
+    ) {
+      // don't switch
+    } else if (activeView !== '') {
+      useMainTabStore.getState().setActiveTab('editor')
     }
   }, [activeView])
 
@@ -91,15 +98,15 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
   // phone-width screen.
   if (isMobile) {
     return (
-      <div className="relative flex h-full w-full">
+      <div className="relative flex w-full h-full">
         <ActivityBar activeView={activeView} onSelectView={setActiveView} />
-        <div className="relative h-full min-w-0 flex-1 overflow-hidden">
+        <div className="relative flex-1 min-w-0 h-full overflow-hidden">
           {children}
         </div>
         {activeView !== '' && (
           <>
             <div
-              className="fixed inset-0 z-40 bg-black/40"
+              className="z-40 fixed inset-0 bg-black/40"
               onClick={() => setActiveView('')}
             />
             <div className="fixed inset-y-0 left-12 z-50 flex w-[85vw] max-w-sm flex-col overflow-hidden border-r bg-(--fd-navigator-bg) shadow-lg">

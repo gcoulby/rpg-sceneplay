@@ -12,9 +12,10 @@ import {
 } from './providers/diskHandleProvider'
 import { memoryProvider } from './providers/memoryProvider'
 import { indexedDbProvider } from './providers/indexedDbProvider'
-import { idbGet, idbSet, STORES, supportsIndexedDb } from './idb'
+import { idbGet, idbSet, idbDelete, STORES, supportsIndexedDb } from './idb'
 
 const MODE_KEY = 'active-storage-mode'
+const LAST_DOC_KEY = 'last-active-doc-id'
 const providers: Record<StorageMode, StorageProvider> = {
   disk: diskHandleProvider,
   memory: memoryProvider,
@@ -52,6 +53,29 @@ async function setPersistedMode(mode: StorageMode): Promise<void> {
     await idbSet(STORES.meta, MODE_KEY, mode)
   } catch {
     /* mode dialog just reappears next launch */
+  }
+}
+
+/**
+ * Which document Browser mode had open, so a reload can drop the user
+ * straight back into it instead of a blank document. Disk/memory modes
+ * don't need this — a disk document IS the connected file handle, and
+ * memory mode is explicitly non-persistent — so this is only read back on
+ * boot when the active mode is `browser`.
+ */
+export async function getLastActiveDocId(): Promise<string | null> {
+  try {
+    return (await idbGet<string>(STORES.meta, LAST_DOC_KEY)) ?? null
+  } catch {
+    return null
+  }
+}
+export async function setLastActiveDocId(id: string | null): Promise<void> {
+  try {
+    if (id) await idbSet(STORES.meta, LAST_DOC_KEY, id)
+    else await idbDelete(STORES.meta, LAST_DOC_KEY)
+  } catch {
+    /* last-open document just won't auto-restore next launch */
   }
 }
 

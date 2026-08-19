@@ -8,6 +8,7 @@
  */
 import { create } from 'zustand';
 import type { StorageDocSummary } from '@/storage/types';
+import { setLastActiveDocId } from '@/storage/storageManager';
 
 interface ProjectState {
   /** Id of the open document — matches `StorageDoc['id']`. */
@@ -23,6 +24,12 @@ export const useProjectStore = create<ProjectState>((set) => ({
   currentDocId: null,
   docs: [],
 
-  setCurrentDocId: (id) => set({ currentDocId: id }),
+  setCurrentDocId: (id) => {
+    set({ currentDocId: id });
+    // Fire-and-forget: lets a later boot in Browser mode auto-restore this
+    // document instead of opening blank. Harmless no-op if the active mode
+    // is disk/memory — that value is only ever read back for `browser`.
+    void setLastActiveDocId(id);
+  },
   setDocs: (docs) => set({ docs }),
 }));

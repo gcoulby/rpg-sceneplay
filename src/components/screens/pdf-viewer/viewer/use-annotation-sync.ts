@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { usePdfViewerStore } from '../store/usePdfViewerStore'
+import { saveAsset } from '@/storage/assetStore'
 import type { PdfAnnotation } from '../types'
 
 const ANNOTATION_TYPE_TO_KIND: Record<number, PdfAnnotation['type']> = {
@@ -9,6 +10,8 @@ const ANNOTATION_TYPE_TO_KIND: Record<number, PdfAnnotation['type']> = {
   13: 'stamp', // AnnotationEditorType.STAMP
   15: 'ink', // AnnotationEditorType.INK
 }
+
+const BAKE_DEBOUNCE_MS = 1500
 
 /**
  * Wires a loaded `PDFDocumentProxy`'s `annotationStorage` to the pdf-viewer
@@ -23,10 +26,23 @@ const ANNOTATION_TYPE_TO_KIND: Record<number, PdfAnnotation['type']> = {
  * `getAnnotations()`, which maps a storage key to the AcroForm field's
  * `fieldName`; everything else in storage is a drawn annotation editor,
  * identified by its own `annotationType`.
+ *
+ * Form values round-trip on their own (pdfjs stores those as plain
+ * `{value}` objects, so `setValue()` on reload is enough to restore them).
+ * Drawn markup (ink/freetext/highlight/stamp) doesn't: pdfjs's viewer
+ * library has no supported way to turn a plain serialized annotation back
+ * into a live, rendered editor on a freshly-parsed PDF — that only happens
+ * through pdfjs-internal flows (page cloning, print) this app never goes
+ * through. The robust fix is the same one every PDF viewer relies on: bake
+ * edits into the PDF bytes themselves via `PDFDocumentProxy.saveDocument()`
+ * (which serializes `annotationStorage` into real PDF-native annotation
+ * objects) and persist that as the asset, so a freshly-opened PDF already
+ * contains the markup natively — no custom re-hydration needed on load.
  */
 export function useAnnotationSync(
   pdfDoc: PDFDocumentProxy | null,
   pdfEmbedId: string,
+  assetRef: string,
 ): void {
   const setFormFieldValue = usePdfViewerStore((s) => s.setFormFieldValue)
   const upsertAnnotation = usePdfViewerStore((s) => s.upsertAnnotation)
@@ -49,6 +65,34 @@ export function useAnnotationSync(
     if (!pdfDoc) return
     const doc = pdfDoc
     let cancelled = false
+
+    // Debounced so a burst of ink points or keystrokes collapses into one
+    // re-serialize-and-write rather than one per pdfjs `onSetModified` edge.
+    // `dirty` tracks whether a bake is actually owed, so the cleanup below
+    // doesn't re-bake unchanged bytes on every unrelated unmount.
+    let bakeTimer: ReturnType<typeof setTimeout> | null = null
+    let dirty = false
+    const bakeNow = () => {
+      if (bakeTimer) {
+        clearTimeout(bakeTimer)
+        bakeTimer = null
+      }
+      if (!dirty) return
+      dirty = false
+      void doc
+        .saveDocument()
+        .then((bytes) =>
+          saveAsset(assetRef, new Blob([bytes], { type: 'application/pdf' })),
+        )
+        .catch((err) => {
+          console.error('Failed to bake PDF annotations into asset:', err)
+        })
+    }
+    const scheduleBake = () => {
+      dirty = true
+      if (bakeTimer) clearTimeout(bakeTimer)
+      bakeTimer = setTimeout(bakeNow, BAKE_DEBOUNCE_MS)
+    }
 
     void (async () => {
       const idToFieldName = new Map<string, string>()
@@ -89,6 +133,10 @@ export function useAnnotationSync(
         // notify us, silently truncating every field to its first change.
         // Resetting immediately re-arms it to fire again next time.
         storage.resetModified()
+        // Bake this edit (form value or drawn markup alike) into the PDF
+        // bytes — see the hook's doc comment for why this is the only
+        // reliable way to make drawn markup survive a reload.
+        scheduleBake()
         for (const [key, value] of storage as unknown as Iterable<
           [string, unknown]
         >) {
@@ -103,7 +151,24 @@ export function useAnnotationSync(
             continue
           }
 
-          const raw = value as Record<string, unknown>
+          // pdfjs' own commit path (`addToAnnotationStorage`) stores the
+          // live AnnotationEditor instance itself, not a plain object — it
+          // only gets serialized (via `.serialize()`) in a few specific
+          // pdfjs-internal flows (page cloning, print/save) that normal
+          // markup editing never goes through. Reading `.annotationType`
+          // straight off that instance is always undefined, which silently
+          // dropped every freshly-drawn annotation. pdfjs' own
+          // `AnnotationStorage.serializable` getter has this exact
+          // `instanceof AnnotationEditor ? val.serialize(...) : val` check
+          // (confirmed by reading pdfjs' bundled source) — mirrored here via
+          // duck-typing since `AnnotationEditor` isn't a public export.
+          const maybeEditor = value as { serialize?: (isForCopying?: boolean) => unknown }
+          const raw = (
+            typeof maybeEditor.serialize === 'function'
+              ? maybeEditor.serialize(false)
+              : value
+          ) as Record<string, unknown> | null
+          if (!raw) continue // e.g. an empty/in-progress editor with nothing to serialize yet
           const kind = ANNOTATION_TYPE_TO_KIND[raw.annotationType as number]
           if (!kind) continue // an editor type this feature doesn't track
           const existing = latestRef.current.annotations.find(
@@ -131,7 +196,13 @@ export function useAnnotationSync(
 
     return () => {
       cancelled = true
+      // Flush rather than let the debounce timer fire later: by then this
+      // embed may have switched away (only the active PDF tab stays
+      // mounted) and `usePdfDocument`'s ref-counting may have already
+      // destroyed this `doc`, which would make a delayed `saveDocument()`
+      // call fail silently instead of persisting the last edit.
+      bakeNow()
     }
-  }, [pdfDoc, pdfEmbedId, setFormFieldValue, upsertAnnotation])
+  }, [pdfDoc, pdfEmbedId, assetRef, setFormFieldValue, upsertAnnotation])
   /* eslint-enable react-hooks/immutability */
 }
