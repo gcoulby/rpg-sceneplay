@@ -54,6 +54,7 @@
     "@tiptap/react": "^2.27.2",
     "@tiptap/starter-kit": "^2.27.2",
     "@types/dompurify": "^3.0.5",
+    "changesets": "^1.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "docx": "^9.6.1",
@@ -87,6 +88,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.0",
     "@datasworn/ironsworn-classic": "^0.0.10",
     "@datasworn/ironsworn-classic-delve": "^0.0.10",
     "@datasworn/starforged": "^0.0.10",
