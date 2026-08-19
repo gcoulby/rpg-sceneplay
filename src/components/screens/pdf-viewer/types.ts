@@ -16,6 +16,13 @@ export interface PdfEmbed {
   sourcePageIndex?: number
   /** Tab position within the PDF screen. */
   order: number
+  /**
+   * Last-set `PDFViewer.currentScale` (a raw multiplier, e.g. `1.5`), or
+   * unset to auto-fit to page width. Not a `currentScaleValue` string like
+   * `'page-width'` — those are relative to viewport size and wouldn't
+   * reproduce the same zoom on reload.
+   */
+  zoom?: number
 }
 
 /** A markup annotation drawn on top of a PDF page (Markup mode). */

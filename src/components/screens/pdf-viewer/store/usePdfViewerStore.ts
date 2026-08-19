@@ -46,6 +46,7 @@ interface PdfViewerState {
   // Tab-bar CRUD.
   addEmbed: (embed: PdfEmbed) => void
   renameEmbed: (id: string, fileName: string) => void
+  setEmbedZoom: (id: string, zoom: number) => void
   /** Swaps the embed at `id` with its neighbour in the given direction,
    *  mirroring `SheetTabsEditor`'s `moveModule` swap-in-array approach.
    *  No-ops at the array boundaries. */
@@ -92,6 +93,11 @@ export const usePdfViewerStore = create<PdfViewerState>((set, get) => ({
   renameEmbed: (id, fileName) =>
     set((s) => ({
       embeds: s.embeds.map((e) => (e.id === id ? { ...e, fileName } : e)),
+    })),
+
+  setEmbedZoom: (id, zoom) =>
+    set((s) => ({
+      embeds: s.embeds.map((e) => (e.id === id ? { ...e, zoom } : e)),
     })),
 
   reorderEmbeds: (id, direction) =>

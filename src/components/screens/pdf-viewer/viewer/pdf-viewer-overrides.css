@@ -8,9 +8,21 @@
  * `.pdfViewer .page` is more specific than the bare `.page` rule, so this
  * resets the two leaking properties back to what pdfjs itself expects.
  */
+/* pdfjs assigns each form-widget/link `<section>` in `.annotationLayer` an
+ * incrementing inline `z-index` (2, 4, 6, ...) purely to layer overlapping
+ * annotations against each other — on a dense character sheet with 80+
+ * fields that counter climbs well past 50, 100, even 200. `.page` is
+ * `position: relative` but was never given its own z-index/isolation, so it
+ * doesn't establish a stacking context of its own — those numbers were
+ * comparing directly against the *app's* dialogs/sidebars in the root
+ * stacking context instead of staying contained to the PDF page they're
+ * drawn on, letting a fillable PDF's checkboxes/dropdowns paint on top of
+ * an open Import dialog or the sidebar. `isolation: isolate` contains them
+ * to this page, however high pdfjs's internal counter goes. */
 .pdfViewer .page {
   min-height: 0;
   padding: 0;
+  isolation: isolate;
 }
 
 /* pdfjs's own layout (page border, canvas/annotation/text layer sizing, the
