@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import pkg from '@/../package.json'
+import icon from '@/assets/icon.png'
 
 interface AboutDialogProps {
   open: boolean
@@ -29,6 +30,9 @@ export default function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
       <DialogContent className="sm:max-w-sm text-center">
         <DialogHeader>
           <DialogTitle className="text-center">
+            <div className="flex justify-center items-center mx-auto mb-3 rounded-[10px] w-12 h-12 font-bold text-[18px] text-white tracking-[1px]">
+              <img src={icon} alt="logo" className="rounded-[10px] w-full" />
+            </div>
             {metadata.title || pkg.name}
           </DialogTitle>
         </DialogHeader>

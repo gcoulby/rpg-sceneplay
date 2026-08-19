@@ -19,6 +19,7 @@ import {
 } from './storageManager'
 import { indexedDbProvider } from './providers/indexedDbProvider'
 import { relativeTime } from '@/utils/open-draft/relativeTime'
+import icon from '@/assets/icon.png'
 
 const OPTION_BUTTON_CLASS =
   'flex items-center gap-3 w-full py-3 px-3.5 bg-white/5 border border-(--fd-border) rounded-lg cursor-pointer transition-colors duration-150 text-left hover:bg-[rgba(74,158,255,0.1)] hover:border-(--fd-accent) disabled:opacity-50 disabled:cursor-not-allowed'
@@ -127,8 +128,8 @@ const StorageModeDialog: React.FC<StorageModeDialogProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-[linear-gradient(135deg,#1a2a3a_0%,#2b2b2b_100%)] px-6 pt-8 pb-5 welcome-hero">
-          <div className="w-12 h-12 mx-auto mb-3 bg-(--fd-accent) rounded-[10px] flex items-center justify-center font-bold text-[18px] text-white tracking-[1px]">
-            OD
+          <div className="flex justify-center items-center mx-auto mb-3 rounded-[10px] w-12 h-12 font-bold text-[18px] text-white tracking-[1px]">
+            <img src={icon} alt="logo" className="rounded-[10px] w-full" />
           </div>
           <h1 className="m-0 mb-1 font-semibold text-[22px] text-white">
             RPG Sceneplay
