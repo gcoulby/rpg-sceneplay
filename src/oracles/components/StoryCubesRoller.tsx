@@ -9,17 +9,23 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-const GLYPHS = Object.values(gi)
+// Paired with each icon's export name (e.g. "GiFire") rather than reading
+// `.name` off the component function itself later — a minifier renames
+// local function identifiers (production build showed tooltips collapsed
+// to single mangled letters), but `Object.entries()` keys are the module's
+// actual ES export names, which have to stay intact for imports elsewhere
+// to keep resolving, so they survive minification untouched.
+const GLYPHS = Object.entries(gi) as [string, IconType][]
 
 interface StoryCubesRollerProps {
   compact?: boolean
 }
 
 export default function StoryCubesRoller({ compact }: StoryCubesRollerProps) {
-  const [cubes, setCubes] = useState<IconType[]>([])
+  const [cubes, setCubes] = useState<[string, IconType][]>([])
 
   const generateCubes = (count: number) => {
-    const c: IconType[] = []
+    const c: [string, IconType][] = []
     for (let i = 0; i < count; i++) {
       c.push(GLYPHS[Math.floor(Math.random() * GLYPHS.length)])
     }
@@ -81,17 +87,17 @@ export default function StoryCubesRoller({ compact }: StoryCubesRollerProps) {
         )}
       </div>
       <div className="flex flex-wrap justify-center items-center gap-2">
-        {cubes.map((cube, index) => (
+        {cubes.map(([name, Cube], index) => (
           <div
             className="flex bg-slate-200 shadow-2xl p-2 border rounded-xl text-background"
             key={index}
           >
             <Tooltip>
               <TooltipTrigger>
-                {cube({ size: compact ? 34 : 40 })}
+                <Cube size={compact ? 34 : 40} />
               </TooltipTrigger>
               <TooltipContent className="shadow-2xl">
-                <p>{cube.name.substring(2)}</p>
+                <p>{name.substring(2)}</p>
               </TooltipContent>
             </Tooltip>
           </div>

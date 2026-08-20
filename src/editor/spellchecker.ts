@@ -212,9 +212,14 @@ class SpellChecker {
     // 1. Try bundled first for the built-in language.
     if (code === BUILTIN_LANGUAGE) {
       try {
+        // Root-absolute paths break under a non-root deploy base (GitHub
+        // Pages serves this app from /rpg-sceneplay/) — `BASE_URL` is Vite's
+        // own resolved base for the current deploy, same pattern already
+        // used for the PDF viewer's bundled assets (see pdfjsSetup.ts).
+        const base = import.meta.env.BASE_URL;
         let [aff, dic] = await Promise.all([
-          fetch('/dictionaries/en_US.aff').then((r) => (r.ok ? r.text() : null)),
-          fetch('/dictionaries/en_US.dic').then((r) => (r.ok ? r.text() : null)),
+          fetch(`${base}dictionaries/en_US.aff`).then((r) => (r.ok ? r.text() : null)),
+          fetch(`${base}dictionaries/en_US.dic`).then((r) => (r.ok ? r.text() : null)),
         ]);
         if (aff && dic) {
           if (aff.charCodeAt(0) === 0xfeff) aff = aff.slice(1);

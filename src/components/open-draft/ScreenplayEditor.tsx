@@ -123,7 +123,8 @@ import {
   buildSaveContent as buildSaveContentShared,
   stripSaveMetadata,
 } from "@/storage/saveContent";
-import { characterKey } from "@/utils/open-draft/nodeText";
+import { characterKey, parseSceneHeading } from "@/utils/open-draft/nodeText";
+import { getSlugSuggestionContext } from "@/utils/open-draft/sluglineSuggestions";
 import { computeContdChanges, type ContdBlock } from "@/editor/contdAuto";
 import {
   runRetext,
@@ -717,6 +718,20 @@ const ScreenplayEditor: React.FC = () => {
     suggestions: string[];
   }>({ visible: false, position: { top: 0, left: 0 }, suggestions: [] });
   const charAutoDismissedRef = useRef(false);
+
+  // Slugline autocomplete state (INT./EXT..., then known locations, then
+  // time of day) — mirrors character autocomplete above, except each stage
+  // replaces only the fragment currently being typed rather than the whole
+  // line, so `slugSegmentRef` tracks that fragment's doc-position range
+  // alongside the suggestion list shown for it.
+  const [knownLocations, setKnownLocations] = useState<string[]>([]);
+  const [slugAutoState, setSlugAutoState] = useState<{
+    visible: boolean;
+    position: { top: number; left: number };
+    suggestions: string[];
+  }>({ visible: false, position: { top: 0, left: 0 }, suggestions: [] });
+  const slugAutoDismissedRef = useRef(false);
+  const slugSegmentRef = useRef<{ from: number; to: number } | null>(null);
 
   const [formatPanelOpen, setFormatPanelOpen] = useState(false);
 
@@ -1583,6 +1598,49 @@ const ScreenplayEditor: React.FC = () => {
     };
   }, [editor, updateCharacters]);
 
+  // --- Collect known locations from existing scene headings ---
+  // Same "update when leaving the relevant node" pattern as
+  // `updateCharacters` above, scanning `sceneHeading` nodes instead.
+  const updateLocations = useCallback(() => {
+    if (!editor) return;
+    const locations = new Set<string>();
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === "sceneHeading") {
+        const { location } = parseSceneHeading(node.textContent);
+        if (location) locations.add(location.toUpperCase());
+      }
+      return true;
+    });
+    setKnownLocations(Array.from(locations).sort());
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    updateLocations();
+    let prevInSceneHeading = false;
+    const handleSelectionUpdate = () => {
+      const { $from } = editor.state.selection;
+      const inNode = $from.parent.type.name === "sceneHeading";
+      if (prevInSceneHeading && !inNode) updateLocations();
+      prevInSceneHeading = inNode;
+    };
+    const handleUpdate = ({
+      transaction,
+    }: {
+      transaction: { docChanged: boolean };
+    }) => {
+      if (!transaction.docChanged) return;
+      const { $from } = editor.state.selection;
+      if ($from.parent.type.name !== "sceneHeading") updateLocations();
+    };
+    editor.on("selectionUpdate", handleSelectionUpdate);
+    editor.on("update", handleUpdate);
+    return () => {
+      editor.off("selectionUpdate", handleSelectionUpdate);
+      editor.off("update", handleUpdate);
+    };
+  }, [editor, updateLocations]);
+
   // --- Auto CONT'D: add/remove (CONT'D) based on previous dialogue ---
   // Industry rule (Final Draft / WriterDuet / Fade In): append the continued
   // marker when the same character resumes speaking after action *within the same
@@ -1687,6 +1745,52 @@ const ScreenplayEditor: React.FC = () => {
       editor.off("selectionUpdate", onUpdate);
     };
   }, [editor, knownCharacters]);
+
+  // --- Slugline autocomplete: show/update on each editor update while in a scene heading ---
+  useEffect(() => {
+    if (!editor) return;
+    const onUpdate = () => {
+      if (!editor.isActive("sceneHeading")) {
+        setSlugAutoState((s) => (s.visible ? { ...s, visible: false } : s));
+        slugAutoDismissedRef.current = false;
+        return;
+      }
+      if (slugAutoDismissedRef.current) return;
+
+      const { $from } = editor.state.selection;
+      const ctx = getSlugSuggestionContext(
+        $from.parent.textContent,
+        knownLocations,
+      );
+      if (!ctx) {
+        setSlugAutoState((s) => (s.visible ? { ...s, visible: false } : s));
+        return;
+      }
+
+      // Absolute doc positions of the fragment `ctx` matched, so selecting a
+      // suggestion replaces just that fragment — not the whole line, which
+      // would also wipe out whatever prefix/location was already confirmed.
+      const blockStart = $from.start();
+      slugSegmentRef.current = {
+        from: blockStart + ctx.segmentStart,
+        to: blockStart + ctx.segmentEnd,
+      };
+
+      const { from } = editor.state.selection;
+      const coords = editor.view.coordsAtPos(from);
+      setSlugAutoState({
+        visible: true,
+        position: { top: coords.bottom + 4, left: coords.left },
+        suggestions: ctx.suggestions,
+      });
+    };
+    editor.on("update", onUpdate);
+    editor.on("selectionUpdate", onUpdate);
+    return () => {
+      editor.off("update", onUpdate);
+      editor.off("selectionUpdate", onUpdate);
+    };
+  }, [editor, knownLocations]);
 
   // Re-measure overlays after editor updates (decorations settle)
   useEffect(() => {
@@ -2902,6 +3006,28 @@ const ScreenplayEditor: React.FC = () => {
     charAutoDismissedRef.current = true;
   }, []);
 
+  const handleSlugAutoSelect = useCallback(
+    (value: string) => {
+      if (!editor || !slugSegmentRef.current) return;
+      const { from, to } = slugSegmentRef.current;
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.insertText(value, from, to);
+          return true;
+        })
+        .run();
+      setSlugAutoState((s) => ({ ...s, visible: false }));
+    },
+    [editor],
+  );
+
+  const handleSlugAutoDismiss = useCallback(() => {
+    setSlugAutoState((s) => ({ ...s, visible: false }));
+    slugAutoDismissedRef.current = true;
+  }, []);
+
   // --- Click on script note highlight → auto-filter notes panel ---
   // Only opens the panel when note highlights are visible (notesVisible).
   // When highlights are off, clicks pass through as normal editing.
@@ -3384,6 +3510,14 @@ const ScreenplayEditor: React.FC = () => {
           suggestions={charAutoState.suggestions}
           onSelect={handleCharAutoSelect}
           onDismiss={handleCharAutoDismiss}
+        />
+      )}
+      {slugAutoState.visible && !pickerState.visible && (
+        <CharacterAutocomplete
+          position={slugAutoState.position}
+          suggestions={slugAutoState.suggestions}
+          onSelect={handleSlugAutoSelect}
+          onDismiss={handleSlugAutoDismiss}
         />
       )}
       {/* Context menu on mobile: 3-finger touch only */}
