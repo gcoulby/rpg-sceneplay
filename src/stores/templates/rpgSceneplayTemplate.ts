@@ -36,6 +36,7 @@ export const RPG_ELEMENT_ORDER = [
   'parenthetical',
   'newAct',
   'endOfAct',
+  'general',
 ]
 
 const STARTER: StarterNode[] = [
@@ -229,6 +230,7 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
       nextOnEnter: 'general',
       placeholder: 'Text...',
     }),
+
     // Landing spot for imported content with no mapping into this template's
     // 8 types. Never offered as a selectable type (excluded from
     // elementMenuOrder); only produced by the .fdx/.fountain/.odraft importers.
