@@ -627,6 +627,13 @@ interface EditorState {
   setRevisionMode: (on: boolean) => void
   setRevisionColor: (color: string) => void
 
+  // Tracked [item] keys, kept in sync from the script by ScreenplayEditor's
+  // item-mark effect — read by the Character Sheet's Gear module to suggest
+  // already-mentioned items when adding gear (see `knownGearItems` below
+  // for the reverse direction).
+  knownItems: string[]
+  setKnownItems: (keys: string[]) => void
+
   // Character profiles (Final Draft CastList + CharacterHighlighting)
   characters: string[]
   setCharacters: (names: string[]) => void
@@ -1193,6 +1200,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   revisionColor: 'White',
   setRevisionMode: (on) => set({ revisionMode: on }),
   setRevisionColor: (color) => set({ revisionColor: color }),
+
+  knownItems: [],
+  setKnownItems: (keys) => set({ knownItems: keys }),
 
   characters: [],
   setCharacters: (names) => set({ characters: names }),

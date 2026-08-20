@@ -66,7 +66,7 @@ import Highlight from "@tiptap/extension-highlight";
 import { useFormattingTemplateStore } from "@/stores/formattingTemplateStore";
 import { useMapStore } from "@/components/screens/map/useMapStore";
 import type { ProjectMap, MapRef } from "@/components/screens/map/types";
-import { useSheetStore } from "@/components/screens/character-sheets/store/useSheetStore";
+import { useSheetStore, getAllGearItemNames } from "@/components/screens/character-sheets/store/useSheetStore";
 import type { CharacterSheet } from "@/components/screens/character-sheets/types";
 import {
   generateTemplateCss,
@@ -126,6 +126,10 @@ import {
 } from "@/storage/saveContent";
 import { characterKey, parseSceneHeading } from "@/utils/open-draft/nodeText";
 import { getSlugSuggestionContext } from "@/utils/open-draft/sluglineSuggestions";
+import {
+  findBracketMatches,
+  getOpenBracketFragment,
+} from "@/utils/open-draft/itemBrackets";
 import { computeContdChanges, type ContdBlock } from "@/editor/contdAuto";
 import {
   runRetext,
@@ -734,6 +738,19 @@ const ScreenplayEditor: React.FC = () => {
   }>({ visible: false, position: { top: 0, left: 0 }, suggestions: [] });
   const slugAutoDismissedRef = useRef(false);
   const slugSegmentRef = useRef<{ from: number; to: number } | null>(null);
+
+  // Item autocomplete: typing `[` anywhere (any block, not just scene
+  // headings) suggests item names already known from character sheets'
+  // Gear modules — the other half of the two-way link, `knownItems` in
+  // editorStore feeds the reverse direction into GearModule. Same
+  // segment-replace shape as slugline autocomplete above.
+  const [itemAutoState, setItemAutoState] = useState<{
+    visible: boolean;
+    position: { top: number; left: number };
+    suggestions: string[];
+  }>({ visible: false, position: { top: 0, left: 0 }, suggestions: [] });
+  const itemAutoDismissedRef = useRef(false);
+  const itemSegmentRef = useRef<{ from: number; to: number } | null>(null);
 
   const [formatPanelOpen, setFormatPanelOpen] = useState(false);
 
@@ -1545,7 +1562,7 @@ const ScreenplayEditor: React.FC = () => {
   // `characterKey` (utils/nodeText) is the one normalization: collapse hard
   // breaks to spaces, drop extensions like (CONT'D)/(V.O.)/(O.S.), uppercase.
   // Every site that compares a cue to a stored name must use it on both sides.
-  const { setCharacters } = useEditorStore();
+  const { setCharacters, setKnownItems } = useEditorStore();
   // Per-document "Mores & Continueds" config. Reactive: editing it re-runs the
   // CONT'D effect and re-renders the page-break markers.
   const moresContds = resolveMoresContds(pageLayout);
@@ -1643,6 +1660,89 @@ const ScreenplayEditor: React.FC = () => {
       editor.off("update", handleUpdate);
     };
   }, [editor, updateLocations]);
+
+  // --- Item marks: keep the `item` mark in sync with `[bracket]` text ---
+  // Deliberately a "re-derive from current state" pass (same shape as Auto
+  // CONT'D below) rather than an input rule reacting to individual
+  // keystrokes — an input rule can't tell whether the triggering character
+  // was already inserted (this broke in testing depending on *how* the `]`
+  // arrived), and never re-fires at all for edits made *inside* an already-
+  // bracketed span. Continuously reconciling against whatever `[...]` text
+  // is actually in the doc means marks can never go stale/orphaned no
+  // matter how the text got there (typed, edited, pasted, undone).
+  useEffect(() => {
+    if (!editor) return;
+    const markType = editor.schema.marks.item;
+    if (!markType) return;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
+    const updateItemMarks = () => {
+      const { doc } = editor.state;
+      const { tr } = editor.state;
+      let changed = false;
+      const seenKeys = new Set<string>();
+
+      doc.descendants((node, pos) => {
+        if (!node.isTextblock) return true;
+        const blockStart = pos + 1;
+        const expected = findBracketMatches(node.textContent);
+        for (const m of expected) seenKeys.add(m.itemKey);
+
+        const current: { from: number; to: number; itemKey: string }[] = [];
+        node.forEach((child, offset) => {
+          if (!child.isText) return;
+          const mark = child.marks.find((m) => m.type === markType);
+          if (mark) {
+            current.push({
+              from: offset,
+              to: offset + child.nodeSize,
+              itemKey: mark.attrs.itemKey as string,
+            });
+          }
+        });
+
+        const same =
+          current.length === expected.length &&
+          current.every(
+            (c, i) =>
+              c.from === expected[i].start &&
+              c.to === expected[i].end &&
+              c.itemKey === expected[i].itemKey,
+          );
+        if (same) return true;
+
+        changed = true;
+        tr.removeMark(blockStart, blockStart + node.content.size, markType);
+        for (const m of expected) {
+          tr.addMark(
+            blockStart + m.start,
+            blockStart + m.end,
+            markType.create({ itemKey: m.itemKey }),
+          );
+        }
+        return true;
+      });
+
+      if (changed && tr.steps.length > 0) {
+        tr.setMeta("addToHistory", false);
+        editor.view.dispatch(tr);
+      }
+
+      setKnownItems(Array.from(seenKeys).sort());
+    };
+
+    const debouncedUpdate = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(updateItemMarks, 400);
+    };
+
+    editor.on("update", debouncedUpdate);
+    setTimeout(updateItemMarks, 300);
+    return () => {
+      editor.off("update", debouncedUpdate);
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [editor, setKnownItems]);
 
   // --- Auto CONT'D: add/remove (CONT'D) based on previous dialogue ---
   // Industry rule (Final Draft / WriterDuet / Fade In): append the continued
@@ -1794,6 +1894,59 @@ const ScreenplayEditor: React.FC = () => {
       editor.off("selectionUpdate", onUpdate);
     };
   }, [editor, knownLocations]);
+
+  // --- Item autocomplete: typing `[` anywhere suggests known gear items ---
+  const sheetsForItemSuggestions = useSheetStore((s) => s.sheets);
+  const knownGearItems = useMemo(
+    () => getAllGearItemNames(sheetsForItemSuggestions),
+    [sheetsForItemSuggestions],
+  );
+  useEffect(() => {
+    if (!editor) return;
+    const onUpdate = () => {
+      const { $from } = editor.state.selection;
+      const frag = getOpenBracketFragment(
+        $from.parent.textContent,
+        $from.parentOffset,
+      );
+      if (!frag) {
+        setItemAutoState((s) => (s.visible ? { ...s, visible: false } : s));
+        itemAutoDismissedRef.current = false;
+        return;
+      }
+      if (itemAutoDismissedRef.current) return;
+
+      const upper = frag.fragment.trim().toUpperCase();
+      const suggestions = knownGearItems.filter((n) => {
+        const nUpper = n.toUpperCase();
+        return nUpper.startsWith(upper) && nUpper !== upper;
+      });
+      if (suggestions.length === 0) {
+        setItemAutoState((s) => (s.visible ? { ...s, visible: false } : s));
+        return;
+      }
+
+      const blockStart = $from.start();
+      itemSegmentRef.current = {
+        from: blockStart + frag.start,
+        to: blockStart + frag.end,
+      };
+
+      const { from } = editor.state.selection;
+      const coords = editor.view.coordsAtPos(from);
+      setItemAutoState({
+        visible: true,
+        position: { top: coords.bottom + 4, left: coords.left },
+        suggestions,
+      });
+    };
+    editor.on("update", onUpdate);
+    editor.on("selectionUpdate", onUpdate);
+    return () => {
+      editor.off("update", onUpdate);
+      editor.off("selectionUpdate", onUpdate);
+    };
+  }, [editor, knownGearItems]);
 
   // Re-measure overlays after editor updates (decorations settle)
   useEffect(() => {
@@ -3031,6 +3184,30 @@ const ScreenplayEditor: React.FC = () => {
     slugAutoDismissedRef.current = true;
   }, []);
 
+  const handleItemAutoSelect = useCallback(
+    (name: string) => {
+      if (!editor || !itemSegmentRef.current) return;
+      const { from, to } = itemSegmentRef.current;
+      // Completes the bracket too (`]`) — the item-mark sync effect picks
+      // it up as a tracked item on its own once the text lands.
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.insertText(`${name}]`, from, to);
+          return true;
+        })
+        .run();
+      setItemAutoState((s) => ({ ...s, visible: false }));
+    },
+    [editor],
+  );
+
+  const handleItemAutoDismiss = useCallback(() => {
+    setItemAutoState((s) => ({ ...s, visible: false }));
+    itemAutoDismissedRef.current = true;
+  }, []);
+
   // --- Click on script note highlight → auto-filter notes panel ---
   // Only opens the panel when note highlights are visible (notesVisible).
   // When highlights are off, clicks pass through as normal editing.
@@ -3521,6 +3698,14 @@ const ScreenplayEditor: React.FC = () => {
           suggestions={slugAutoState.suggestions}
           onSelect={handleSlugAutoSelect}
           onDismiss={handleSlugAutoDismiss}
+        />
+      )}
+      {itemAutoState.visible && !pickerState.visible && (
+        <CharacterAutocomplete
+          position={itemAutoState.position}
+          suggestions={itemAutoState.suggestions}
+          onSelect={handleItemAutoSelect}
+          onDismiss={handleItemAutoDismiss}
         />
       )}
       {/* Context menu on mobile: 3-finger touch only */}
