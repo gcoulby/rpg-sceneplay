@@ -9,6 +9,8 @@ import {
   Highlighter,
   Stamp,
   Search,
+  Maximize,
+  Minimize,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AnnotationEditorType } from 'pdfjs-dist'
@@ -37,6 +39,8 @@ interface PdfToolbarProps {
   onZoomChange: (percent: number) => void
   searchOpen: boolean
   onToggleSearch: () => void
+  fullscreen: boolean
+  onToggleFullscreen: () => void
 }
 
 /** Page nav, zoom, and the Fill/Markup mode toggle — mutually exclusive
@@ -56,6 +60,8 @@ export default function PdfToolbar({
   onZoomChange,
   searchOpen,
   onToggleSearch,
+  fullscreen,
+  onToggleFullscreen,
 }: PdfToolbarProps) {
   const clampPage = (n: number) => onPageChange(Math.min(pageCount, Math.max(1, Math.round(n))))
 
@@ -154,6 +160,18 @@ export default function PdfToolbar({
           ))}
         </div>
       )}
+
+      <div className="flex-1" />
+
+      <Button
+        variant={fullscreen ? 'secondary' : 'ghost'}
+        size="icon"
+        className="size-7"
+        onClick={onToggleFullscreen}
+        title={fullscreen ? 'Exit full screen (Esc)' : 'Full screen'}
+      >
+        {fullscreen ? <Minimize className="size-3.5" /> : <Maximize className="size-3.5" />}
+      </Button>
     </div>
   )
 }

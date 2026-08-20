@@ -61,7 +61,11 @@ export function getSlugSuggestionContext(
     return suggestions.length ? { segmentStart, segmentEnd: text.length, suggestions } : null;
   }
 
-  // Stage 1: still typing the prefix itself.
-  const suggestions = SLUGLINE_PREFIXES.filter((p) => p.startsWith(upper) && p !== upper);
+  // Stage 1: still typing the prefix itself. Shortest match first (an
+  // autoformatter has already reordered `SLUGLINE_PREFIXES` once — sort
+  // explicitly here rather than depending on its declaration order).
+  const suggestions = SLUGLINE_PREFIXES.filter((p) => p.startsWith(upper) && p !== upper).sort(
+    (a, b) => a.length - b.length,
+  );
   return suggestions.length ? { segmentStart: 0, segmentEnd: text.length, suggestions } : null;
 }

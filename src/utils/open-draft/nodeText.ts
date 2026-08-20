@@ -161,11 +161,11 @@ export function characterKey(raw: string): string {
     .toUpperCase()
 }
 
-/**
- * Recognized slugline prefixes, longest/most-specific first so a
- * `.find(p => upper.startsWith(p))` scan doesn't stop at "INT." when the
- * line is actually "INT./EXT."
- */
+/** Recognized slugline prefixes. Declaration order doesn't matter — see
+ *  `findSluglinePrefix` below, which always checks the longest ones first
+ *  regardless of how this array is sorted (an autoformatter has already
+ *  reordered it alphabetically once, which silently broke matching until
+ *  the length-based lookup below was added). */
 export const SLUGLINE_PREFIXES = [
   'INT.',
   'EXT.',
@@ -173,6 +173,16 @@ export const SLUGLINE_PREFIXES = [
   'EXT./INT.',
   'I/E.',
 ] as const
+
+/** Finds the longest `SLUGLINE_PREFIXES` entry `upper` starts with — longest
+ *  first so "INT./EXT." matches in full rather than stopping at "INT." */
+export function findSluglinePrefix(upper: string): string {
+  let best = ''
+  for (const p of SLUGLINE_PREFIXES) {
+    if (upper.startsWith(p) && p.length > best.length) best = p
+  }
+  return best
+}
 
 export interface SceneHeadingParts {
   /** One of `SLUGLINE_PREFIXES`, or `''` if the line doesn't start with one yet. */
@@ -190,7 +200,7 @@ export interface SceneHeadingParts {
 export function parseSceneHeading(raw: string): SceneHeadingParts {
   const text = singleLine(raw)
   const upper = text.toUpperCase()
-  const prefix = SLUGLINE_PREFIXES.find((p) => upper.startsWith(p)) ?? ''
+  const prefix = findSluglinePrefix(upper)
   const rest = text.slice(prefix.length).trim()
   const dashMatch = rest.match(/\s-\s/)
   if (dashMatch && dashMatch.index !== undefined) {

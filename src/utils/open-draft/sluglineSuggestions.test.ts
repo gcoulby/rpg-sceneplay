@@ -5,7 +5,7 @@ describe('getSlugSuggestionContext', () => {
   it('suggests prefixes before a space is typed', () => {
     const ctx = getSlugSuggestionContext('INT', [])
     expect(ctx).not.toBeNull()
-    expect(ctx?.suggestions).toEqual(['INT./EXT.', 'INT.'])
+    expect(ctx?.suggestions).toEqual(['INT.', 'INT./EXT.'])
     expect(ctx?.segmentStart).toBe(0)
     expect(ctx?.segmentEnd).toBe(3)
   })
