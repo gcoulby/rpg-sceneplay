@@ -17,6 +17,7 @@ export { FontSize } from './FontSize';
 export { ScriptNoteMark } from './ScriptNoteMark';
 export { RollAnchorNode } from './RollAnchorNode';
 export { TagMark } from './TagMark';
+export { ItemMark } from './ItemMark';
 export { FormatOverride } from './FormatOverride';
 export { CustomElement } from './CustomElement';
 export { AvBlock, AvRow, AvCell, AvPara, AvShot, AvDirection, AvKeymap, AvBlockExtensions } from './AvBlock';

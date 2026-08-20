@@ -9740,6 +9740,17 @@ html.android .version-history-panel {
   background-color: transparent !important;
   border-bottom: none !important;
 }
+/* ============ TRACKED ITEMS ============ */
+.tracked-item {
+  cursor: pointer;
+  border-radius: 1px;
+  background-color: rgb(111 168 220 / 0.18);
+  border-bottom: 1px dotted var(--fd-accent, #6fa8dc);
+}
+.items-hidden .tracked-item {
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
 /* Pending tag selection prompt in Tags panel */
 .tags-pending {
   border-bottom: 2px solid var(--fd-accent);

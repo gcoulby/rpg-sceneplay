@@ -44,6 +44,7 @@ import {
   ScriptNoteMark,
   RollAnchorNode,
   TagMark,
+  ItemMark,
   FormatOverride,
   CustomElement,
   DualDialogue,
@@ -571,6 +572,7 @@ const ScreenplayEditor: React.FC = () => {
     fontSize,
     pageLayout,
     tagsVisible,
+    itemsVisible,
     notesVisible,
     spellCheckEnabled,
     grammarCheckEnabled,
@@ -1309,6 +1311,7 @@ const ScreenplayEditor: React.FC = () => {
         ScriptNoteMark,
         RollAnchorNode,
         TagMark,
+        ItemMark,
         PaginationExtension,
         ContdCaseExtension,
         SearchExtension,
@@ -3241,7 +3244,7 @@ const ScreenplayEditor: React.FC = () => {
             >
               {isContinuous && (
                 <div
-                  className={`page continuous${!tagsVisible ? " tags-hidden" : ""}${!notesVisible ? " notes-hidden" : ""}`}
+                  className={`page continuous${!tagsVisible ? " tags-hidden" : ""}${!notesVisible ? " notes-hidden" : ""}${!itemsVisible ? " items-hidden" : ""}`}
                   ref={pageRef}
                   style={{
                     fontFamily: `'${fontFamily}', 'Courier New', Courier, monospace`,
@@ -3270,7 +3273,7 @@ const ScreenplayEditor: React.FC = () => {
                     }}
                   >
                     <div
-                      className={`page${!tagsVisible ? " tags-hidden" : ""}${!notesVisible ? " notes-hidden" : ""}${sceneNumbersVisible ? " show-scene-numbers" : ""}`}
+                      className={`page${!tagsVisible ? " tags-hidden" : ""}${!notesVisible ? " notes-hidden" : ""}${!itemsVisible ? " items-hidden" : ""}${sceneNumbersVisible ? " show-scene-numbers" : ""}`}
                       ref={pageRef}
                       style={{
                         fontFamily: `'${fontFamily}', 'Courier New', Courier, monospace`,

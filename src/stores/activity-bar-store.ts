@@ -13,6 +13,7 @@ import {
   Lightbulb,
   Eye,
   FileStack,
+  Package,
 } from 'lucide-react'
 import { create } from 'zustand'
 
@@ -23,6 +24,7 @@ export type NavView =
   | 'locations'
   | 'structure'
   | 'tags'
+  | 'items'
   | 'notes'
   | 'characters'
   | 'index-cards'
@@ -44,6 +46,7 @@ export const NAV_VIEWS: NavViewConfig[] = [
   { id: 'locations', label: 'Locations', icon: MapPin },
   { id: 'structure', label: 'Structure', icon: ListTree },
   { id: 'tags', label: 'Tags', icon: Tags },
+  { id: 'items', label: 'Items', icon: Package },
   { id: 'notes', label: 'Notes', icon: StickyNote },
   { id: 'characters', label: 'Characters', icon: Users },
   { id: 'index-cards', label: 'Index Cards', icon: NotebookTabs },

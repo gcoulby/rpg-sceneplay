@@ -17,6 +17,7 @@ interface ViewState {
   locationDatabaseOpen?: boolean
   notesVisible?: boolean
   tagsVisible?: boolean
+  itemsVisible?: boolean
   notesActiveTab?: 'script' | 'general'
   zoomLevel?: number
   viewMode?: 'paginated' | 'continuous'
@@ -665,6 +666,10 @@ interface EditorState {
   setTagsVisible: (v: boolean) => void
   tagsPanelOpen: boolean
   toggleTagsPanel: () => void
+  /** Auto-discovered [item] highlights — no registry of pre-defined items to
+   *  manage (unlike tags), just a show/hide toggle for the inline styling. */
+  itemsVisible: boolean
+  setItemsVisible: (v: boolean) => void
   locationDatabaseOpen: boolean
   toggleLocationDatabase: () => void
   /** When set, the Tags panel shows a "select category" prompt for this selection */
@@ -1318,6 +1323,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       saveViewState({ tagsPanelOpen: v })
       return { tagsPanelOpen: v }
     }),
+  itemsVisible: _vs.itemsVisible ?? true,
+  setItemsVisible: (v) => {
+    saveViewState({ itemsVisible: v })
+    set({ itemsVisible: v })
+  },
   locationDatabaseOpen: _vs.locationDatabaseOpen ?? false,
   toggleLocationDatabase: () =>
     set((s) => {
