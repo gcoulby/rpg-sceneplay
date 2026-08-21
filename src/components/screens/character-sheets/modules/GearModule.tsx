@@ -3,6 +3,8 @@ import { Backpack, Dices, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { uuid } from '@/utils/open-draft/uuid'
+import { useEditorStore } from '@/stores/editorStore'
+import CharacterAutocomplete from '@/components/open-draft/CharacterAutocomplete'
 import { resolveReferences } from '../formula/resolveReferences'
 import { rollFormula } from '../formula/rollFormula'
 import ModuleCard from './shared/ModuleCard'
@@ -46,7 +48,15 @@ export const defaultGearConfig: GearConfig = {}
 export const defaultGearValues: GearValues = { items: [], currencies: [] }
 
 function newItem(): GearItem {
-  return { id: uuid(), name: 'New Item', tag: '', qty: 1, weight: 0, formula: '', notes: '' }
+  return {
+    id: uuid(),
+    name: '',
+    tag: '',
+    qty: 1,
+    weight: 0,
+    formula: '',
+    notes: '',
+  }
 }
 
 /** Sheets saved before tag/formula existed on GearItem have those fields
@@ -63,9 +73,7 @@ function normalizeItem(item: Partial<GearItem> & { id: string }): GearItem {
   }
 }
 
-const GearModule: React.FC<
-  ModuleComponentProps<GearConfig, GearValues>
-> = ({
+const GearModule: React.FC<ModuleComponentProps<GearConfig, GearValues>> = ({
   module,
   valueMap,
   layout,
@@ -82,6 +90,39 @@ const GearModule: React.FC<
   const [search, setSearch] = useState('')
   const [lastRoll, setLastRoll] = useState<Record<string, number>>({})
 
+  // Suggests items already tracked from `[brackets]` in the script — the
+  // other half of the two-way link (ScreenplayEditor.tsx's item-mark sync
+  // effect populates `knownItems`; this module's item names populate the
+  // reverse direction via `getAllGearItemNames`, read back in ScreenplayEditor).
+  const knownItems = useEditorStore((s) => s.knownItems)
+  const [nameSuggest, setNameSuggest] = useState<{
+    itemId: string
+    position: { top: number; left: number }
+    suggestions: string[]
+  } | null>(null)
+
+  const updateNameSuggestions = (
+    itemId: string,
+    value: string,
+    target: HTMLInputElement,
+  ) => {
+    const upper = value.trim().toUpperCase()
+    const suggestions = knownItems.filter((k) => {
+      if (!upper) return true
+      return k.startsWith(upper) && k !== upper
+    })
+    if (suggestions.length === 0) {
+      setNameSuggest((s) => (s?.itemId === itemId ? null : s))
+      return
+    }
+    const rect = target.getBoundingClientRect()
+    setNameSuggest({
+      itemId,
+      position: { top: rect.bottom + 4, left: rect.left },
+      suggestions: suggestions.slice(0, 8),
+    })
+  }
+
   const items = (values.items ?? []).map(normalizeItem)
   const currencies = values.currencies ?? []
 
@@ -95,7 +136,8 @@ const GearModule: React.FC<
 
   const visibleItems = items.filter((item) => {
     if (filterTag && item.tag.trim() !== filterTag) return false
-    if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false
+    if (search && !item.name.toLowerCase().includes(search.toLowerCase()))
+      return false
     return true
   })
 
@@ -108,7 +150,9 @@ const GearModule: React.FC<
   const updateCurrency = (id: string, updates: Partial<CurrencyItem>) =>
     onChangeValues({
       ...values,
-      currencies: currencies.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+      currencies: currencies.map((c) =>
+        c.id === id ? { ...c, ...updates } : c,
+      ),
     })
 
   return (
@@ -132,7 +176,9 @@ const GearModule: React.FC<
               >
                 <input
                   value={c.label}
-                  onChange={(e) => updateCurrency(c.id, { label: e.target.value })}
+                  onChange={(e) =>
+                    updateCurrency(c.id, { label: e.target.value })
+                  }
                   className="bg-transparent w-10 font-medium text-[10px] text-(--fd-text-muted) uppercase outline-none"
                 />
                 <NumberField
@@ -144,7 +190,10 @@ const GearModule: React.FC<
                 <button
                   type="button"
                   onClick={() =>
-                    onChangeValues({ ...values, currencies: currencies.filter((x) => x.id !== c.id) })
+                    onChangeValues({
+                      ...values,
+                      currencies: currencies.filter((x) => x.id !== c.id),
+                    })
                   }
                   className="text-(--fd-text-muted) hover:text-destructive"
                 >
@@ -157,7 +206,10 @@ const GearModule: React.FC<
               onClick={() =>
                 onChangeValues({
                   ...values,
-                  currencies: [...currencies, { id: uuid(), label: 'GP', value: 0 }],
+                  currencies: [
+                    ...currencies,
+                    { id: uuid(), label: 'GP', value: 0 },
+                  ],
                 })
               }
               className="px-2 py-1 border border-(--fd-border) border-dashed rounded-md text-[10px] text-(--fd-text-muted) hover:border-(--fd-accent) hover:text-(--fd-accent) transition-colors"
@@ -169,7 +221,9 @@ const GearModule: React.FC<
 
         <div className="flex items-center gap-2 text-[10px] text-(--fd-text-muted)">
           <span className="uppercase tracking-wide">Carry</span>
-          <span className={overCapacity ? 'font-semibold text-destructive' : ''}>
+          <span
+            className={overCapacity ? 'font-semibold text-destructive' : ''}
+          >
             {totalWeight}
             {capacity > 0 ? ` / ${capacity}` : ''}
           </span>
@@ -177,7 +231,9 @@ const GearModule: React.FC<
             <div className="flex-1 bg-black/30 rounded-full h-1.5 overflow-hidden">
               <div
                 className={`h-full transition-[width] duration-200 ${overCapacity ? 'bg-destructive' : 'bg-(--fd-accent)'}`}
-                style={{ width: `${Math.min(100, (totalWeight / capacity) * 100)}%` }}
+                style={{
+                  width: `${Math.min(100, (totalWeight / capacity) * 100)}%`,
+                }}
               />
             </div>
           ) : (
@@ -186,7 +242,9 @@ const GearModule: React.FC<
           <NumberField
             value={capacity}
             min={0}
-            onChange={(v) => onChangeConfig({ ...config, carryCapacity: v || undefined })}
+            onChange={(v) =>
+              onChangeConfig({ ...config, carryCapacity: v || undefined })
+            }
             inputClassName="h-6 w-14 text-[10px]"
             title="Carry capacity (0 = no limit shown)"
           />
@@ -243,11 +301,17 @@ const GearModule: React.FC<
                   value={item.tag}
                   onChange={(e) => updateItem(item.id, { tag: e.target.value })}
                   placeholder="Tag"
-                  className="h-7 w-20 text-[10px] uppercase"
+                  className="w-20 h-7 text-[10px] uppercase"
                 />
                 <Input
                   value={item.name}
-                  onChange={(e) => updateItem(item.id, { name: e.target.value })}
+                  onChange={(e) => {
+                    updateItem(item.id, { name: e.target.value })
+                    updateNameSuggestions(item.id, e.target.value, e.target)
+                  }}
+                  onFocus={(e) =>
+                    updateNameSuggestions(item.id, item.name, e.target)
+                  }
                   placeholder="Item name"
                   className="flex-1 h-7 font-medium text-xs"
                 />
@@ -255,7 +319,12 @@ const GearModule: React.FC<
                   variant="ghost"
                   size="icon"
                   className="size-7 text-(--fd-text-muted) shrink-0"
-                  onClick={() => onChangeValues({ ...values, items: items.filter((i) => i.id !== item.id) })}
+                  onClick={() =>
+                    onChangeValues({
+                      ...values,
+                      items: items.filter((i) => i.id !== item.id),
+                    })
+                  }
                 >
                   <X className="size-3.5" />
                 </Button>
@@ -278,7 +347,9 @@ const GearModule: React.FC<
                 />
                 <Input
                   value={item.formula}
-                  onChange={(e) => updateItem(item.id, { formula: e.target.value })}
+                  onChange={(e) =>
+                    updateItem(item.id, { formula: e.target.value })
+                  }
                   placeholder="Roll formula (optional)"
                   className="flex-1 h-7 text-xs"
                 />
@@ -290,7 +361,10 @@ const GearModule: React.FC<
                     title="Roll"
                     onClick={() => {
                       const resolved = resolveReferences(item.formula, valueMap)
-                      setLastRoll((s) => ({ ...s, [item.id]: rollFormula(resolved).total }))
+                      setLastRoll((s) => ({
+                        ...s,
+                        [item.id]: rollFormula(resolved).total,
+                      }))
                     }}
                   >
                     <Dices className="size-3.5" />
@@ -317,8 +391,24 @@ const GearModule: React.FC<
           )}
         </div>
 
-        <AddTile label="Add Gear" onClick={() => onChangeValues({ ...values, items: [...items, newItem()] })} />
+        <AddTile
+          label="Add Gear"
+          onClick={() =>
+            onChangeValues({ ...values, items: [...items, newItem()] })
+          }
+        />
       </div>
+      {nameSuggest && (
+        <CharacterAutocomplete
+          position={nameSuggest.position}
+          suggestions={nameSuggest.suggestions}
+          onSelect={(name) => {
+            updateItem(nameSuggest.itemId, { name })
+            setNameSuggest(null)
+          }}
+          onDismiss={() => setNameSuggest(null)}
+        />
+      )}
     </ModuleCard>
   )
 }

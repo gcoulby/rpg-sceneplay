@@ -17,6 +17,7 @@ interface ViewState {
   locationDatabaseOpen?: boolean
   notesVisible?: boolean
   tagsVisible?: boolean
+  itemsVisible?: boolean
   notesActiveTab?: 'script' | 'general'
   zoomLevel?: number
   viewMode?: 'paginated' | 'continuous'
@@ -476,6 +477,34 @@ export interface CharacterRelationship {
   dynamic: string
 }
 
+// Global knowledge graph — generalizes the character relationship map to
+// span characters, items, locations, and freeform "other" entities.
+// Character-to-character edges keep living in `characterRelationships`
+// above (unchanged, still edited from the Character panel); this only
+// covers edges involving at least one non-character entity, plus the
+// entity registry for the "other" kind (the only kind with no existing
+// source of truth to derive nodes from).
+export type EntityKind = 'character' | 'item' | 'location' | 'other'
+
+export interface EntityRef {
+  kind: EntityKind
+  /** Uppercased name for character/item/location; a uuid for 'other'. */
+  id: string
+}
+
+export interface OtherEntity {
+  id: string
+  name: string
+}
+
+export interface GraphRelationship {
+  id: string
+  a: EntityRef
+  b: EntityRef
+  type: string
+  description: string
+}
+
 export interface BeatColumn {
   id: string
   title: string
@@ -626,6 +655,13 @@ interface EditorState {
   setRevisionMode: (on: boolean) => void
   setRevisionColor: (color: string) => void
 
+  // Tracked [item] keys, kept in sync from the script by ScreenplayEditor's
+  // item-mark effect — read by the Character Sheet's Gear module to suggest
+  // already-mentioned items when adding gear (see `knownGearItems` below
+  // for the reverse direction).
+  knownItems: string[]
+  setKnownItems: (keys: string[]) => void
+
   // Character profiles (Final Draft CastList + CharacterHighlighting)
   characters: string[]
   setCharacters: (names: string[]) => void
@@ -646,6 +682,17 @@ interface EditorState {
   selectedCharacter: string | null
   setSelectedCharacter: (name: string | null) => void
 
+  // Global knowledge graph — see `GraphRelationship`/`OtherEntity` above.
+  otherEntities: OtherEntity[]
+  setOtherEntities: (entities: OtherEntity[]) => void
+  addOtherEntity: (name: string) => string
+  renameOtherEntity: (id: string, name: string) => void
+  removeOtherEntity: (id: string) => void
+  graphRelationships: GraphRelationship[]
+  setGraphRelationships: (rels: GraphRelationship[]) => void
+  upsertGraphRelationship: (rel: GraphRelationship) => void
+  deleteGraphRelationship: (id: string) => void
+
   // Production tags
   tagCategories: TagCategory[]
   setTagCategories: (cats: TagCategory[]) => void
@@ -665,6 +712,10 @@ interface EditorState {
   setTagsVisible: (v: boolean) => void
   tagsPanelOpen: boolean
   toggleTagsPanel: () => void
+  /** Auto-discovered [item] highlights — no registry of pre-defined items to
+   *  manage (unlike tags), just a show/hide toggle for the inline styling. */
+  itemsVisible: boolean
+  setItemsVisible: (v: boolean) => void
   locationDatabaseOpen: boolean
   toggleLocationDatabase: () => void
   /** When set, the Tags panel shows a "select category" prompt for this selection */
@@ -1189,6 +1240,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setRevisionMode: (on) => set({ revisionMode: on }),
   setRevisionColor: (color) => set({ revisionColor: color }),
 
+  knownItems: [],
+  setKnownItems: (keys) => set({ knownItems: keys }),
+
   characters: [],
   setCharacters: (names) => set({ characters: names }),
   addCharacter: (name) =>
@@ -1266,6 +1320,47 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   selectedCharacter: null,
   setSelectedCharacter: (name) => set({ selectedCharacter: name }),
 
+  otherEntities: [],
+  setOtherEntities: (entities) => set({ otherEntities: entities }),
+  addOtherEntity: (name) => {
+    const id = crypto.randomUUID()
+    set((s) => ({
+      otherEntities: [...s.otherEntities, { id, name: name.trim() }],
+    }))
+    return id
+  },
+  renameOtherEntity: (id, name) =>
+    set((s) => ({
+      otherEntities: s.otherEntities.map((e) =>
+        e.id === id ? { ...e, name: name.trim() } : e,
+      ),
+    })),
+  removeOtherEntity: (id) =>
+    set((s) => ({
+      otherEntities: s.otherEntities.filter((e) => e.id !== id),
+      graphRelationships: s.graphRelationships.filter(
+        (r) =>
+          !(r.a.kind === 'other' && r.a.id === id) &&
+          !(r.b.kind === 'other' && r.b.id === id),
+      ),
+    })),
+  graphRelationships: [],
+  setGraphRelationships: (rels) => set({ graphRelationships: rels }),
+  upsertGraphRelationship: (rel) =>
+    set((s) => {
+      const idx = s.graphRelationships.findIndex((r) => r.id === rel.id)
+      if (idx >= 0) {
+        const copy = [...s.graphRelationships]
+        copy[idx] = { ...copy[idx], ...rel }
+        return { graphRelationships: copy }
+      }
+      return { graphRelationships: [...s.graphRelationships, rel] }
+    }),
+  deleteGraphRelationship: (id) =>
+    set((s) => ({
+      graphRelationships: s.graphRelationships.filter((r) => r.id !== id),
+    })),
+
   // Production tags
   tagCategories: [...DEFAULT_TAG_CATEGORIES],
   setTagCategories: (cats) => set({ tagCategories: cats }),
@@ -1318,6 +1413,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       saveViewState({ tagsPanelOpen: v })
       return { tagsPanelOpen: v }
     }),
+  itemsVisible: _vs.itemsVisible ?? true,
+  setItemsVisible: (v) => {
+    saveViewState({ itemsVisible: v })
+    set({ itemsVisible: v })
+  },
   locationDatabaseOpen: _vs.locationDatabaseOpen ?? false,
   toggleLocationDatabase: () =>
     set((s) => {

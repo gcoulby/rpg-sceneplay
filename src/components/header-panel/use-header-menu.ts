@@ -127,6 +127,8 @@ export function useHeaderMenus({
     setNotesVisible,
     tagsVisible,
     setTagsVisible,
+    itemsVisible,
+    setItemsVisible,
     setSearchOpen,
     spellCheckEnabled,
     toggleSpellCheck,
@@ -569,6 +571,13 @@ export function useHeaderMenus({
                 label: tagsVisible ? '\u2713 Tag Highlights' : 'Tag Highlights',
                 action: () => setTagsVisible(!tagsVisible),
               },
+              {
+                icon: FaHighlighter,
+                label: itemsVisible
+                  ? '\u2713 Item Highlights'
+                  : 'Item Highlights',
+                action: () => setItemsVisible(!itemsVisible),
+              },
             ],
           },
 
@@ -715,6 +724,7 @@ export function useHeaderMenus({
       onTemplateSelectOpen,
       notesVisible,
       tagsVisible,
+      itemsVisible,
       sceneNumbersVisible,
       sceneNumbersLocked,
       theme,

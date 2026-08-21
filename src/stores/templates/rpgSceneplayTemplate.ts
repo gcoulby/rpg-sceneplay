@@ -34,6 +34,9 @@ export const RPG_ELEMENT_ORDER = [
   'character',
   'dialogue',
   'parenthetical',
+  'newAct',
+  'endOfAct',
+  'general',
 ]
 
 const STARTER: StarterNode[] = [
@@ -170,10 +173,10 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
     }),
     // Disabled but present so Film Screenplay's shared schema stays intact —
     // these still exist as valid node types, just hidden from this template's UI.
-    general: disabled('general', 'General'),
+    // general: disabled('general', 'General'),
     shot: disabled('shot', 'Shot'),
-    newAct: disabled('newAct', 'New Act'),
-    endOfAct: disabled('endOfAct', 'End of Act'),
+    // newAct: disabled('newAct', 'New Act'),
+    // endOfAct: disabled('endOfAct', 'End of Act'),
     lyrics: disabled('lyrics', 'Lyrics'),
     showEpisode: disabled('showEpisode', 'Show/Episode'),
     castList: disabled('castList', 'Cast List'),
@@ -206,6 +209,28 @@ export const RPG_SCENEPLAY_TEMPLATE: FormattingTemplate = {
         placeholder: 'Describe the resolution...',
       },
     ),
+    newAct: rule('newAct', 'New Act', true, {
+      bold: true,
+      underline: true,
+      textTransform: 'uppercase',
+      textAlign: 'center',
+      marginTop: 24,
+      nextOnEnter: 'sceneHeading',
+      placeholder: 'ACT ONE',
+    }),
+    endOfAct: rule('endOfAct', 'End of Act', true, {
+      bold: true,
+      textTransform: 'uppercase',
+      textAlign: 'center',
+      marginTop: 24,
+      nextOnEnter: 'newAct',
+      placeholder: 'END OF ACT',
+    }),
+    general: rule('general', 'General', true, {
+      nextOnEnter: 'general',
+      placeholder: 'Text...',
+    }),
+
     // Landing spot for imported content with no mapping into this template's
     // 8 types. Never offered as a selectable type (excluded from
     // elementMenuOrder); only produced by the .fdx/.fountain/.odraft importers.

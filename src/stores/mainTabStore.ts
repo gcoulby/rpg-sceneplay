@@ -11,6 +11,7 @@ export type MainTab =
   | 'character-sheet'
   | 'oracles'
   | 'pdf-viewer'
+  | 'graph'
   | 'acknowledgements'
 
 interface MainTabState {

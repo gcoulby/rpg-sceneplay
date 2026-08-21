@@ -24,9 +24,16 @@ export interface ListValues {
 export const defaultListConfig: ListConfig = {}
 export const defaultListValues: ListValues = { items: [] }
 
-const ListModule: React.FC<
-  ModuleComponentProps<ListConfig, ListValues>
-> = ({ module, layout, onChangeLabel, onChangeValues, onChangeLayout, onDelete, onMoveUp, onMoveDown }) => {
+const ListModule: React.FC<ModuleComponentProps<ListConfig, ListValues>> = ({
+  module,
+  layout,
+  onChangeLabel,
+  onChangeValues,
+  onChangeLayout,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}) => {
   const { values } = module
 
   return (
@@ -77,7 +84,9 @@ const ListModule: React.FC<
               size="icon"
               className="size-6 text-(--fd-text-muted) shrink-0"
               onClick={() =>
-                onChangeValues({ items: values.items.filter((i) => i.id !== item.id) })
+                onChangeValues({
+                  items: values.items.filter((i) => i.id !== item.id),
+                })
               }
             >
               <X className="size-3.5" />
@@ -88,7 +97,10 @@ const ListModule: React.FC<
           label="Add Item"
           onClick={() =>
             onChangeValues({
-              items: [...values.items, { id: uuid(), label: 'New item', checked: false }],
+              items: [
+                ...values.items,
+                { id: uuid(), label: '', checked: false },
+              ],
             })
           }
         />

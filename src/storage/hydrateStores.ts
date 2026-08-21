@@ -73,6 +73,8 @@ export function hydrateEditorStoresFromContent(
   store.setTagCategories(parseAttr(c._tagCategories, DEFAULT_TAG_CATEGORIES))
   store.setCharacterProfiles(parseAttr(c._characterProfiles, []))
   store.setCharacterRelationships(parseAttr(c._characterRelationships, []))
+  store.setOtherEntities(parseAttr(c._otherEntities, []))
+  store.setGraphRelationships(parseAttr(c._graphRelationships, []))
   store.setBeats(parseAttr(c._beats, []))
   store.setBeatColumns(parseAttr(c._beatColumns, []))
   if (c._beatArrangeMode !== undefined) {

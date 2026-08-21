@@ -13,6 +13,7 @@ import type { PanelImperativeHandle } from 'react-resizable-panels'
 import LocationsPanel from './locations-panel/LocationsPanel'
 import StructurePanel from './structures-panel/StructurePanel'
 import TagsPanel from './tags-panel/TagsPanel'
+import ItemsPanel from './items-panel/ItemsPanel'
 import NotesPanel from './notes-tab/NotesPanel'
 import CharacterProfilesPanel from './character-panel/CharacterProfilesPanel'
 import IndexCardsPanel from './index-card-panel/IndexCardsPanel'
@@ -80,6 +81,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({
       )}
       {activeView === 'structure' && <StructurePanel editor={editor} />}
       {activeView === 'tags' && <TagsPanel editor={editor} />}
+      {activeView === 'items' && <ItemsPanel editor={editor} />}
       {activeView === 'notes' && <NotesPanel editor={editor} />}
       {activeView === 'characters' && (
         <CharacterProfilesPanel editor={editor} projectId="" />

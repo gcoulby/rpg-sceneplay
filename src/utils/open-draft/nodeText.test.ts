@@ -7,6 +7,7 @@ import {
   blockContentRange,
   singleLine,
   characterKey,
+  parseSceneHeading,
 } from './nodeText'
 import { pmDoc, doc, block, BR } from '@/test/screenplaySchema'
 
@@ -210,5 +211,39 @@ describe('characterKey', () => {
 
   it('is stable across the normalization both sides of a comparison need', () => {
     expect(characterKey('  MARY  ')).toBe(characterKey('mary'))
+  })
+})
+
+describe('parseSceneHeading', () => {
+  it('splits prefix, location and time', () => {
+    expect(parseSceneHeading('INT. COFFEE SHOP - DAY')).toEqual({
+      prefix: 'INT.',
+      location: 'COFFEE SHOP',
+      time: 'DAY',
+    })
+  })
+
+  it('prefers the longer INT./EXT. prefix over INT.', () => {
+    expect(parseSceneHeading('INT./EXT. CAR - NIGHT')).toEqual({
+      prefix: 'INT./EXT.',
+      location: 'CAR',
+      time: 'NIGHT',
+    })
+  })
+
+  it('handles a heading with no time yet', () => {
+    expect(parseSceneHeading('EXT. CITY STREET')).toEqual({
+      prefix: 'EXT.',
+      location: 'CITY STREET',
+      time: '',
+    })
+  })
+
+  it('returns an empty prefix for an unrecognized line, still splitting on the dash', () => {
+    expect(parseSceneHeading('COFFEE SHOP - DAY')).toEqual({
+      prefix: '',
+      location: 'COFFEE SHOP',
+      time: 'DAY',
+    })
   })
 })

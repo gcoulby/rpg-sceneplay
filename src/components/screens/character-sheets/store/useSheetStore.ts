@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { CharacterSheet } from '../types'
+import type { GearItem } from '../modules/GearModule'
 
 interface SheetState {
   sheets: CharacterSheet[]
@@ -32,3 +33,25 @@ export const useSheetStore = create<SheetState>((set) => ({
   removeSheet: (id) =>
     set((s) => ({ sheets: s.sheets.filter((sheet) => sheet.id !== id) })),
 }))
+
+/** Every distinct gear item name across every character's every Gear
+ *  module — the "known items" half of the script `[bracket]` ↔ inventory
+ *  two-way link. No per-character scoping (sheets/scripts aren't linked
+ *  that granularly), matching how the script side's own known-items list
+ *  is also doc-wide rather than per-scene. */
+export function getAllGearItemNames(sheets: CharacterSheet[]): string[] {
+  const names = new Set<string>()
+  for (const sheet of sheets) {
+    for (const tab of sheet.moduleLayout.tabs) {
+      for (const module of tab.modules) {
+        if (module.type !== 'gear') continue
+        const items = (module.values as { items?: GearItem[] }).items ?? []
+        for (const item of items) {
+          const name = item.name?.trim()
+          if (name) names.add(name)
+        }
+      }
+    }
+  }
+  return Array.from(names).sort()
+}

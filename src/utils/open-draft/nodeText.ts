@@ -21,11 +21,11 @@
  * import) so it stays trivially unit-testable in the node test environment,
  * matching the convention in `docText.ts`.
  */
-import type { JSONContent } from '@tiptap/react';
-import type { Node as PMNode } from '@tiptap/pm/model';
+import type { JSONContent } from '@tiptap/react'
+import type { Node as PMNode } from '@tiptap/pm/model'
 
 /** The node type name for an inline hard break. */
-export const BREAK_TYPE = 'hardBreak';
+export const BREAK_TYPE = 'hardBreak'
 
 // ── JSON side ───────────────────────────────────────────────────────────────
 
@@ -37,26 +37,26 @@ export const BREAK_TYPE = 'hardBreak';
  * break contribute nothing, which matches how they render.
  */
 export function jsonBlockText(node: JSONContent | null | undefined): string {
-  if (!node) return '';
-  if (node.type === BREAK_TYPE) return '\n';
-  if (typeof node.text === 'string') return node.text;
-  if (!Array.isArray(node.content)) return '';
-  let out = '';
-  for (const child of node.content) out += jsonBlockText(child);
-  return out;
+  if (!node) return ''
+  if (node.type === BREAK_TYPE) return '\n'
+  if (typeof node.text === 'string') return node.text
+  if (!Array.isArray(node.content)) return ''
+  let out = ''
+  for (const child of node.content) out += jsonBlockText(child)
+  return out
 }
 
 /** The block's text split into the lines the hard breaks divide it into. */
 export function jsonBlockLines(node: JSONContent | null | undefined): string[] {
-  return jsonBlockText(node).split('\n');
+  return jsonBlockText(node).split('\n')
 }
 
 /** True when the node contains a hard break at any depth. */
 export function jsonHasBreak(node: JSONContent | null | undefined): boolean {
-  if (!node) return false;
-  if (node.type === BREAK_TYPE) return true;
-  if (!Array.isArray(node.content)) return false;
-  return node.content.some(jsonHasBreak);
+  if (!node) return false
+  if (node.type === BREAK_TYPE) return true
+  if (!Array.isArray(node.content)) return false
+  return node.content.some(jsonHasBreak)
 }
 
 /**
@@ -69,33 +69,50 @@ export function jsonHasBreak(node: JSONContent | null | undefined): boolean {
  * render a blank line rather than nothing at all.
  */
 export interface Run {
-  text: string;
-  bold: boolean;
-  italic: boolean;
-  underline: boolean;
-  strike: boolean;
-  isBreak: boolean;
+  text: string
+  bold: boolean
+  italic: boolean
+  underline: boolean
+  strike: boolean
+  isBreak: boolean
 }
 
-const EMPTY_RUN: Run = { text: '', bold: false, italic: false, underline: false, strike: false, isBreak: false };
+const EMPTY_RUN: Run = {
+  text: '',
+  bold: false,
+  italic: false,
+  underline: false,
+  strike: false,
+  isBreak: false,
+}
 
 export function jsonBlockRuns(node: JSONContent | null | undefined): Run[] {
   if (!node || !Array.isArray(node.content) || node.content.length === 0) {
-    return [{ ...EMPTY_RUN }];
+    return [{ ...EMPTY_RUN }]
   }
   return node.content.map((child): Run => {
-    if (child.type === BREAK_TYPE) return { ...EMPTY_RUN, isBreak: true };
-    let bold = false, italic = false, underline = false, strike = false;
+    if (child.type === BREAK_TYPE) return { ...EMPTY_RUN, isBreak: true }
+    let bold = false,
+      italic = false,
+      underline = false,
+      strike = false
     if (child.marks) {
       for (const mark of child.marks) {
-        if (mark.type === 'bold') bold = true;
-        if (mark.type === 'italic') italic = true;
-        if (mark.type === 'underline') underline = true;
-        if (mark.type === 'strike') strike = true;
+        if (mark.type === 'bold') bold = true
+        if (mark.type === 'italic') italic = true
+        if (mark.type === 'underline') underline = true
+        if (mark.type === 'strike') strike = true
       }
     }
-    return { text: child.text || '', bold, italic, underline, strike, isBreak: false };
-  });
+    return {
+      text: child.text || '',
+      bold,
+      italic,
+      underline,
+      strike,
+      isBreak: false,
+    }
+  })
 }
 
 // ── ProseMirror side ────────────────────────────────────────────────────────
@@ -108,8 +125,11 @@ export function jsonBlockRuns(node: JSONContent | null | undefined): Run[] {
  * leave the tail of the block behind — duplicating it. Deriving from
  * `nodeSize` is correct regardless of what inline nodes the block contains.
  */
-export function blockContentRange(node: PMNode, pos: number): { from: number; to: number } {
-  return { from: pos + 1, to: pos + node.nodeSize - 1 };
+export function blockContentRange(
+  node: PMNode,
+  pos: number,
+): { from: number; to: number } {
+  return { from: pos + 1, to: pos + node.nodeSize - 1 }
 }
 
 // ── Normalization ───────────────────────────────────────────────────────────
@@ -123,7 +143,7 @@ export function blockContentRange(node: PMNode, pos: number): { from: number; to
  * an FDX Character paragraph).
  */
 export function singleLine(text: string): string {
-  return text.replace(/\s*\n\s*/g, ' ').trim();
+  return text.replace(/\s*\n\s*/g, ' ').trim()
 }
 
 /**
@@ -135,5 +155,60 @@ export function singleLine(text: string): string {
  * the match silently fails.
  */
 export function characterKey(raw: string): string {
-  return singleLine(raw).replace(/\s*\([^)]*\)\s*/g, '').trim().toUpperCase();
+  return singleLine(raw)
+    .replace(/\s*\([^)]*\)\s*/g, '')
+    .trim()
+    .toUpperCase()
+}
+
+/** Recognized slugline prefixes. Declaration order doesn't matter — see
+ *  `findSluglinePrefix` below, which always checks the longest ones first
+ *  regardless of how this array is sorted (an autoformatter has already
+ *  reordered it alphabetically once, which silently broke matching until
+ *  the length-based lookup below was added). */
+export const SLUGLINE_PREFIXES = [
+  'INT.',
+  'EXT.',
+  'INT./EXT.',
+  'EXT./INT.',
+  'I/E.',
+] as const
+
+/** Finds the longest `SLUGLINE_PREFIXES` entry `upper` starts with — longest
+ *  first so "INT./EXT." matches in full rather than stopping at "INT." */
+export function findSluglinePrefix(upper: string): string {
+  let best = ''
+  for (const p of SLUGLINE_PREFIXES) {
+    if (upper.startsWith(p) && p.length > best.length) best = p
+  }
+  return best
+}
+
+export interface SceneHeadingParts {
+  /** One of `SLUGLINE_PREFIXES`, or `''` if the line doesn't start with one yet. */
+  prefix: string
+  location: string
+  /** Text after the ` - ` separator, or `''` if there isn't one (yet). */
+  time: string
+}
+
+/**
+ * Splits a scene heading into its three conventional parts. Used both to
+ * build the known-locations list (scanning existing headings) and to figure
+ * out which part is currently being typed, for slugline autocomplete.
+ */
+export function parseSceneHeading(raw: string): SceneHeadingParts {
+  const text = singleLine(raw)
+  const upper = text.toUpperCase()
+  const prefix = findSluglinePrefix(upper)
+  const rest = text.slice(prefix.length).trim()
+  const dashMatch = rest.match(/\s-\s/)
+  if (dashMatch && dashMatch.index !== undefined) {
+    return {
+      prefix,
+      location: rest.slice(0, dashMatch.index).trim(),
+      time: rest.slice(dashMatch.index + dashMatch[0].length).trim(),
+    }
+  }
+  return { prefix, location: rest, time: '' }
 }

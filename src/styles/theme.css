@@ -4730,6 +4730,18 @@ html.android .version-history-panel {
   border-bottom: none !important;
 }
 
+.tracked-item {
+  cursor: pointer;
+  border-radius: 1px;
+  background-color: rgb(111 168 220 / 0.18);
+  border-bottom: 1px dotted var(--fd-accent, #6fa8dc);
+}
+
+.items-hidden .tracked-item {
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
 .tags-pending-cancel {
   background: none;
   border: none;

@@ -59,6 +59,11 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
   const [searchOpen, setSearchOpen] = useState(false)
   const search = usePdfSearch(eventBus, findController)
   const pageJumpRequest = usePdfViewerStore((s) => s.pageJumpRequest)
+  // Full screen escapes the whole app shell (header, sidebar, main tab bar,
+  // PDF filename tab strip) via `fixed inset-0` — same pattern as the
+  // Index Cards/Character Profiles panels' own fullscreen toggles — rather
+  // than threading a "hide everything else" flag up through every ancestor.
+  const [fullscreen, setFullscreen] = useState(false)
 
   // Recreate the viewer whenever the resolved document changes — switching
   // tabs means switching documents, and the library isn't designed for
@@ -243,6 +248,29 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
     return () => clearTimeout(clearTimer)
   }, [pageJumpRequest, embed.id, eventBus, findController])
 
+  useEffect(() => {
+    if (!fullscreen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFullscreen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [fullscreen])
+
+  // Entering/exiting full screen changes the container's real size, but the
+  // one-shot auto-fit `ResizeObserver` above has typically already fired and
+  // disconnected by the time the user reaches for this toggle — without an
+  // explicit refit here, the page would keep whatever scale it had in the
+  // old layout instead of filling the new one.
+  useEffect(() => {
+    const viewer = viewerRef.current
+    if (!viewer || !viewerReady) return
+    requestAnimationFrame(() => {
+      autoFitRef.current = false
+      viewer.currentScaleValue = 'page-width'
+    })
+  }, [fullscreen, viewerReady])
+
   if (error) {
     return (
       <div className="flex justify-center items-center h-full text-destructive text-xs text-center">
@@ -252,7 +280,13 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className={
+        fullscreen
+          ? 'fixed inset-0 z-50 flex flex-col bg-background'
+          : 'flex flex-col h-full'
+      }
+    >
       <PdfToolbar
         mode={mode}
         onModeChange={setMode}
@@ -285,6 +319,8 @@ export default function PdfViewer({ embed }: PdfViewerProps) {
           if (searchOpen) search.close()
           setSearchOpen((s) => !s)
         }}
+        fullscreen={fullscreen}
+        onToggleFullscreen={() => setFullscreen((s) => !s)}
       />
       {searchOpen && (
         <PdfSearchBar
