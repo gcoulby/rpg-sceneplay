@@ -15,6 +15,7 @@ import {
   MapIcon,
   PencilLine,
   SquareKanban,
+  Waypoints,
 } from 'lucide-react'
 import BeatBoard from './components/screens/beat-board'
 import ScriptStatistics from './components/screens/analytics/ScriptStatistics'
@@ -25,6 +26,7 @@ import { CharacterSheet } from './components/screens/character-sheets/character-
 import Acknowledgements from './components/screens/acknowledgements'
 import OracleScreen from './components/screens/oracles'
 import PdfViewerScreen from './components/screens/pdf-viewer/pdf-viewer-screen'
+import GraphScreen from './components/screens/graph/graph-screen'
 function App() {
   const editor = useEditorStore((s) => s.editor)
   const activeTab = useMainTabStore((s) => s.activeTab)
@@ -71,6 +73,10 @@ function App() {
                 <SquareKanban />
                 <span className="hidden md:inline">Beats</span>
               </TabsTrigger>
+              <TabsTrigger value="graph">
+                <Waypoints />
+                <span className="hidden md:inline">Graph</span>
+              </TabsTrigger>
               <TabsTrigger value="statistics">
                 <ChartAreaIcon />
                 <span className="hidden md:inline">Stats</span>
@@ -99,6 +105,11 @@ function App() {
             <TabsContent value="beat-board">
               <div className="h-(--app-h)! w-full overflow-hidden">
                 <BeatBoard />
+              </div>
+            </TabsContent>
+            <TabsContent value="graph">
+              <div className="h-(--app-h)! w-full overflow-hidden">
+                <GraphScreen />
               </div>
             </TabsContent>
             <TabsContent value="statistics">

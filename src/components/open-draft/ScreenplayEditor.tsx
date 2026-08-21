@@ -2286,6 +2286,18 @@ const ScreenplayEditor: React.FC = () => {
               rels as import("@/stores/editorStore").CharacterRelationship[],
             );
           }
+          const otherEnts = parseAttr(c._otherEntities);
+          if (otherEnts.length > 0) {
+            store.setOtherEntities(
+              otherEnts as import("@/stores/editorStore").OtherEntity[],
+            );
+          }
+          const graphRels = parseAttr(c._graphRelationships);
+          if (graphRels.length > 0) {
+            store.setGraphRelationships(
+              graphRels as import("@/stores/editorStore").GraphRelationship[],
+            );
+          }
           store.setBeats(
             parseAttr(c._beats) as import("@/stores/editorStore").BeatInfo[],
           );

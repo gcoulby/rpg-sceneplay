@@ -222,7 +222,7 @@ export default function OracleBrowserFull({
         {sources.map((source) => (
           <TabsContent key={source.id} value={source.id}>
             <div className="gap-3 grid grid-cols-1 lg:grid-cols-5">
-              <ScrollArea className="lg:col-span-2 border rounded-lg max-h-[50dvh]">
+              <ScrollArea className="lg:col-span-2 border rounded-lg h-[50dvh] min-h-0">
                 <Accordion>
                   {collections
                     .filter((c) => c.sourceId === source.id && !c.parentId)
@@ -252,7 +252,7 @@ export default function OracleBrowserFull({
                   </p>
                 )}
                 {selection?.kind === 'table' && (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 min-h-0">
                     <div className="flex justify-between items-center gap-2">
                       <h3 className="font-semibold">{selection.table.name}</h3>
                       <div className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export default function OracleBrowserFull({
                         )
                       )
                     })()}
-                    <ScrollArea className="max-h-[50dvh]">
+                    <ScrollArea className="h-[50dvh] min-h-0">
                       <ul className="flex flex-col gap-0.5 text-sm">
                         {selection.table.rows.map((row, i) => (
                           <li
